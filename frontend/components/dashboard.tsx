@@ -68,6 +68,11 @@ const dateLabel = (date: string) =>
   new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long" }).format(
     new Date(date),
   );
+/** Forme française utilisée dans la signature, avec élision devant Annecy par exemple. */
+function communeDesignation(name?: string) {
+  if (!name) return "votre commune";
+  return `la commune ${/^[aeiouyhàâéèêëîïôùûü]/i.test(name) ? "d’" : "de "}${name}`;
+}
 function CategoryIcon({
   category,
   size = 16,
@@ -1023,8 +1028,9 @@ export default function Dashboard() {
           wide
         >
           <p className="dialog-intro">
-            Une information à partager à {memberCommune?.name} ? Choisissez à
-            qui elle s’adresse.
+            Publiez au nom de {communeDesignation(memberCommune?.name)}, avec
+            votre nom comme auteur. Choisissez une publication publique ou
+            réservée à votre conseil municipal.
           </p>
           <form onSubmit={publish} className="form">
             <fieldset className="visibility-choice">
@@ -1095,9 +1101,10 @@ export default function Dashboard() {
                   .join("")}
               </span>
               <span>
-                Publié par <strong>{member.name}</strong>
+                Au nom de{" "}
+                <strong>{communeDesignation(memberCommune?.name)}</strong>, par{" "}
+                <strong>{member.name}</strong>
                 <small>
-                  {memberCommune?.name} ·{" "}
                   {visibility === "public"
                     ? "Visible par tous"
                     : "Réservé au conseil municipal"}
@@ -1134,6 +1141,16 @@ export default function Dashboard() {
             {detail.category}
           </span>
           <h3 className="detail-title">{detail.title}</h3>
+          <p className="publication-attribution">
+            Publié au nom de{" "}
+            <strong>
+              {communeDesignation(
+                communes.find((c) => c.id === detail.commune_id)?.name ||
+                  detail.commune_id,
+              )}
+            </strong>
+            , par <strong>{detail.author_name}</strong>.
+          </p>
           <Author item={detail} />
           {detail.visibility === "private" && (
             <div className="demo-notice">
@@ -1235,8 +1252,8 @@ function Author({ item }: { item: Publication }) {
         {item.author_name}
         <small>
           {item.author_role === "maire"
-            ? "Maire · compte fictif"
-            : "Conseillère · compte fictif"}
+            ? "Maire"
+            : "Membre du conseil municipal"}
         </small>
       </span>
     </div>

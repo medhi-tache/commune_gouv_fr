@@ -27,6 +27,8 @@ Chaque publication possède un mode de visibilité :
 - **Public** : accessible à tous les visiteurs, sans connexion.
 - **Privé** : accessible uniquement aux membres authentifiés du conseil municipal de la commune concernée.
 
+Chaque membre du conseil, maire ou conseiller municipal, peut publier en choisissant **Public** ou **Privé**. Chaque message est publié **au nom de sa commune et signé du nom de son auteur**. La commune, le nom et le rôle de l'auteur sont déterminés par sa session côté serveur ; ils ne sont pas modifiables dans le formulaire. La signature est affichée avant l'envoi, dans le fil et dans la lecture détaillée.
+
 Les publications privées ne doivent être accessibles ni aux visiteurs ni aux membres des conseils municipaux des autres communes. Le contrôle d'accès doit s'appliquer au contenu et aux éventuelles pièces jointes, y compris lors d'un accès par lien direct.
 
 ## Architecture technique
@@ -129,7 +131,7 @@ Les mots de passe sont hachés avec Argon2. Les sessions utilisent un cookie `Ht
 npm run check
 ```
 
-MongoDB doit être démarré avant cette commande. Elle vérifie le format Rust, lance les dix tests d’intégration contre MongoDB et construit le frontend avec vérification TypeScript. Chaque test crée une base temporaire `qomune_test_<UUID>` puis la supprime, sans toucher à la base de l’application. La variable `MONGODB_URI` permet aussi de choisir l’instance pour les tests.
+MongoDB doit être démarré avant cette commande. Elle vérifie le format Rust, lance les onze tests d’intégration contre MongoDB et construit le frontend avec vérification TypeScript. Chaque test crée une base temporaire `qomune_test_<UUID>` puis la supprime, sans toucher à la base de l’application. La variable `MONGODB_URI` permet aussi de choisir l’instance pour les tests.
 
 - [Guide du code et règles d'accès](CONTRIBUTING.md)
 - [Contrat de l'API](API.md)

@@ -559,3 +559,63 @@ async fn deux_ajouts_simultanes_ne_creent_qu_un_compte() {
     );
     database.drop().await.unwrap();
 }
+
+/// Chaque élu choisit sa visibilité ; sa signature et sa commune restent imposées par sa session.
+#[tokio::test]
+async fn maire_et_conseiller_publient_dans_les_deux_espaces_avec_leur_signature() {
+    let (app, database) = setup().await;
+    for (email, name, role) in [
+        ("maire.annecy@demo.qomune.fr", "Camille Martin", "maire"),
+        ("conseil.annecy@demo.qomune.fr", "Léa Robert", "conseiller"),
+    ] {
+        let token = sign_in(&app, email).await;
+        for visibility in ["public", "private"] {
+            let body = json!({"title":format!("Message {visibility} du {role}"),"body":"Une publication au nom de la commune, signée par son auteur.","category":"Vie citoyenne","visibility":visibility});
+            let (status, result, _) = request(
+                &app,
+                "POST",
+                "/publications",
+                Some(&token),
+                Some(body.clone()),
+            )
+            .await;
+            assert_eq!(status, StatusCode::CREATED);
+            let id = result["id"].as_str().unwrap();
+            let path = format!("/publications/{id}");
+            let (status, publication, _) = request(&app, "GET", &path, Some(&token), None).await;
+            assert_eq!(status, StatusCode::OK);
+            assert_eq!(publication["commune_id"], "74010");
+            assert_eq!(publication["author_name"], name);
+            assert_eq!(publication["author_role"], role);
+            assert_eq!(publication["visibility"], visibility);
+            assert_eq!(
+                request(&app, "GET", &path, None, None).await.0,
+                if visibility == "public" {
+                    StatusCode::OK
+                } else {
+                    StatusCode::NOT_FOUND
+                }
+            );
+            let (_, public_feed, _) = request(&app, "GET", "/publications", None, None).await;
+            assert_eq!(
+                public_feed
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .any(|publication| publication["id"] == id),
+                visibility == "public"
+            );
+            for field in ["commune_id", "author_name", "author_role", "author_id"] {
+                let mut forged = body.clone();
+                forged[field] = json!("Une autre identité");
+                assert_eq!(
+                    request(&app, "POST", "/publications", Some(&token), Some(forged))
+                        .await
+                        .0,
+                    StatusCode::UNPROCESSABLE_ENTITY
+                );
+            }
+        }
+    }
+    database.drop().await.unwrap();
+}

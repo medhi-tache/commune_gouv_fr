@@ -40,7 +40,7 @@ Paramètres facultatifs :
 
 Le titre contient 3 à 160 caractères, et le texte 10 à 10 000 caractères après suppression des espaces aux extrémités. Les visibilités acceptées sont `public` et `private`. Les thèmes sont `Vie citoyenne`, `Travaux`, `Culture`, `Environnement`, `Services publics` et `Conseil municipal`.
 
-L'identité de l'auteur, son rôle et sa commune sont déterminés par la session. Les champs supplémentaires sont refusés. Réponse : `201` avec `{ "id": "..." }`.
+Les maires et les conseillers peuvent publier avec les deux visibilités. L'identité de l'auteur, son rôle et sa commune sont déterminés par la session. Les lectures renvoient `commune_id`, `author_name` et `author_role` pour afficher une publication au nom de la commune et de la personne qui l’a écrite. Les champs supplémentaires sont refusés. Réponse : `201` avec `{ "id": "..." }`.
 
 Le relais Next.js exige une origine identique à celle de la requête ainsi qu'un contenu `application/json` pour les écritures. Il n'accepte que les routes énumérées ci-dessus. Taille maximale d'une requête : 64 Kio.
 
