@@ -34,6 +34,15 @@ Les publications privées ne doivent être accessibles ni aux visiteurs ni aux m
 
 Le frontend communique avec le backend via une API. Le backend vérifie les droits à chaque accès aux publications privées et à leurs pièces jointes.
 
+## Domaines prévus
+
+| Version | Adresse |
+| --- | --- |
+| Prototype | https://qomune.fr |
+| Version définitive | https://commune.gouv.fr |
+
+Ces adresses correspondent aux destinations prévues du projet. Leur mention ne confirme ni leur configuration ni le déploiement de l'application.
+
 ## État du projet
 
 Le dépôt est initialisé. Les rôles, les règles de visibilité et les technologies principales sont définis. L'application reste à développer. Les modalités de vérification des mandats des élus, les formats de publication et les canaux de diffusion restent à préciser.
