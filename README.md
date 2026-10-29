@@ -27,6 +27,13 @@ Chaque publication possède un mode de visibilité :
 
 Les publications privées ne doivent être accessibles ni aux visiteurs ni aux membres des conseils municipaux des autres communes. Le contrôle d'accès doit s'appliquer au contenu et aux éventuelles pièces jointes, y compris lors d'un accès par lien direct.
 
+## Architecture technique
+
+- **Backend : Rust** — API, authentification, gestion des publications et contrôle des accès par commune et par visibilité.
+- **Frontend : Next.js** — consultation des publications publiques et espace connecté des maires et des conseillers municipaux.
+
+Le frontend communique avec le backend via une API. Le backend vérifie les droits à chaque accès aux publications privées et à leurs pièces jointes.
+
 ## État du projet
 
-Le dépôt est initialisé et les rôles ainsi que les règles de visibilité sont définis. L'application reste à développer. Les modalités de vérification des mandats des élus, les formats de publication et les canaux de diffusion restent à préciser.
+Le dépôt est initialisé. Les rôles, les règles de visibilité et les technologies principales sont définis. L'application reste à développer. Les modalités de vérification des mandats des élus, les formats de publication et les canaux de diffusion restent à préciser.
