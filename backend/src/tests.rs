@@ -721,3 +721,124 @@ async fn import_du_referentiel_repris_sans_modifier_les_comptes_et_publications(
     sign_in(&app, "maire.annecy@demo.qomune.fr").await;
     database.drop().await.unwrap();
 }
+
+async fn add_registration_commune(database: &Database) {
+    database.collection::<Document>("communes").insert_one(doc!{"id":"42218","name":"Saint-Étienne","department":"Loire · 42","region":"Auvergne-Rhône-Alpes","search_name":"saint etienne"}).await.unwrap();
+}
+
+#[tokio::test]
+async fn maire_inscrit_sans_verification_dans_le_prototype() {
+    let (app, database) = setup().await;
+    add_registration_commune(&database).await;
+    let input = json!({"name":"Alex Dupont","email":"nouveau.maire@example.test","password":"Mot-de-passe-de-test-2026","commune_id":"42218"});
+    let (status, _, cookie) = request(&app, "POST", "/auth/register", None, Some(input)).await;
+    assert_eq!(status, StatusCode::CREATED);
+    let cookie = cookie.unwrap();
+    let (_, profile, _) = request(&app, "GET", "/auth/me", Some(&cookie), None).await;
+    assert_eq!(profile["member"]["role"], "maire");
+    assert_eq!(profile["member"]["commune_id"], "42218");
+    let stored = database
+        .collection::<Document>("members")
+        .find_one(doc! {"email":"nouveau.maire@example.test"})
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(
+        stored.get_str("verification_status").unwrap(),
+        "unverified_prototype"
+    );
+    assert_ne!(
+        stored.get_str("password_hash").unwrap(),
+        "Mot-de-passe-de-test-2026"
+    );
+    let new_member = json!({"name":"Un conseiller","email":"conseiller.nouveau@example.test"});
+    assert_eq!(
+        request(&app, "POST", "/members", Some(&cookie), Some(new_member))
+            .await
+            .0,
+        StatusCode::CREATED
+    );
+    assert_eq!(
+        request(&app, "GET", "/publications/demo-8", Some(&cookie), None)
+            .await
+            .0,
+        StatusCode::NOT_FOUND
+    );
+    database.drop().await.unwrap();
+}
+
+#[tokio::test]
+async fn inscription_de_maire_validee_et_refusee_hors_prototype() {
+    let (app, database) = setup().await;
+    add_registration_commune(&database).await;
+    let input = json!({"name":"Alex Dupont","email":"nouveau.maire@example.test","password":"Mot-de-passe-de-test-2026","commune_id":"42218"});
+    let registration = serde_json::from_value::<registration::Registration>(input.clone()).unwrap();
+    let result = registration::register_for_mode(database.clone(), registration, false).await;
+    assert_eq!(result.unwrap_err().0, StatusCode::FORBIDDEN);
+    let mut invalid = input.clone();
+    invalid["password"] = json!("court");
+    assert_eq!(
+        request(&app, "POST", "/auth/register", None, Some(invalid))
+            .await
+            .0,
+        StatusCode::BAD_REQUEST
+    );
+    let mut invalid = input.clone();
+    invalid["commune_id"] = json!("00000");
+    assert_eq!(
+        request(&app, "POST", "/auth/register", None, Some(invalid))
+            .await
+            .0,
+        StatusCode::BAD_REQUEST
+    );
+    let mut forged = input.clone();
+    forged["role"] = json!("administrateur");
+    assert_eq!(
+        request(&app, "POST", "/auth/register", None, Some(forged))
+            .await
+            .0,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+    let mut duplicate = input;
+    duplicate["commune_id"] = json!("74010");
+    assert_eq!(
+        request(&app, "POST", "/auth/register", None, Some(duplicate))
+            .await
+            .0,
+        StatusCode::CONFLICT
+    );
+    assert_eq!(
+        database
+            .collection::<Document>("members")
+            .count_documents(doc! {})
+            .await
+            .unwrap(),
+        7
+    );
+    database.drop().await.unwrap();
+}
+
+#[tokio::test]
+async fn une_seule_inscription_de_maire_par_commune_en_cas_de_concurrence() {
+    let (app, database) = setup().await;
+    add_registration_commune(&database).await;
+    let first = json!({"name":"Alex Dupont","email":"premier.maire@example.test","password":"Mot-de-passe-de-test-2026","commune_id":"42218"});
+    let mut second = first.clone();
+    second["email"] = json!("autre.maire@example.test");
+    let (first, second) = tokio::join!(
+        request(&app, "POST", "/auth/register", None, Some(first)),
+        request(&app, "POST", "/auth/register", None, Some(second))
+    );
+    let mut statuses = [first.0.as_u16(), second.0.as_u16()];
+    statuses.sort();
+    assert_eq!(statuses, [201, 409]);
+    assert_eq!(
+        database
+            .collection::<Document>("members")
+            .count_documents(doc! {"role":"maire","commune_id":"42218"})
+            .await
+            .unwrap(),
+        1
+    );
+    database.drop().await.unwrap();
+}

@@ -9,6 +9,7 @@ Préfixe navigateur : `/api`. Le serveur Rust expose les mêmes chemins sans ce 
 | GET | `/health` | État du serveur. |
 | GET | `/communes` | Recherche bornée dans les 34 875 communes du COG 2026. |
 | GET | `/communes/meta` | Nombre de communes, millésime, source et date du dernier import terminé. |
+| POST | `/auth/register` | Inscription non vérifiée d’un maire, réservée au prototype ; ouvre une session. |
 | POST | `/auth/login` | Connexion par `email` et `password` ; pose un cookie de session. |
 | POST | `/auth/logout` | Révoque la session et efface son cookie. Corps : `{}`. |
 | GET | `/auth/me` | `{ "member": ... }` ou `{ "member": null }`. |
@@ -57,6 +58,14 @@ Les maires et les conseillers peuvent publier avec les deux visibilités. L'iden
 
 Le relais Next.js exige une origine identique à celle de la requête ainsi qu'un contenu `application/json` pour les écritures. Il n'accepte que les routes énumérées ci-dessus. Taille maximale d'une requête : 64 Kio.
 
+## Inscrire un maire dans le prototype
+
+`POST /auth/register` reçoit uniquement `name`, `email`, `password` et `commune_id`. Le nom contient 2 à 120 caractères ; l'adresse e-mail usuelle ASCII est normalisée en minuscules et limitée à 200 caractères. Le mot de passe contient au moins 12 caractères et au plus 200 octets UTF-8. La commune doit exister dans le référentiel.
+
+Le serveur impose le rôle `maire` et enregistre `verification_status=unverified_prototype`. Il ne vérifie ni l'identité ni le mandat. Un seul maire est autorisé par commune, même en cas de demandes simultanées ; les doublons d'adresse ou de commune renvoient `409`. Le rôle et les champs de vérification ne peuvent pas être fournis par le navigateur.
+
+La réponse `201` contient `{ "ok": true }` et pose le cookie de session ; `/auth/me` donne le profil. L'inscription est refusée hors du mode prototype. Le parcours FranceConnect + RNE prévu en production n'est pas encore disponible ; voir `AUTHENTIFICATION.md`.
+
 ## Créer les comptes des membres du conseil
 
 `POST /members` exige une session de maire et accepte uniquement :
@@ -84,7 +93,7 @@ Les erreurs métier prennent la forme `{ "error": "Message en français" }`.
 - `401` : connexion requise ou identifiants incorrects.
 - `403` : commune, rôle ou origine refusée.
 - `404` : publication inexistante ou privée non accessible.
-- `409` : adresse e-mail déjà utilisée.
+- `409` : adresse e-mail déjà utilisée ou maire déjà inscrit pour la commune.
 - `413` : requête trop volumineuse.
 - `415` : contenu autre que JSON à travers le relais.
 - `422` : structure JSON refusée par l'extracteur Rust, notamment en cas de champs supplémentaires.

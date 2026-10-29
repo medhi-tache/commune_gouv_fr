@@ -18,12 +18,14 @@ export default function CommunePicker({
   label,
   disabled = false,
   compact = false,
+  allowAll = true,
 }: {
   value: Commune | null;
   onChange: (commune: Commune | null) => void;
   label: string;
   disabled?: boolean;
   compact?: boolean;
+  allowAll?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -117,6 +119,7 @@ export default function CommunePicker({
       }}
     >
       <button
+        type="button"
         ref={trigger}
         className="commune-trigger"
         aria-label={label}
@@ -126,7 +129,10 @@ export default function CommunePicker({
         onClick={() => setOpen(!open)}
       >
         <MapPin size={17} />
-        <span>{value?.name || "Toutes les communes"}</span>
+        <span>
+          {value?.name ||
+            (allowAll ? "Toutes les communes" : "Choisir une commune")}
+        </span>
         <ChevronDown size={15} />
       </button>
       {open && (
@@ -142,12 +148,15 @@ export default function CommunePicker({
               onChange={(event) => setQuery(event.target.value)}
             />
           </label>
-          <button
-            className="commune-result all-communes"
-            onClick={() => choose(null)}
-          >
-            Toutes les communes {!value && <Check size={14} />}
-          </button>
+          {allowAll && (
+            <button
+              type="button"
+              className="commune-result all-communes"
+              onClick={() => choose(null)}
+            >
+              Toutes les communes {!value && <Check size={14} />}
+            </button>
+          )}
           <div className="commune-results" aria-live="polite">
             {loading ? (
               <p role="status">Recherche en cours…</p>
@@ -158,6 +167,7 @@ export default function CommunePicker({
             ) : (
               results.map((commune) => (
                 <button
+                  type="button"
                   className="commune-result"
                   key={commune.id}
                   onClick={() => choose(commune)}

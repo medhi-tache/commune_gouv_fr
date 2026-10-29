@@ -118,6 +118,14 @@ cargo run --manifest-path backend/Cargo.toml -- --import-communes
 
 Exporter `MONGODB_URI` si la base utilise un autre port. La mise à jour porte sur les documents des communes, sans modifier les comptes, les sessions ni les publications. Une opération interrompue est reprise au prochain lancement. Le script reste explicitement fixé au millésime 2026 ; un changement de millésime nécessite une mise à jour des ressources et une vérification du périmètre.
 
+## Inscription du maire : prototype
+
+L'inscription du maire est **sans vérification dans le prototype**. Ouvrir **Espace élus → Maire : créer mon compte**, choisir sa commune, puis renseigner son nom, son adresse e-mail et un mot de passe d'au moins 12 caractères. Le compte est immédiatement utilisable et reste marqué comme non vérifié. Un seul maire peut s'inscrire par commune ; les six communes de démonstration ont déjà leurs comptes préconfigurés.
+
+En production, le parcours prévu combinera **FranceConnect pour l'identité** et le **Répertoire national des élus (RNE), disponible sur data.gouv.fr, pour le mandat de maire dans la commune**. Cette intégration n'est pas encore implémentée. Le mode `QOMUNE_MODE=production` refuse donc de démarrer le serveur actuel ; aucune connexion FranceConnect n'est simulée.
+
+Les sources officielles et le parcours cible sont détaillés dans [AUTHENTIFICATION.md](AUTHENTIFICATION.md).
+
 ## Ajouter les membres du conseil
 
 1. Se connecter avec un compte de maire, puis ouvrir **Membres du conseil**.
@@ -138,6 +146,7 @@ MongoDB doit rester un service interne. La configuration Docker locale ne prévo
 
 | Variable | Valeur par défaut | Usage |
 | --- | --- | --- |
+| `QOMUNE_MODE` | `prototype` | Inscription déclarative autorisée uniquement dans ce mode. La production attend FranceConnect + contrôle du mandat RNE. |
 | `WEB_PORT` | `3000` | Port du frontend via le script commun. |
 | `API_BIND` | `127.0.0.1:8080` | Adresse d'écoute Rust. |
 | `API_BASE_URL` | `http://127.0.0.1:8080` | Adresse interne Rust pour Next.js ; adaptée par le script commun si `API_BIND` change. |
@@ -155,16 +164,17 @@ Les mots de passe sont hachés avec Argon2. Les sessions utilisent un cookie `Ht
 npm run check
 ```
 
-MongoDB doit être démarré avant cette commande. Elle vérifie le format Rust, lance les quatorze tests, dont treize tests d’intégration contre MongoDB et un test d’intégrité du référentiel et construit le frontend avec vérification TypeScript. Chaque test crée une base temporaire `qomune_test_<UUID>` puis la supprime, sans toucher à la base de l’application. La variable `MONGODB_URI` permet aussi de choisir l’instance pour les tests.
+MongoDB doit être démarré avant cette commande. Elle vérifie le format Rust, lance les dix-sept tests, dont seize tests d’intégration contre MongoDB et un test d’intégrité du référentiel et construit le frontend avec vérification TypeScript. Chaque test crée une base temporaire `qomune_test_<UUID>` puis la supprime, sans toucher à la base de l’application. La variable `MONGODB_URI` permet aussi de choisir l’instance pour les tests.
 
 - [Guide du code et règles d'accès](CONTRIBUTING.md)
 - [Contrat de l'API](API.md)
+- [Inscription et vérification des maires : FranceConnect + RNE](AUTHENTIFICATION.md)
 
 Le code, ses commentaires explicatifs et la documentation du projet sont en français.
 
 ## État et limites du prototype
 
-Le prototype implémente le fil public, les filtres, la lecture détaillée, la connexion, l'espace du conseil, l'ajout de conseillers par le maire et la création de publications textuelles publiques ou privées. Le référentiel comporte les 34 875 communes du COG 2026. Les comptes préconfigurés et les publications d'exemple restent limités à six communes ; aucun compte de maire n'est créé automatiquement pour les autres communes.
+Le prototype implémente le fil public, les filtres, la lecture détaillée, la connexion, l'espace du conseil, l'inscription déclarative des maires, l'ajout de conseillers par le maire et la création de publications textuelles publiques ou privées. Le référentiel comporte les 34 875 communes du COG 2026. Les comptes préconfigurés et les publications d'exemple restent limités à six communes ; aucun compte de maire n'est créé automatiquement pour les autres communes.
 
 La vérification réelle des mandats, les invitations par e-mail, la récupération et le changement de mot de passe, la modification et la suppression des membres, les pièces jointes, la modification et la suppression des publications, les notifications et la modération restent à développer. Les requêtes du fil sont limitées aux 100 dernières publications correspondant aux filtres, sans pagination. La recherche est une recherche littérale par sous-chaîne, sans interprétation des opérateurs de regex.
 

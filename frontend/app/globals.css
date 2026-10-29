@@ -2116,3 +2116,27 @@ h1 {
 .commune-search-note {
   flex-shrink: 0;
 }
+
+/* L'inscription déclarative du prototype indique son niveau de vérification sans simuler FranceConnect. */
+.register-link {
+  margin-top: 15px;
+}
+.registration-commune {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.registration-commune > span {
+  font-size: 11px;
+  color: #365482;
+  font-weight: 600;
+}
+.registration-commune .commune-picker {
+  width: 100%;
+}
+.registration-commune > small,
+.form label > small {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 400;
+}

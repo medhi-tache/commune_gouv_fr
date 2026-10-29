@@ -33,6 +33,7 @@ import {
 
 import { api } from "../lib/api";
 import CouncilMembers from "./council-members";
+import MayorRegistration from "./mayor-registration";
 import CommunePicker, { type Commune } from "./commune-picker";
 
 type CommuneCatalog = {
@@ -59,7 +60,7 @@ type Publication = {
   author_role: string;
   published_at: string;
 };
-type Modal = "login" | "create" | "about" | "members" | null;
+type Modal = "login" | "create" | "about" | "members" | "register" | null;
 const categories = [
   "Vie citoyenne",
   "Travaux",
@@ -943,8 +944,8 @@ export default function Dashboard() {
             </div>
           ) : (
             <p className="dialog-intro">
-              Utilisez l’adresse e-mail et le mot de passe remis par votre
-              maire.
+              Utilisez les identifiants de votre compte de maire ou ceux remis
+              par votre maire.
             </p>
           )}
           <form onSubmit={login} className="form">
@@ -1027,10 +1028,39 @@ export default function Dashboard() {
               <ArrowRight size={17} />
             </button>
           </form>
+          <button
+            className="button full register-link"
+            disabled={busy}
+            onClick={() => openModal("register")}
+          >
+            Maire : créer mon compte
+          </button>
           <p className="privacy-note">
             <LockKeyhole size={13} /> Seuls les membres de votre commune
             accèdent à son espace privé.
           </p>
+        </Dialog>
+      )}
+      {modal === "register" && (
+        <Dialog
+          title="Inscription du maire"
+          close={() => !busy && setModal(null)}
+        >
+          <MayorRegistration
+            initialCommune={selectedCommune || null}
+            onBusyChange={setBusy}
+            onRegistered={async () => {
+              const session = await api<{ member: Member }>("auth/me");
+              setMember(session.member);
+              setView("council");
+              setCategory("");
+              setQuery("");
+              setModal(null);
+              setToast(
+                "Votre compte de maire est créé pour le prototype, sans vérification de mandat.",
+              );
+            }}
+          />
         </Dialog>
       )}
       {modal === "members" && member?.role === "maire" && (

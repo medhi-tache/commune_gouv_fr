@@ -7,6 +7,9 @@ La documentation, les commentaires et les messages destinés aux utilisateurs so
 - `backend/src/main.rs` : modèles, initialisation MongoDB, authentification, et routes.
 - `backend/src/tests.rs` : tests d’intégration MongoDB et contrôle des accès.
 - `backend/src/fixtures.rs` : élus et publications fictifs dans six communes de démonstration.
+- `backend/src/registration.rs` : inscription déclarative des maires, limitée au prototype.
+- `frontend/components/mayor-registration.tsx` : formulaire d’inscription avec choix de commune.
+- `AUTHENTIFICATION.md` : séparation entre le prototype et la vérification FranceConnect + RNE prévue en production.
 - `backend/src/reference.rs` : validation et import idempotent du COG, normalisation des noms.
 - `backend/reference/` : communes officielles normalisées et provenance des ressources.
 - `scripts/refresh_communes.py` : téléchargement des ressources Insee publiées sur data.gouv.fr, filtrage de `TYPECOM=COM`.
@@ -59,3 +62,7 @@ Les collections et les index sont initialisés au démarrage. Les exemples utili
 La préparation Python utilise uniquement la bibliothèque standard. Elle vérifie l’identifiant du jeu data.gouv.fr, le millésime et les domaines de téléchargement, puis combine communes, départements et régions. Rust contrôle l’empreinte SHA-256, le nombre de communes, les codes, leur unicité et la normalisation avant l’import. Les écritures MongoDB sont limitées à 32 opérations simultanées. Le marqueur de succès n’est écrit qu’à la fin ; un import interrompu est rejoué.
 
 Les tests d’intégration utilisent un petit jeu isolé pour vérifier les filtres et la reprise sans charger 34 875 documents dans chacune de leurs bases temporaires. Un test dédié contrôle le fichier officiel complet, les codes corses, les zéros initiaux, les DROM et l’exclusion des arrondissements municipaux.
+
+## Inscription déclarative
+
+Les tests couvrent la création et la session d’un maire non vérifié, le choix d’une commune existante, les mots de passe trop courts, les champs supplémentaires, les doublons et les inscriptions simultanées. Le statut `unverified_prototype` ne doit jamais être traité comme une validation d’identité ou de mandat. Le serveur actuel refuse de démarrer hors de `QOMUNE_MODE=prototype` ; l’intégration FranceConnect et le rapprochement RNE restent à développer.

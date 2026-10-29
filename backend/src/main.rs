@@ -2,6 +2,7 @@
 //! Les comptes de démonstration ne constituent pas une vérification de mandat.
 mod fixtures;
 mod reference;
+mod registration;
 #[cfg(test)]
 mod tests;
 
@@ -135,6 +136,21 @@ async fn initialize(database: &Database, password: &str) -> mongodb::error::Resu
             IndexModel::builder()
                 .keys(doc! {"email":1})
                 .options(IndexOptions::builder().unique(true).build())
+                .build(),
+        )
+        .await?;
+    // Un seul compte de maire par commune ; les conseillers ne sont pas concernés par cet index.
+    database
+        .collection::<Document>("members")
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! {"commune_id":1})
+                .options(
+                    IndexOptions::builder()
+                        .unique(true)
+                        .partial_filter_expression(doc! {"role":"maire"})
+                        .build(),
+                )
                 .build(),
         )
         .await?;
@@ -702,6 +718,7 @@ fn app(database: Database) -> Router {
         .route("/communes", get(communes))
         .route("/communes/meta", get(communes_meta))
         .route("/auth/login", post(login))
+        .route("/auth/register", post(registration::register))
         .route("/auth/logout", post(logout))
         .route("/auth/me", get(me))
         .route("/members", get(council_members).post(create_member))
@@ -712,6 +729,10 @@ fn app(database: Database) -> Router {
 }
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Le prototype ne peut pas être présenté comme une production authentifiée par FranceConnect.
+    if !registration::prototype_mode() {
+        return Err("Le mode production sera disponible après l'intégration de FranceConnect et de la validation des mandats.".into());
+    }
     let uri = std::env::var("MONGODB_URI").unwrap_or_else(|_| "mongodb://127.0.0.1:27017".into());
     let name = std::env::var("MONGODB_DATABASE").unwrap_or_else(|_| "qomune_prototype".into());
     let database = connect(&uri, &name)
