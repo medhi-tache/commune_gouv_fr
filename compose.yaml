@@ -1,0 +1,16 @@
+# Base locale du prototype. Aucun port n'est ouvert sur le réseau public.
+services:
+  mongodb:
+    image: mongo:8
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - qomune_mongodb:/data/db
+    healthcheck:
+      test:
+        ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+volumes:
+  qomune_mongodb:

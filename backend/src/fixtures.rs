@@ -1,0 +1,118 @@
+//! Communes, noms et publications fictifs utilisés pour la démonstration locale.
+
+pub const COMMUNES: [(&str, &str, &str, &str, &str, &str); 6] = [
+    (
+        "74010",
+        "Annecy",
+        "Haute-Savoie · 74",
+        "Auvergne-Rhône-Alpes",
+        "annecy",
+        "Camille Martin",
+    ),
+    (
+        "33063",
+        "Bordeaux",
+        "Gironde · 33",
+        "Nouvelle-Aquitaine",
+        "bordeaux",
+        "Alexandre Bernard",
+    ),
+    (
+        "69123",
+        "Lyon",
+        "Rhône · 69",
+        "Auvergne-Rhône-Alpes",
+        "lyon",
+        "Louise Dubois",
+    ),
+    (
+        "44109",
+        "Nantes",
+        "Loire-Atlantique · 44",
+        "Pays de la Loire",
+        "nantes",
+        "Gabriel Moreau",
+    ),
+    (
+        "35288",
+        "Saint-Malo",
+        "Ille-et-Vilaine · 35",
+        "Bretagne",
+        "saint-malo",
+        "Sarah Laurent",
+    ),
+    (
+        "67482",
+        "Strasbourg",
+        "Bas-Rhin · 67",
+        "Grand Est",
+        "strasbourg",
+        "Thomas Petit",
+    ),
+];
+
+pub const EXAMPLES: [(&str, &str, &str, &str, &str); 9] = [
+    (
+        "74010",
+        "Une place plus verte, un centre-ville plus vivant",
+        "À partir du 9 novembre, la place du marché fait peau neuve : de nouveaux arbres, des bancs et davantage de place pour les piétons.\n\nLes commerces restent accessibles pendant les travaux. Une permanence d'information vous accueille à la mairie chaque mercredi, de 14 h à 17 h.\n\nCe contenu est un exemple fictif du prototype.",
+        "Travaux",
+        "public",
+    ),
+    (
+        "74010",
+        "Les rendez-vous culturels de novembre",
+        "Expositions, rencontres à la bibliothèque et spectacles : découvrez les temps forts du mois.\n\nRendez-vous samedi à 15 h à la médiathèque pour une rencontre ouverte à toutes et tous. L'entrée est libre, dans la limite des places disponibles.\n\nProgramme fictif pour la démonstration.",
+        "Culture",
+        "public",
+    ),
+    (
+        "33063",
+        "Budget participatif : à vos idées !",
+        "Un jardin partagé, des équipements sportifs ou un projet de quartier ? Déposez votre idée à l'accueil de la mairie avant le 30 novembre.\n\nLes propositions seront étudiées avec les habitants lors d'un atelier public.\n\nPublication fictive de démonstration.",
+        "Vie citoyenne",
+        "public",
+    ),
+    (
+        "44109",
+        "Une nouvelle permanence pour vos démarches",
+        "Le service d'accueil vous accompagne dans vos démarches chaque jeudi matin, sur rendez-vous à la mairie.\n\nPensez à apporter les documents utiles à votre demande.\n\nPublication fictive de démonstration.",
+        "Services publics",
+        "public",
+    ),
+    (
+        "35288",
+        "Le littoral se découvre aussi en automne",
+        "Une balade commentée vous invite à découvrir la biodiversité du littoral. Départ dimanche à 10 h devant la maison des associations.\n\nPrévoyez une tenue adaptée à la météo.\n\nÉvénement fictif de démonstration.",
+        "Environnement",
+        "public",
+    ),
+    (
+        "69123",
+        "Des rencontres pour imaginer notre quartier",
+        "La commune vous invite à échanger sur les usages des espaces publics lors d'une rencontre à la maison de quartier.\n\nToutes les générations sont les bienvenues.\n\nPublication fictive de démonstration.",
+        "Vie citoyenne",
+        "public",
+    ),
+    (
+        "67482",
+        "La bibliothèque vient à votre rencontre",
+        "Une sélection de livres et des lectures pour les enfants vous attendent samedi à la maison des associations.\n\nAnimation fictive de démonstration.",
+        "Culture",
+        "public",
+    ),
+    (
+        "74010",
+        "Préparation du prochain conseil municipal",
+        "Document de travail réservé au conseil municipal d'Annecy.\n\nOrdre du jour proposé : suivi des travaux, préparation budgétaire et vie associative. Merci de partager vos observations avant la prochaine séance.\n\nDonnées fictives : ne pas utiliser cet espace pour des documents réels.",
+        "Conseil municipal",
+        "private",
+    ),
+    (
+        "33063",
+        "Réunion de travail : projets de quartier",
+        "Note interne réservée au conseil municipal de Bordeaux.\n\nPréparation de la réunion de travail et examen des projets de quartier.\n\nContenu fictif de démonstration.",
+        "Conseil municipal",
+        "private",
+    ),
+];

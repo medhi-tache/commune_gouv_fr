@@ -1,0 +1,48 @@
+# Guide du code
+
+La documentation, les commentaires et les messages destinés aux utilisateurs sont rédigés en français. Les identifiants techniques suivent les conventions de Rust et de TypeScript.
+
+## Organisation
+
+- `backend/src/main.rs` : modèles, initialisation MongoDB, authentification, et routes.
+- `backend/src/tests.rs` : tests d’intégration MongoDB et contrôle des accès.
+- `backend/src/fixtures.rs` : contenus fictifs de démonstration.
+- `frontend/app/api/[...path]/route.ts` : relais serveur Next.js vers Rust ; contrôle de l'origine des écritures et transmission du cookie de session.
+- `frontend/components/dashboard.tsx` : fil de publications, filtres, lecture détaillée, connexion et création de publication.
+- `frontend/app/globals.css` : styles partagés, cartes, formulaires et adaptation aux petits écrans.
+- `scripts/dev.mjs` : lancement et arrêt des deux serveurs.
+
+## Circulation des données
+
+Le navigateur utilise uniquement `/api/...` sur le serveur Next.js. Ce dernier relaie les requêtes à l'API Rust, dont l'adresse reste interne. Le navigateur ne reçoit jamais le jeton de session dans un objet JavaScript : le cookie est `HttpOnly`, `SameSite=Strict`, avec une durée maximale de huit heures.
+
+MongoDB conserve les publications et les sessions dans quatre collections : `communes`, `members`, `sessions` et `publications`. Les index uniques portent sur les identifiants et les e-mails ; un index composé facilite la lecture par commune et visibilité. Un index TTL nettoie les sessions expirées, dont la validité est également vérifiée au moment de chaque accès. Chaque membre est rattaché à une seule commune dans ce prototype. La commune et le rôle sont lus dans la base à partir de la session, jamais depuis le formulaire de publication. Une reconnexion révoque la session précédente du navigateur ; la déconnexion supprime la session en base.
+
+## Règles à préserver
+
+1. Le fil public ne doit renvoyer que des publications publiques, même pour un utilisateur connecté.
+2. Le fil du conseil exige une session et limite les résultats à la commune de son titulaire.
+3. L'accès direct à une publication privée applique le même contrôle. Un accès refusé renvoie `404` pour ne pas confirmer l'existence du document.
+4. Un auteur ne choisit pas son identité ni sa commune dans une requête. Les champs inconnus sont refusés à la création.
+5. Les filtres BSON sont construits à partir de champs explicitement autorisés ; aucune requête MongoDB fournie par le navigateur n’est exécutée. Les caractères spéciaux de recherche sont échappés pour une recherche littérale. Le contenu utilisateur est rendu comme du texte par React, sans HTML injecté.
+6. Toute future pièce jointe doit être soumise aux mêmes contrôles côté serveur. Ne pas placer de document privé dans un répertoire statique public.
+
+## Vérification
+
+Démarrer MongoDB, puis depuis la racine :
+
+```sh
+npm run check
+```
+
+Cette commande vérifie le format Rust, lance les tests d’intégration de l’API contre MongoDB et construit le frontend avec vérification TypeScript.
+
+Les tests utilisent des bases temporaires nommées `qomune_test_<UUID>`, indépendantes de `MONGODB_DATABASE`, puis les suppriment. Aucun test ne doit supprimer une base dont le nom vient directement de la configuration de l’application.
+
+Les tests couvrent l'accès anonyme, les liens privés, l'isolation entre communes, la publication par une conseillère, le refus d'usurpation de commune, la validation, les filtres, la déconnexion, l'expiration et la conservation des données lors de l'initialisation.
+
+## Étendre le prototype
+
+Ajouter une route dans Rust puis, si nécessaire, l'autoriser explicitement dans le relais Next.js. Documenter son contrat dans `API.md`. Toute évolution des droits doit être accompagnée d'un test qui tente un accès depuis une autre commune.
+
+Les collections et les index sont initialisés au démarrage. Les exemples utilisent des ajouts conditionnels pour résister à une initialisation interrompue. Avant une évolution réelle des documents, introduire des migrations versionnées. La recherche MongoDB est une recherche par sous-chaîne littérale, insensible à la casse, avec les caractères de regex échappés.
