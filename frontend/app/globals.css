@@ -1961,3 +1961,158 @@ h1 {
   color: var(--muted);
   margin: 0 0 18px;
 }
+
+/* Recherche communale distante : panneaux courts, indépendants du nombre total de communes. */
+.commune-picker {
+  position: relative;
+  width: 205px;
+  flex-shrink: 0;
+}
+.commune-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 43px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: white;
+  text-align: left;
+  color: #53658c;
+  font-size: 11px;
+}
+.commune-trigger > span {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.commune-trigger svg {
+  flex-shrink: 0;
+}
+.commune-picker.compact {
+  width: 100%;
+}
+.compact .commune-trigger {
+  border: 0;
+  background: transparent;
+  padding: 10px 8px;
+  font-size: 12px;
+}
+.commune-popup {
+  position: absolute;
+  top: calc(100% + 7px);
+  right: 0;
+  z-index: 45;
+  width: 340px;
+  max-width: calc(100vw - 36px);
+  background: white;
+  border: 1px solid #dce3f1;
+  border-radius: 8px;
+  box-shadow: 0 12px 40px #162c5b25;
+  padding: 10px;
+}
+.compact .commune-popup {
+  left: 0;
+  right: auto;
+}
+.commune-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border: 1px solid #dce3f1;
+  border-radius: 5px;
+  color: #637197;
+}
+.commune-search input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 11px 0;
+  color: var(--ink);
+  font-size: 12px;
+  outline: none;
+}
+.commune-search:focus-within {
+  outline: 2px solid var(--blue);
+}
+.commune-results {
+  max-height: 265px;
+  overflow: auto;
+}
+.commune-results > p {
+  font-size: 12px;
+  padding: 12px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.commune-result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 8px;
+  text-align: left;
+  border-radius: 4px;
+}
+.commune-result:hover,
+.commune-result:focus-visible {
+  background: #eef2fc;
+}
+.commune-result strong {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.commune-result small {
+  display: block;
+  font-size: 10px;
+  margin-top: 5px;
+  color: var(--muted);
+}
+.all-communes {
+  color: var(--blue);
+  font-size: 12px;
+  border-bottom: 1px solid var(--line);
+  margin-top: 5px;
+}
+.commune-search-note {
+  font-size: 9px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 10px 5px 1px;
+}
+@media (max-width: 900px) {
+  .filter-bar > .commune-picker {
+    flex: 1;
+  }
+}
+@media (max-width: 680px) {
+  .filter-bar .commune-popup {
+    left: 0;
+    right: auto;
+  }
+}
+/* Le panneau se positionne dans la fenêtre et réserve le défilement à la liste des résultats. */
+.commune-popup,
+.compact .commune-popup,
+.filter-bar .commune-popup {
+  position: fixed;
+  top: auto;
+  left: auto;
+  right: auto;
+  display: flex;
+  flex-direction: column;
+}
+.commune-results {
+  flex: 1;
+  min-height: 0;
+}
+.commune-search,
+.all-communes,
+.commune-search-note {
+  flex-shrink: 0;
+}

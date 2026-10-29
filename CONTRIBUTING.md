@@ -6,7 +6,11 @@ La documentation, les commentaires et les messages destinés aux utilisateurs so
 
 - `backend/src/main.rs` : modèles, initialisation MongoDB, authentification, et routes.
 - `backend/src/tests.rs` : tests d’intégration MongoDB et contrôle des accès.
-- `backend/src/fixtures.rs` : contenus fictifs de démonstration.
+- `backend/src/fixtures.rs` : élus et publications fictifs dans six communes de démonstration.
+- `backend/src/reference.rs` : validation et import idempotent du COG, normalisation des noms.
+- `backend/reference/` : communes officielles normalisées et provenance des ressources.
+- `scripts/refresh_communes.py` : téléchargement des ressources Insee publiées sur data.gouv.fr, filtrage de `TYPECOM=COM`.
+- `frontend/components/commune-picker.tsx` : recherche distante de commune, limitée à 20 résultats.
 - `frontend/app/api/[...path]/route.ts` : relais serveur Next.js vers Rust ; contrôle de l'origine des écritures et transmission du cookie de session.
 - `frontend/components/council-members.tsx` : liste du conseil et ajout de comptes par le maire.
 - `frontend/lib/api.ts` : requêtes du navigateur vers le relais Next.js.
@@ -18,7 +22,7 @@ La documentation, les commentaires et les messages destinés aux utilisateurs so
 
 Le navigateur utilise uniquement `/api/...` sur le serveur Next.js. Ce dernier relaie les requêtes à l'API Rust, dont l'adresse reste interne. Le navigateur ne reçoit jamais le jeton de session dans un objet JavaScript : le cookie est `HttpOnly`, `SameSite=Strict`, avec une durée maximale de huit heures.
 
-MongoDB conserve les publications et les sessions dans quatre collections : `communes`, `members`, `sessions` et `publications`. Les index uniques portent sur les identifiants et les e-mails ; un index composé facilite la lecture par commune et visibilité. Un index TTL nettoie les sessions expirées, dont la validité est également vérifiée au moment de chaque accès. Chaque membre est rattaché à une seule commune dans ce prototype. La commune et le rôle sont lus dans la base à partir de la session, jamais depuis le formulaire de publication. Une reconnexion révoque la session précédente du navigateur ; la déconnexion supprime la session en base.
+MongoDB conserve les données dans `communes`, `members`, `sessions` et `publications`. La collection `reference_imports` mémorise l’empreinte, la source et la date des imports terminés. Les index uniques portent sur les identifiants et les e-mails ; un index composé facilite la lecture par commune et visibilité. Un index TTL nettoie les sessions expirées, dont la validité est également vérifiée au moment de chaque accès. Chaque membre est rattaché à une seule commune dans ce prototype. La commune et le rôle sont lus dans la base à partir de la session, jamais depuis le formulaire de publication. Une reconnexion révoque la session précédente du navigateur ; la déconnexion supprime la session en base.
 
 ## Règles à préserver
 
@@ -49,3 +53,9 @@ Les tests couvrent l'accès anonyme, les liens privés, l'isolation entre commun
 Ajouter une route dans Rust puis, si nécessaire, l'autoriser explicitement dans le relais Next.js. Documenter son contrat dans `API.md`. Toute évolution des droits doit être accompagnée d'un test qui tente un accès depuis une autre commune.
 
 Les collections et les index sont initialisés au démarrage. Les exemples utilisent des ajouts conditionnels pour résister à une initialisation interrompue. Avant une évolution réelle des documents, introduire des migrations versionnées. La recherche MongoDB est une recherche par sous-chaîne littérale, insensible à la casse, avec les caractères de regex échappés.
+
+## Import du référentiel officiel
+
+La préparation Python utilise uniquement la bibliothèque standard. Elle vérifie l’identifiant du jeu data.gouv.fr, le millésime et les domaines de téléchargement, puis combine communes, départements et régions. Rust contrôle l’empreinte SHA-256, le nombre de communes, les codes, leur unicité et la normalisation avant l’import. Les écritures MongoDB sont limitées à 32 opérations simultanées. Le marqueur de succès n’est écrit qu’à la fin ; un import interrompu est rejoué.
+
+Les tests d’intégration utilisent un petit jeu isolé pour vérifier les filtres et la reprise sans charger 34 875 documents dans chacune de leurs bases temporaires. Un test dédié contrôle le fichier officiel complet, les codes corses, les zéros initiaux, les DROM et l’exclusion des arrondissements municipaux.

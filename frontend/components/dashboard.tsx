@@ -20,7 +20,6 @@ import {
   Leaf,
   LockKeyhole,
   LogOut,
-  MapPin,
   Menu,
   MessageSquare,
   Plus,
@@ -34,8 +33,14 @@ import {
 
 import { api } from "../lib/api";
 import CouncilMembers from "./council-members";
+import CommunePicker, { type Commune } from "./commune-picker";
 
-type Commune = { id: string; name: string; department: string; region: string };
+type CommuneCatalog = {
+  total: number;
+  vintage: number | null;
+  source_url: string | null;
+  imported_at: string | null;
+};
 type Member = {
   id: string;
   name: string;
@@ -208,6 +213,7 @@ function Dialog({
 
 export default function Dashboard() {
   const [communes, setCommunes] = useState<Commune[]>([]);
+  const [catalog, setCatalog] = useState<CommuneCatalog | null>(null);
   const [member, setMember] = useState<Member | null>(null);
   const [publications, setPublications] = useState<Publication[]>([]);
   const [commune, setCommune] = useState("");
@@ -234,12 +240,16 @@ export default function Dashboard() {
   useEffect(() => {
     let current = true;
     Promise.all([
-      api<Commune[]>("communes"),
+      api<Commune[]>("communes?limit=20"),
+      api<CommuneCatalog>("communes/meta"),
       api<{ member: Member | null }>("auth/me"),
     ])
-      .then(([items, session]) => {
+      .then(([items, catalog, session]) => {
         if (current) {
-          setCommunes(items);
+          setCommunes((previous) => [
+            ...new Map([...previous, ...items].map((c) => [c.id, c])).values(),
+          ]);
+          setCatalog(catalog);
           setMember(session.member);
           setReady(true);
         }
@@ -288,6 +298,42 @@ export default function Dashboard() {
     const timer = setTimeout(() => setToast(""), 5000);
     return () => clearTimeout(timer);
   }, [toast]);
+
+  // Les noms des communes publiant dans le fil sont chargés par codes, indépendamment de la recherche.
+  useEffect(() => {
+    const ids = [
+      ...new Set(
+        [
+          commune,
+          member?.commune_id,
+          ...publications.map((p) => p.commune_id),
+        ].filter((id): id is string => Boolean(id)),
+      ),
+    ].filter((id) => !communes.some((c) => c.id === id));
+    if (!ids.length) return;
+    let current = true;
+    api<Commune[]>(`communes?ids=${encodeURIComponent(ids.join(","))}`)
+      .then((items) => {
+        if (current)
+          setCommunes((previous) => [
+            ...new Map([...previous, ...items].map((c) => [c.id, c])).values(),
+          ]);
+      })
+      .catch((error) => {
+        if (current) setToast(error.message);
+      });
+    return () => {
+      current = false;
+    };
+  }, [commune, member, publications, communes]);
+
+  function selectCommune(selected: Commune | null) {
+    if (selected)
+      setCommunes((previous) => [
+        ...new Map([...previous, selected].map((c) => [c.id, c])).values(),
+      ]);
+    setCommune(selected?.id || "");
+  }
 
   const selectedCommune = communes.find(
     (c) => c.id === (view === "council" ? member?.commune_id : commune),
@@ -417,23 +463,13 @@ export default function Dashboard() {
         </nav>
         <div className="sidebar-line" />
         <p className="sidebar-label">VOTRE TERRITOIRE</p>
-        <label className="sidebar-commune">
-          <MapPin size={18} />
-          <select
-            aria-label="Choisir une commune"
-            value={view === "council" ? member?.commune_id || "" : commune}
-            disabled={view === "council"}
-            onChange={(e) => setCommune(e.target.value)}
-          >
-            <option value="">Toutes les communes</option>
-            {communes.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-          <ChevronDown size={14} />
-        </label>
+        <CommunePicker
+          compact
+          label="Choisir une commune"
+          value={selectedCommune || null}
+          onChange={selectCommune}
+          disabled={view === "council"}
+        />
         <p className="territory-help">
           L’information locale commence
           <br />
@@ -675,25 +711,12 @@ export default function Dashboard() {
                   </button>
                 )}
               </label>
-              <div className="filter-select">
-                <MapPin size={17} />
-                <select
-                  aria-label="Filtrer par commune"
-                  value={
-                    view === "council" ? member?.commune_id || "" : commune
-                  }
-                  disabled={view === "council"}
-                  onChange={(e) => setCommune(e.target.value)}
-                >
-                  <option value="">Toutes les communes</option>
-                  {communes.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown size={15} />
-              </div>
+              <CommunePicker
+                label="Filtrer par commune"
+                value={selectedCommune || null}
+                onChange={selectCommune}
+                disabled={view === "council"}
+              />
               <div className="filter-select category-select">
                 <SlidersHorizontal size={17} />
                 <select
@@ -848,7 +871,8 @@ export default function Dashboard() {
               <Landmark size={15} /> Qomune · Le lien local
             </span>
             <span>
-              Démonstration · {communes.length} communes · contenus fictifs
+              {catalog?.total.toLocaleString("fr-FR") || "…"} communes · COG{" "}
+              {catalog?.vintage || "…"} · publications de démonstration
             </span>
             <button onClick={() => openModal("about")}>
               À propos <ArrowUpRight size={13} />
@@ -1199,8 +1223,10 @@ export default function Dashboard() {
             <div>
               <strong>Un prototype en construction</strong>
               <p>
-                6 communes de démonstration. Les noms des élus et les
-                publications sont fictifs. Qomune n’est pas un service officiel
+                {catalog?.total.toLocaleString("fr-FR") || "…"} communes du
+                référentiel Insee COG {catalog?.vintage || "…"}, téléchargé
+                depuis data.gouv.fr. Les comptes et les publications de
+                démonstration sont fictifs. Qomune n’est pas un service officiel
                 de l’État. Le périmètre cible du projet est de 34 875 communes.
               </p>
             </div>

@@ -10,7 +10,7 @@ async function proxy(
 ) {
   const { path } = await context.params;
   const allowed =
-    /^(communes|health|members|auth\/(login|logout|me)|publications(?:\/[a-zA-Z0-9-]+)?)$/;
+    /^(communes(?:\/meta)?|health|members|auth\/(login|logout|me)|publications(?:\/[a-zA-Z0-9-]+)?)$/;
   const route = path.join("/");
   if (!allowed.test(route))
     return Response.json({ error: "Route introuvable." }, { status: 404 });

@@ -10,7 +10,7 @@ Permettre aux maires et aux conseillers municipaux de chaque commune de publier 
 
 ## Périmètre cible
 
-Le projet vise les 34 875 communes de France, selon le périmètre défini à son lancement.
+Le prototype charge les **34 875 communes actuelles** de France métropolitaine et des DROM du **Code officiel géographique 2026 de l’Insee**, référencé sur [data.gouv.fr](https://www.data.gouv.fr/datasets/code-officiel-geographique-1). Les communes déléguées, les communes associées et les arrondissements municipaux sont exclus (`TYPECOM=COM`).
 
 ## Utilisateurs et publications
 
@@ -64,7 +64,7 @@ npm run dev
 
 Si MongoDB est déjà démarré sur `127.0.0.1:27017`, la commande Docker est inutile. Pour une autre instance : `MONGODB_URI=mongodb://127.0.0.1:27018 npm run dev`.
 
-Ouvrir **http://127.0.0.1:3000**. Le backend écoute sur **http://127.0.0.1:8080**. `Ctrl+C` arrête les deux services.
+Ouvrir **http://127.0.0.1:3000**. Le backend écoute sur **http://127.0.0.1:8080**. Le script attend la fin de l’import communal et la disponibilité de l’API avant de démarrer Next.js. `Ctrl+C` arrête les deux services.
 
 Si les ports sont déjà utilisés :
 
@@ -94,6 +94,30 @@ Le script transmet automatiquement l'adresse du backend à Next.js. Les fichiers
 
 Les noms des élus, les mandats et les contenus sont fictifs. Ce prototype n'est pas un service officiel de l'État.
 
+## Référentiel des communes : data.gouv.fr / Insee
+
+Les fichiers du COG 2026 sont découverts dans les métadonnées du jeu de données officiel data.gouv.fr puis téléchargés depuis les URL de l'Insee qui y sont publiées. Les fichiers des départements et régions complètent le libellé de chaque commune.
+
+- 34 875 communes actuelles ; codes INSEE conservés comme chaînes, y compris les zéros initiaux et les codes corses `2A` et `2B`.
+- Source et licence : **Insee — Licence Ouverte / Open Licence**, selon [la fiche data.gouv.fr](https://www.data.gouv.fr/datasets/code-officiel-geographique-1).
+- Données normalisées : `backend/reference/communes-2026.json` ; ressources et empreintes SHA-256 : `backend/reference/source.json`.
+- Import automatique au premier démarrage, puis vérification du marqueur et du nombre de documents aux démarrages suivants. Aucun téléchargement réseau n'est nécessaire au démarrage : le référentiel validé est embarqué dans le backend.
+- Recherche par nom ou code INSEE, insensible à la casse, aux accents, aux apostrophes et aux tirets. Le sélecteur affiche au plus 20 résultats par recherche ; il faut préciser la saisie pour trouver les autres.
+
+Pour retélécharger et réimporter le millésime 2026 (Python 3 standard, connexion Internet et MongoDB nécessaires) :
+
+```sh
+npm run communes:refresh
+```
+
+Pour réimporter les fichiers déjà présents sans téléchargement :
+
+```sh
+cargo run --manifest-path backend/Cargo.toml -- --import-communes
+```
+
+Exporter `MONGODB_URI` si la base utilise un autre port. La mise à jour porte sur les documents des communes, sans modifier les comptes, les sessions ni les publications. Une opération interrompue est reprise au prochain lancement. Le script reste explicitement fixé au millésime 2026 ; un changement de millésime nécessite une mise à jour des ressources et une vérification du périmètre.
+
 ## Ajouter les membres du conseil
 
 1. Se connecter avec un compte de maire, puis ouvrir **Membres du conseil**.
@@ -106,9 +130,9 @@ Le nouveau compte reçoit obligatoirement le rôle de conseiller municipal dans 
 
 ## Données et configuration
 
-Le backend utilise la base MongoDB `qomune_prototype`, avec les collections `communes`, `members`, `sessions` et `publications`. Le fichier `compose.yaml` fournit une instance locale avec un volume persistant et un port accessible uniquement sur la machine. Les publications restent présentes après un redémarrage.
+Le backend utilise la base MongoDB `qomune_prototype`, avec les collections `communes`, `members`, `sessions`, `publications` et `reference_imports` (traçabilité des imports). Le fichier `compose.yaml` fournit une instance locale avec un volume persistant et un port accessible uniquement sur la machine. Les publications restent présentes après un redémarrage.
 
-Les exemples sont insérés avec `$setOnInsert` : une nouvelle initialisation ne remplace ni les comptes ni les publications existantes. Pour essayer un jeu de données neuf sans effacer l'ancien, lancer avec un autre nom de base : `MONGODB_DATABASE=qomune_autre_demo npm run dev`.
+Les comptes et publications de démonstration sont insérés avec `$setOnInsert` : une nouvelle initialisation ne remplace ni les comptes ni les publications existantes. Pour essayer un jeu de données neuf sans effacer l'ancien, lancer avec un autre nom de base : `MONGODB_DATABASE=qomune_autre_demo npm run dev`.
 
 MongoDB doit rester un service interne. La configuration Docker locale ne prévoit pas d'authentification et ne doit pas être exposée sur Internet.
 
@@ -131,7 +155,7 @@ Les mots de passe sont hachés avec Argon2. Les sessions utilisent un cookie `Ht
 npm run check
 ```
 
-MongoDB doit être démarré avant cette commande. Elle vérifie le format Rust, lance les onze tests d’intégration contre MongoDB et construit le frontend avec vérification TypeScript. Chaque test crée une base temporaire `qomune_test_<UUID>` puis la supprime, sans toucher à la base de l’application. La variable `MONGODB_URI` permet aussi de choisir l’instance pour les tests.
+MongoDB doit être démarré avant cette commande. Elle vérifie le format Rust, lance les quatorze tests, dont treize tests d’intégration contre MongoDB et un test d’intégrité du référentiel et construit le frontend avec vérification TypeScript. Chaque test crée une base temporaire `qomune_test_<UUID>` puis la supprime, sans toucher à la base de l’application. La variable `MONGODB_URI` permet aussi de choisir l’instance pour les tests.
 
 - [Guide du code et règles d'accès](CONTRIBUTING.md)
 - [Contrat de l'API](API.md)
@@ -140,7 +164,7 @@ Le code, ses commentaires explicatifs et la documentation du projet sont en fran
 
 ## État et limites du prototype
 
-Le prototype implémente le fil public, les filtres, la lecture détaillée, la connexion, l'espace du conseil, l'ajout de conseillers par le maire et la création de publications textuelles publiques ou privées. Il comprend six communes d'exemple ; le référentiel complet des 34 875 communes n'est pas importé.
+Le prototype implémente le fil public, les filtres, la lecture détaillée, la connexion, l'espace du conseil, l'ajout de conseillers par le maire et la création de publications textuelles publiques ou privées. Le référentiel comporte les 34 875 communes du COG 2026. Les comptes préconfigurés et les publications d'exemple restent limités à six communes ; aucun compte de maire n'est créé automatiquement pour les autres communes.
 
 La vérification réelle des mandats, les invitations par e-mail, la récupération et le changement de mot de passe, la modification et la suppression des membres, les pièces jointes, la modification et la suppression des publications, les notifications et la modération restent à développer. Les requêtes du fil sont limitées aux 100 dernières publications correspondant aux filtres, sans pagination. La recherche est une recherche littérale par sous-chaîne, sans interprétation des opérateurs de regex.
 

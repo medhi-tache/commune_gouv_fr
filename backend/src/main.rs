@@ -1,6 +1,7 @@
 //! API Rust / MongoDB du prototype Qomune.
 //! Les comptes de démonstration ne constituent pas une vérification de mandat.
 mod fixtures;
+mod reference;
 #[cfg(test)]
 mod tests;
 
@@ -169,7 +170,7 @@ async fn initialize(database: &Database, password: &str) -> mongodb::error::Resu
             .collection::<Document>("communes")
             .update_one(
                 doc! {"id":id},
-                doc! {"$setOnInsert":{"id":id,"name":name,"department":department,"region":region}},
+                doc! {"$setOnInsert":{"id":id,"name":name,"department":department,"region":region,"search_name":reference::normalize_name(name)}},
             )
             .upsert(true)
             .await?;
@@ -241,15 +242,76 @@ async fn health(State(database): State<Database>) -> ApiResult<Json<Value>> {
     })?;
     Ok(Json(json!({"status":"ok","database":"mongodb"})))
 }
-async fn communes(State(database): State<Database>) -> ApiResult<Json<Vec<Commune>>> {
+#[derive(Deserialize, Default)]
+struct CommuneFilters {
+    q: Option<String>,
+    ids: Option<String>,
+    limit: Option<i64>,
+}
+
+/// Limite les réponses pour ne pas envoyer 34 875 options au navigateur. Les codes restent des chaînes.
+async fn communes(
+    State(database): State<Database>,
+    Query(query): Query<CommuneFilters>,
+) -> ApiResult<Json<Vec<Commune>>> {
+    let mut filter = doc! {};
+    let mut limit = query.limit.unwrap_or(20);
+    if !(1..=100).contains(&limit) {
+        return Err(invalid("La limite doit être comprise entre 1 et 100."));
+    }
+    if let Some(ids) = query.ids {
+        let codes: Vec<_> = ids.split(',').filter(|id| !id.is_empty()).collect();
+        if codes.is_empty()
+            || codes.len() > 200
+            || codes
+                .iter()
+                .any(|id| id.len() != 5 || !id.bytes().all(|c| c.is_ascii_alphanumeric()))
+        {
+            return Err(invalid("Liste de codes de communes invalide."));
+        }
+        limit = codes.len() as i64;
+        filter.insert("id", doc! {"$in":codes});
+    }
+    if let Some(q) = query.q.filter(|q| !q.trim().is_empty()) {
+        if q.len() > 200 {
+            return Err(invalid("Recherche de commune trop longue."));
+        }
+        let q = reference::normalize_name(&q);
+        if q.is_empty() {
+            return Ok(Json(Vec::new()));
+        }
+        let literal = escaped_search(&q);
+        filter.insert(
+            "$or",
+            vec![
+                doc! {"search_name":{"$regex":&literal}},
+                doc! {"id":{"$regex":format!("^{literal}"),"$options":"i"}},
+            ],
+        );
+    }
     Ok(Json(
         database
             .collection::<Commune>("communes")
-            .find(doc! {})
-            .sort(doc! {"name":1})
+            .find(filter)
+            .sort(doc! {"search_name":1,"id":1})
+            .limit(limit)
             .await?
             .try_collect()
             .await?,
+    ))
+}
+
+async fn communes_meta(State(database): State<Database>) -> ApiResult<Json<Value>> {
+    let total = database
+        .collection::<Document>("communes")
+        .count_documents(doc! {})
+        .await?;
+    let source = database
+        .collection::<Document>("reference_imports")
+        .find_one(doc! {"_id":"communes"})
+        .await?;
+    Ok(Json(
+        json!({"total":total,"vintage":source.as_ref().and_then(|d|d.get_i32("vintage").ok()),"source_url":source.as_ref().and_then(|d|d.get_str("source_url").ok()),"imported_at":source.as_ref().and_then(|d|d.get_str("imported_at").ok())}),
     ))
 }
 #[derive(Deserialize)]
@@ -638,6 +700,7 @@ fn app(database: Database) -> Router {
     Router::new()
         .route("/health", get(health))
         .route("/communes", get(communes))
+        .route("/communes/meta", get(communes_meta))
         .route("/auth/login", post(login))
         .route("/auth/logout", post(logout))
         .route("/auth/me", get(me))
@@ -658,9 +721,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     initialize(&database, &password)
         .await
         .map_err(|_| "Initialisation MongoDB impossible.")?;
+    let count = reference::import(&database)
+        .await
+        .map_err(|_| "Import du référentiel des communes impossible.")?;
+    println!("{count} communes COG 2026 chargées depuis le référentiel data.gouv.fr / Insee.");
+    if std::env::args().any(|arg| arg == "--import-communes") {
+        return Ok(());
+    }
     let address = std::env::var("API_BIND").unwrap_or_else(|_| "127.0.0.1:8080".into());
     let listener = tokio::net::TcpListener::bind(&address).await?;
-    println!("API Qomune : http://{address} — Rust / MongoDB — données fictives");
+    println!("API Qomune : http://{address} — Rust / MongoDB — publications de démonstration");
     axum::serve(listener, app(database))
         .with_graceful_shutdown(async {
             let _ = tokio::signal::ctrl_c().await;

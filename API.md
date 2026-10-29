@@ -7,7 +7,8 @@ Préfixe navigateur : `/api`. Le serveur Rust expose les mêmes chemins sans ce 
 | Méthode | Chemin | Comportement |
 | --- | --- | --- |
 | GET | `/health` | État du serveur. |
-| GET | `/communes` | Les six communes de démonstration. |
+| GET | `/communes` | Recherche bornée dans les 34 875 communes du COG 2026. |
+| GET | `/communes/meta` | Nombre de communes, millésime, source et date du dernier import terminé. |
 | POST | `/auth/login` | Connexion par `email` et `password` ; pose un cookie de session. |
 | POST | `/auth/logout` | Révoque la session et efface son cookie. Corps : `{}`. |
 | GET | `/auth/me` | `{ "member": ... }` ou `{ "member": null }`. |
@@ -16,6 +17,18 @@ Préfixe navigateur : `/api`. Le serveur Rust expose les mêmes chemins sans ce 
 | GET | `/publications` | Fil public par défaut ; au maximum 100 résultats, du plus récent au plus ancien. |
 | GET | `/publications/{id}` | Publication publique, ou publication privée de sa propre commune. |
 | POST | `/publications` | Création par un maire ou conseiller connecté. |
+
+## Rechercher une commune
+
+`GET /communes` accepte :
+
+- `q` : nom ou début de code INSEE, au plus 200 octets UTF-8 ; recherche des noms insensible à la casse, aux accents et à la ponctuation séparatrice.
+- `limit` : de 1 à 100, valeur par défaut 20. La réponse reste une liste JSON de communes.
+- `ids` : liste de codes INSEE séparés par des virgules, au plus 200 codes. Ce mode renvoie tous les codes trouvés de la liste et sert à afficher les noms des communes présentes dans le fil.
+
+Chaque commune contient `id`, `name`, `department` et `region`. Les codes sont des chaînes, jamais des nombres. Les champs internes de normalisation et de provenance ne sont pas exposés dans cette liste. La recherche ne réalise aucun téléchargement vers data.gouv.fr : elle lit le référentiel importé dans MongoDB.
+
+`GET /communes/meta` renvoie `{ "total": 34875, "vintage": 2026, "source_url": "...", "imported_at": "..." }` après import. Avant un import terminé, le millésime, la source et la date peuvent être `null`.
 
 ## Fil et filtres
 

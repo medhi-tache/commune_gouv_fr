@@ -4,6 +4,7 @@
   "private": true,
   "description": "Prototype Qomune : publications publiques et espace du conseil municipal",
   "scripts": {
+    "communes:refresh": "python3 scripts/refresh_communes.py && cargo run --manifest-path backend/Cargo.toml -- --import-communes",
     "dev": "node scripts/dev.mjs",
     "setup": "npm --prefix frontend ci && cargo fetch --manifest-path backend/Cargo.toml",
     "check": "cargo fmt --manifest-path backend/Cargo.toml --check && cargo test --manifest-path backend/Cargo.toml && npm --prefix frontend run build"

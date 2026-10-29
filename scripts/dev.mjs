@@ -32,13 +32,18 @@ function stop(code = 0) {
   });
 }
 
-function launch(command, args, directory, env = {}) {
+function launch(command, args, directory, env = {}, onOutput) {
   const child = spawn(command, args, {
     cwd: resolve(root, directory),
-    stdio: "inherit",
+    stdio: onOutput ? ["inherit", "pipe", "inherit"] : "inherit",
     env: { ...process.env, ...env },
   });
   children.push(child);
+  if (onOutput)
+    child.stdout.on("data", (chunk) => {
+      process.stdout.write(chunk);
+      onOutput(chunk.toString());
+    });
   child.once("error", (error) => {
     console.error(`Impossible de lancer ${command} : ${error.message}`);
     stop(1);
@@ -50,15 +55,29 @@ function launch(command, args, directory, env = {}) {
 
 console.log(`\nQomune — prototype local : http://127.0.0.1:${webPort}`);
 console.log(
-  "Les données et les comptes sont fictifs. Ctrl+C arrête les deux services.\n",
+  "Communes Insee ; comptes et publications de démonstration. Ctrl+C arrête les deux services.\n",
 );
-launch("cargo", ["run", "--locked"], "backend", { API_BIND: apiBind });
+// Le premier import peut prendre quelques secondes. L'interface ne démarre qu'après la disponibilité de l'API.
+let backendOutput = "";
+let webStarted = false;
 launch(
-  process.platform === "win32" ? "npm.cmd" : "npm",
-  ["run", "dev", "--", "--port", webPort],
-  "frontend",
-  {
-    API_BASE_URL: process.env.API_BASE_URL || `http://${apiBind}`,
+  "cargo",
+  ["run", "--locked"],
+  "backend",
+  { API_BIND: apiBind },
+  (output) => {
+    backendOutput = (backendOutput + output).slice(-2000);
+    if (!webStarted && !stopping && backendOutput.includes("API Qomune :")) {
+      webStarted = true;
+      launch(
+        process.platform === "win32" ? "npm.cmd" : "npm",
+        ["run", "dev", "--", "--port", webPort],
+        "frontend",
+        {
+          API_BASE_URL: process.env.API_BASE_URL || `http://${apiBind}`,
+        },
+      );
+    }
   },
 );
 process.on("SIGINT", () => stop());

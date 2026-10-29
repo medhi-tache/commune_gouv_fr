@@ -619,3 +619,105 @@ async fn maire_et_conseiller_publient_dans_les_deux_espaces_avec_leur_signature(
     }
     database.drop().await.unwrap();
 }
+
+#[tokio::test]
+async fn recherche_de_communes_bornee_par_nom_et_code() {
+    let (app, database) = setup().await;
+    let (status, items, _) = request(&app, "GET", "/communes?q=ANNECY&limit=1", None, None).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(items.as_array().unwrap().len(), 1);
+    assert_eq!(items[0]["id"], "74010");
+    let (_, items, _) = request(&app, "GET", "/communes?q=33", None, None).await;
+    assert_eq!(items[0]["name"], "Bordeaux");
+    let (_, items, _) = request(&app, "GET", "/communes?ids=74010,33063", None, None).await;
+    assert_eq!(items.as_array().unwrap().len(), 2);
+    assert_eq!(
+        request(&app, "GET", "/communes?limit=1000", None, None)
+            .await
+            .0,
+        StatusCode::BAD_REQUEST
+    );
+    assert_eq!(
+        request(&app, "GET", "/communes?ids=code-invalide", None, None)
+            .await
+            .0,
+        StatusCode::BAD_REQUEST
+    );
+    let (_, items, _) = request(&app, "GET", "/communes?q=.%2A", None, None).await;
+    // Une recherche sans caractère alphanumérique ne devient jamais une regex libre.
+    assert!(items.as_array().unwrap().is_empty());
+    database.drop().await.unwrap();
+}
+
+#[tokio::test]
+async fn import_du_referentiel_repris_sans_modifier_les_comptes_et_publications() {
+    let (app, database) = setup().await;
+    let record = reference::ReferenceCommune {
+        commune: Commune {
+            id: "42218".into(),
+            name: "Saint-Étienne".into(),
+            department: "Loire · 42".into(),
+            region: "Auvergne-Rhône-Alpes".into(),
+        },
+        search_name: reference::normalize_name("Saint-Étienne"),
+    };
+    let manifest = reference::Manifest {
+        vintage: 2026,
+        count: 1,
+        sha256: "empreinte-de-test".into(),
+    };
+    reference::import_records(&database, vec![record.clone()], &manifest)
+        .await
+        .unwrap();
+    reference::import_records(&database, vec![record.clone()], &manifest)
+        .await
+        .unwrap();
+    assert_eq!(
+        database
+            .collection::<Document>("communes")
+            .count_documents(doc! {})
+            .await
+            .unwrap(),
+        7
+    );
+    assert_eq!(
+        database
+            .collection::<Document>("members")
+            .count_documents(doc! {})
+            .await
+            .unwrap(),
+        7
+    );
+    assert_eq!(
+        database
+            .collection::<Document>("publications")
+            .count_documents(doc! {})
+            .await
+            .unwrap(),
+        9
+    );
+    let (_, items, _) = request(&app, "GET", "/communes?q=saint%20etienne", None, None).await;
+    assert_eq!(items[0]["id"], "42218");
+    let (_, metadata, _) = request(&app, "GET", "/communes/meta", None, None).await;
+    assert_eq!(metadata["total"], 7);
+    assert_eq!(metadata["vintage"], 2026);
+    // Un document absent est réimporté, même si la précédente opération avait son marqueur de succès.
+    database
+        .collection::<Document>("communes")
+        .delete_one(doc! {"id":"42218"})
+        .await
+        .unwrap();
+    reference::import_records(&database, vec![record], &manifest)
+        .await
+        .unwrap();
+    assert!(
+        database
+            .collection::<Document>("communes")
+            .find_one(doc! {"id":"42218"})
+            .await
+            .unwrap()
+            .is_some()
+    );
+    sign_in(&app, "maire.annecy@demo.qomune.fr").await;
+    database.drop().await.unwrap();
+}

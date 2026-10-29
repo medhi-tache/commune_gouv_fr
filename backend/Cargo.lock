@@ -1439,8 +1439,10 @@ dependencies = [
  "mongodb",
  "serde",
  "serde_json",
+ "sha2",
  "tokio",
  "tower",
+ "unicode-normalization",
  "uuid",
 ]
 
