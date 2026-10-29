@@ -32,6 +32,9 @@ import {
   X,
 } from "lucide-react";
 
+import { api } from "../lib/api";
+import CouncilMembers from "./council-members";
+
 type Commune = { id: string; name: string; department: string; region: string };
 type Member = {
   id: string;
@@ -51,7 +54,7 @@ type Publication = {
   author_role: string;
   published_at: string;
 };
-type Modal = "login" | "create" | "about" | null;
+type Modal = "login" | "create" | "about" | "members" | null;
 const categories = [
   "Vie citoyenne",
   "Travaux",
@@ -61,20 +64,6 @@ const categories = [
   "Conseil municipal",
 ];
 
-/** Toute lecture de données passe par le relais Next.js vers l'API Rust. */
-async function api<T>(path: string, body?: unknown): Promise<T> {
-  const response = await fetch(`/api/${path}`, {
-    method: body === undefined ? "GET" : "POST",
-    credentials: "same-origin",
-    cache: "no-store",
-    headers: { "Content-Type": "application/json" },
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
-  const data = await response.json();
-  if (!response.ok)
-    throw new Error(data.error || "La demande a échoué. Réessayez.");
-  return data as T;
-}
 const dateLabel = (date: string) =>
   new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long" }).format(
     new Date(date),
@@ -231,6 +220,7 @@ export default function Dashboard() {
   const [toast, setToast] = useState("");
   const [revision, setRevision] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [demoLogin, setDemoLogin] = useState(true);
   const [loginCommune, setLoginCommune] = useState("annecy");
   const [loginRole, setLoginRole] = useState("maire");
   const [email, setEmail] = useState("maire.annecy@demo.qomune.fr");
@@ -561,15 +551,25 @@ export default function Dashboard() {
               </p>
             </div>
             {member && (
-              <button
-                className="button primary"
-                onClick={() => {
-                  setVisibility("public");
-                  openModal("create");
-                }}
-              >
-                <Plus size={17} /> Publier
-              </button>
+              <div className="heading-actions">
+                {member.role === "maire" && (
+                  <button
+                    className="button"
+                    onClick={() => openModal("members")}
+                  >
+                    <Users size={17} /> Membres du conseil
+                  </button>
+                )}
+                <button
+                  className="button primary"
+                  onClick={() => {
+                    setVisibility("public");
+                    openModal("create");
+                  }}
+                >
+                  <Plus size={17} /> Publier
+                </button>
+              </div>
             )}
           </section>
 
@@ -873,62 +873,99 @@ export default function Dashboard() {
             Connectez-vous pour publier et retrouver les échanges de votre
             conseil municipal.
           </p>
-          <div className="demo-notice">
-            <ShieldCheck size={20} />
-            <div>
-              <strong>Connexion de démonstration</strong>
-              <p>
-                Identités et mandats fictifs. Mot de passe :{" "}
-                <code>commune-demo</code>
-              </p>
-            </div>
+          <div className="login-modes" aria-label="Mode de connexion">
+            <button
+              type="button"
+              className={!demoLogin ? "selected" : ""}
+              aria-pressed={!demoLogin}
+              disabled={busy}
+              onClick={() => {
+                setDemoLogin(false);
+                setEmail("");
+                setFormError("");
+              }}
+            >
+              Mon compte
+            </button>
+            <button
+              type="button"
+              className={demoLogin ? "selected" : ""}
+              aria-pressed={demoLogin}
+              disabled={busy}
+              onClick={() => {
+                setDemoLogin(true);
+                setEmail(`${loginRole}.${loginCommune}@demo.qomune.fr`);
+                setFormError("");
+              }}
+            >
+              Démonstration
+            </button>
           </div>
-          <form onSubmit={login} className="form">
-            <div className="form-row">
-              <label>
-                Commune de démonstration
-                <select
-                  value={loginCommune}
-                  onChange={(e) => {
-                    setLoginCommune(e.target.value);
-                    setLoginRole("maire");
-                    setEmail(`maire.${e.target.value}@demo.qomune.fr`);
-                  }}
-                >
-                  {[
-                    "annecy",
-                    "bordeaux",
-                    "lyon",
-                    "nantes",
-                    "saint-malo",
-                    "strasbourg",
-                  ].map((c) => (
-                    <option key={c} value={c}>
-                      {c === "saint-malo"
-                        ? "Saint-Malo"
-                        : c[0].toUpperCase() + c.slice(1)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Rôle
-                <select
-                  value={loginRole}
-                  onChange={(e) => {
-                    setLoginRole(e.target.value);
-                    setEmail(
-                      `${e.target.value}.${loginCommune}@demo.qomune.fr`,
-                    );
-                  }}
-                >
-                  <option value="maire">Maire</option>
-                  {loginCommune === "annecy" && (
-                    <option value="conseil">Conseillère municipale</option>
-                  )}
-                </select>
-              </label>
+          {demoLogin ? (
+            <div className="demo-notice">
+              <ShieldCheck size={20} />
+              <div>
+                <strong>Connexion de démonstration</strong>
+                <p>
+                  Identités et mandats fictifs. Mot de passe :{" "}
+                  <code>commune-demo</code>
+                </p>
+              </div>
             </div>
+          ) : (
+            <p className="dialog-intro">
+              Utilisez l’adresse e-mail et le mot de passe remis par votre
+              maire.
+            </p>
+          )}
+          <form onSubmit={login} className="form">
+            {demoLogin && (
+              <div className="form-row">
+                <label>
+                  Commune de démonstration
+                  <select
+                    value={loginCommune}
+                    onChange={(e) => {
+                      setLoginCommune(e.target.value);
+                      setLoginRole("maire");
+                      setEmail(`maire.${e.target.value}@demo.qomune.fr`);
+                    }}
+                  >
+                    {[
+                      "annecy",
+                      "bordeaux",
+                      "lyon",
+                      "nantes",
+                      "saint-malo",
+                      "strasbourg",
+                    ].map((c) => (
+                      <option key={c} value={c}>
+                        {c === "saint-malo"
+                          ? "Saint-Malo"
+                          : c[0].toUpperCase() + c.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Rôle
+                  <select
+                    value={loginRole}
+                    onChange={(e) => {
+                      setLoginRole(e.target.value);
+                      setEmail(
+                        `${e.target.value}.${loginCommune}@demo.qomune.fr`,
+                      );
+                    }}
+                  >
+                    <option value="maire">Maire</option>
+                    {loginCommune === "annecy" && (
+                      <option value="conseil">Conseillère municipale</option>
+                    )}
+                  </select>
+                </label>
+              </div>
+            )}
             <label>
               Adresse e-mail
               <input
@@ -945,7 +982,8 @@ export default function Dashboard() {
                 type="password"
                 name="password"
                 autoComplete="current-password"
-                defaultValue="commune-demo"
+                key={demoLogin ? "demo-password" : "member-password"}
+                defaultValue={demoLogin ? "commune-demo" : ""}
                 required
                 maxLength={200}
               />
@@ -964,6 +1002,18 @@ export default function Dashboard() {
             <LockKeyhole size={13} /> Seuls les membres de votre commune
             accèdent à son espace privé.
           </p>
+        </Dialog>
+      )}
+      {modal === "members" && member?.role === "maire" && (
+        <Dialog
+          title="Membres du conseil"
+          close={() => !busy && setModal(null)}
+          wide
+        >
+          <CouncilMembers
+            commune={memberCommune?.name || "votre commune"}
+            onBusyChange={setBusy}
+          />
         </Dialog>
       )}
       {modal === "create" && member && (

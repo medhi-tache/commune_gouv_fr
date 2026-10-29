@@ -77,6 +77,8 @@ struct StoredMember {
     #[serde(flatten)]
     member: Member,
     password_hash: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    created_by: Option<String>,
 }
 #[derive(Serialize, Deserialize)]
 struct Session {
@@ -329,6 +331,145 @@ async fn logout(State(database): State<Database>, headers: HeaderMap) -> ApiResu
 async fn me(State(database): State<Database>, headers: HeaderMap) -> ApiResult<Json<Value>> {
     Ok(Json(json!({"member":member(&database,&headers).await?})))
 }
+
+/// Cette autorisation est vérifiée par l'API, indépendamment des boutons affichés dans Next.js.
+async fn require_mayor(database: &Database, headers: &HeaderMap) -> ApiResult<Member> {
+    let user = member(database, headers).await?.ok_or_else(unauthorized)?;
+    if user.role != "maire" {
+        return Err(ApiError(
+            StatusCode::FORBIDDEN,
+            "Seul le maire peut gérer les membres de son conseil municipal.".into(),
+        ));
+    }
+    Ok(user)
+}
+
+/// Les coordonnées du conseil ne sont visibles que par son maire. Aucun hash n'est renvoyé.
+async fn council_members(
+    State(database): State<Database>,
+    headers: HeaderMap,
+) -> ApiResult<Json<Vec<Member>>> {
+    let mayor = require_mayor(&database, &headers).await?;
+    let records: Vec<StoredMember> = database
+        .collection("members")
+        .find(doc! {"commune_id":mayor.commune_id})
+        .sort(doc! {"role":-1,"name":1})
+        .await?
+        .try_collect()
+        .await?;
+    Ok(Json(
+        records.into_iter().map(|record| record.member).collect(),
+    ))
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct NewMember {
+    name: String,
+    email: String,
+}
+
+/// Validation des adresses usuelles du prototype ; les noms de domaine internationaux doivent être en ASCII.
+fn valid_email(email: &str) -> bool {
+    if email.len() > 200 || !email.is_ascii() {
+        return false;
+    }
+    let Some((local, domain)) = email.split_once('@') else {
+        return false;
+    };
+    !local.is_empty()
+        && local.len() <= 64
+        && !local.starts_with('.')
+        && !local.ends_with('.')
+        && !local.contains("..")
+        && local
+            .bytes()
+            .all(|c| c.is_ascii_alphanumeric() || b"._%+-".contains(&c))
+        && domain.contains('.')
+        && domain.split('.').all(|label| {
+            !label.is_empty()
+                && label.len() <= 63
+                && !label.starts_with('-')
+                && !label.ends_with('-')
+                && label
+                    .bytes()
+                    .all(|c| c.is_ascii_alphanumeric() || c == b'-')
+        })
+}
+
+async fn create_member(
+    State(database): State<Database>,
+    headers: HeaderMap,
+    Json(input): Json<NewMember>,
+) -> ApiResult<(StatusCode, Json<Value>)> {
+    let mayor = require_mayor(&database, &headers).await?;
+    let name = input.name.trim();
+    let email = input.email.trim().to_lowercase();
+    if !(2..=120).contains(&name.chars().count()) || name.chars().any(char::is_control) {
+        return Err(invalid(
+            "Le nom doit contenir de 2 à 120 caractères, sans caractères de contrôle.",
+        ));
+    }
+    if !valid_email(&email) {
+        return Err(invalid(
+            "Saisissez une adresse e-mail valide (200 caractères maximum).",
+        ));
+    }
+    // Le mot de passe aléatoire n'est renvoyé qu'à la création ; seule son empreinte est stockée.
+    let initial_password = format!("Qm-{}", Uuid::new_v4().simple());
+    let password_to_hash = initial_password.clone();
+    let hash = tokio::task::spawn_blocking(move || {
+        let salt = SaltString::encode_b64(Uuid::new_v4().as_bytes()).expect("Sel valide");
+        Argon2::default()
+            .hash_password(password_to_hash.as_bytes(), &salt)
+            .map(|hash| hash.to_string())
+    })
+    .await
+    .map_err(|_| {
+        ApiError(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "La création du compte a échoué.".into(),
+        )
+    })?
+    .map_err(|_| {
+        ApiError(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "La création du compte a échoué.".into(),
+        )
+    })?;
+    let new_member = Member {
+        id: Uuid::new_v4().to_string(),
+        name: name.into(),
+        email,
+        role: "conseiller".into(),
+        commune_id: mayor.commune_id,
+    };
+    let record = StoredMember {
+        member: new_member.clone(),
+        password_hash: hash,
+        created_by: Some(mayor.id),
+    };
+    if let Err(error) = database
+        .collection::<StoredMember>("members")
+        .insert_one(record)
+        .await
+    {
+        // L'index unique bloque également deux créations simultanées avec la même adresse.
+        if matches!(error.kind.as_ref(), mongodb::error::ErrorKind::Write(mongodb::error::WriteFailure::WriteError(write)) if write.code==11000)
+        {
+            return Err(ApiError(
+                StatusCode::CONFLICT,
+                "Cette adresse e-mail est déjà utilisée. Aucun compte existant n'a été modifié."
+                    .into(),
+            ));
+        }
+        return Err(error.into());
+    }
+    Ok((
+        StatusCode::CREATED,
+        Json(json!({"member":new_member,"initial_password":initial_password})),
+    ))
+}
 #[derive(Deserialize, Default)]
 struct Filters {
     commune: Option<String>,
@@ -500,6 +641,7 @@ fn app(database: Database) -> Router {
         .route("/auth/login", post(login))
         .route("/auth/logout", post(logout))
         .route("/auth/me", get(me))
+        .route("/members", get(council_members).post(create_member))
         .route("/publications", get(publications).post(create_publication))
         .route("/publications/{id}", get(publication))
         .layer(DefaultBodyLimit::max(65536))

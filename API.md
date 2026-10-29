@@ -11,6 +11,8 @@ Préfixe navigateur : `/api`. Le serveur Rust expose les mêmes chemins sans ce 
 | POST | `/auth/login` | Connexion par `email` et `password` ; pose un cookie de session. |
 | POST | `/auth/logout` | Révoque la session et efface son cookie. Corps : `{}`. |
 | GET | `/auth/me` | `{ "member": ... }` ou `{ "member": null }`. |
+| GET | `/members` | Liste des membres de sa commune, réservée au maire. |
+| POST | `/members` | Création d’un conseiller municipal par le maire de la commune. |
 | GET | `/publications` | Fil public par défaut ; au maximum 100 résultats, du plus récent au plus ancien. |
 | GET | `/publications/{id}` | Publication publique, ou publication privée de sa propre commune. |
 | POST | `/publications` | Création par un maire ou conseiller connecté. |
@@ -42,14 +44,34 @@ L'identité de l'auteur, son rôle et sa commune sont déterminés par la sessio
 
 Le relais Next.js exige une origine identique à celle de la requête ainsi qu'un contenu `application/json` pour les écritures. Il n'accepte que les routes énumérées ci-dessus. Taille maximale d'une requête : 64 Kio.
 
+## Créer les comptes des membres du conseil
+
+`POST /members` exige une session de maire et accepte uniquement :
+
+```json
+{
+  "name": "Alex Dupont",
+  "email": "alex.dupont@exemple.fr"
+}
+```
+
+Le nom contient de 2 à 120 caractères après suppression des espaces aux extrémités et aucun caractère de contrôle. L'adresse e-mail usuelle ASCII contient au plus 200 caractères, est normalisée en minuscules et doit être unique dans l'ensemble de l'application.
+
+Le serveur impose le rôle `conseiller` et la commune du maire connecté. Les champs supplémentaires tels que `role`, `commune_id` et `password` sont refusés. La réponse `201` contient `{ "member": { ... }, "initial_password": "..." }`. Le mot de passe aléatoire est retourné uniquement à la création, puis stocké sous forme de hash Argon2. Le champ interne `created_by` conserve l'identifiant du maire ayant créé le compte.
+
+`GET /members` renvoie uniquement les profils publics de stockage (`id`, `name`, `email`, `role`, `commune_id`) de la commune du maire connecté, sans hash ni mot de passe initial. Ces coordonnées ne sont pas consultables par les visiteurs ou les conseillers. Aucun paramètre ne permet de choisir une autre commune.
+
+Un doublon d'adresse renvoie `409`, y compris pour des créations concurrentes. Aucun compte existant n'est modifié. Le nouveau membre peut immédiatement se connecter avec `/auth/login` puis utiliser les routes de publication selon les droits de sa commune. Aucun e-mail n'est envoyé.
+
 ## Erreurs
 
 Les erreurs métier prennent la forme `{ "error": "Message en français" }`.
 
 - `400` : contenu ou filtre invalide.
 - `401` : connexion requise ou identifiants incorrects.
-- `403` : commune ou origine refusée.
+- `403` : commune, rôle ou origine refusée.
 - `404` : publication inexistante ou privée non accessible.
+- `409` : adresse e-mail déjà utilisée.
 - `413` : requête trop volumineuse.
 - `415` : contenu autre que JSON à travers le relais.
 - `422` : structure JSON refusée par l'extracteur Rust, notamment en cas de champs supplémentaires.

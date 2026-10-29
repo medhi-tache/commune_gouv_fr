@@ -17,7 +17,7 @@ Le projet vise les 34 875 communes de France, selon le périmètre défini à so
 | Utilisateur | Accès et actions |
 | --- | --- |
 | Visiteur | Consulter les publications publiques des communes. |
-| Maire | Publier des informations publiques ou privées pour sa commune et consulter les publications privées de son conseil municipal. |
+| Maire | Publier des informations publiques ou privées, consulter les publications privées et ajouter les membres de son conseil municipal. |
 | Conseiller municipal | Publier des informations publiques ou privées pour sa commune et consulter les publications privées de son conseil municipal. |
 
 ## Visibilité des publications
@@ -92,6 +92,16 @@ Le script transmet automatiquement l'adresse du backend à Next.js. Les fichiers
 
 Les noms des élus, les mandats et les contenus sont fictifs. Ce prototype n'est pas un service officiel de l'État.
 
+## Ajouter les membres du conseil
+
+1. Se connecter avec un compte de maire, puis ouvrir **Membres du conseil**.
+2. Saisir le nom complet et l'adresse e-mail du membre, puis cliquer sur **Créer le compte du membre**.
+3. Noter ou copier les identifiants affichés : le mot de passe initial est généré automatiquement et affiché uniquement à la création. Seul son hash Argon2 est conservé dans MongoDB.
+4. Transmettre les identifiants au membre par un moyen privé. Aucun e-mail n'est envoyé par le prototype.
+5. Le membre ouvre **Espace élus → Mon compte** et se connecte avec ces identifiants. Il peut consulter les publications privées de son conseil et publier pour sa commune.
+
+Le nouveau compte reçoit obligatoirement le rôle de conseiller municipal dans la commune du maire connecté. Le serveur refuse les ajouts par un visiteur ou un conseiller, les tentatives de choisir une autre commune ou le rôle de maire, ainsi que les adresses déjà utilisées. Un doublon ne modifie jamais un compte existant. La liste des membres et leurs adresses e-mail restent réservées au maire de cette commune.
+
 ## Données et configuration
 
 Le backend utilise la base MongoDB `qomune_prototype`, avec les collections `communes`, `members`, `sessions` et `publications`. Le fichier `compose.yaml` fournit une instance locale avec un volume persistant et un port accessible uniquement sur la machine. Les publications restent présentes après un redémarrage.
@@ -119,7 +129,7 @@ Les mots de passe sont hachés avec Argon2. Les sessions utilisent un cookie `Ht
 npm run check
 ```
 
-MongoDB doit être démarré avant cette commande. Elle vérifie le format Rust, lance les six tests d’intégration contre MongoDB et construit le frontend avec vérification TypeScript. Chaque test crée une base temporaire `qomune_test_<UUID>` puis la supprime, sans toucher à la base de l’application. La variable `MONGODB_URI` permet aussi de choisir l’instance pour les tests.
+MongoDB doit être démarré avant cette commande. Elle vérifie le format Rust, lance les dix tests d’intégration contre MongoDB et construit le frontend avec vérification TypeScript. Chaque test crée une base temporaire `qomune_test_<UUID>` puis la supprime, sans toucher à la base de l’application. La variable `MONGODB_URI` permet aussi de choisir l’instance pour les tests.
 
 - [Guide du code et règles d'accès](CONTRIBUTING.md)
 - [Contrat de l'API](API.md)
@@ -128,9 +138,9 @@ Le code, ses commentaires explicatifs et la documentation du projet sont en fran
 
 ## État et limites du prototype
 
-Le prototype implémente le fil public, les filtres, la lecture détaillée, la connexion de démonstration, l'espace du conseil et la création de publications textuelles publiques ou privées. Il comprend six communes d'exemple ; le référentiel complet des 34 875 communes n'est pas importé.
+Le prototype implémente le fil public, les filtres, la lecture détaillée, la connexion, l'espace du conseil, l'ajout de conseillers par le maire et la création de publications textuelles publiques ou privées. Il comprend six communes d'exemple ; le référentiel complet des 34 875 communes n'est pas importé.
 
-La vérification réelle des mandats, les invitations de membres, la récupération de mot de passe, les pièces jointes, la modification et la suppression des publications, les notifications et la modération restent à développer. Les requêtes du fil sont limitées aux 100 dernières publications correspondant aux filtres, sans pagination. La recherche est une recherche littérale par sous-chaîne, sans interprétation des opérateurs de regex.
+La vérification réelle des mandats, les invitations par e-mail, la récupération et le changement de mot de passe, la modification et la suppression des membres, les pièces jointes, la modification et la suppression des publications, les notifications et la modération restent à développer. Les requêtes du fil sont limitées aux 100 dernières publications correspondant aux filtres, sans pagination. La recherche est une recherche littérale par sous-chaîne, sans interprétation des opérateurs de regex.
 
 Le prototype fonctionne localement et n'est pas déployé sur les domaines prévus. Pour une mise en ligne réelle sur qomune.fr, prévoir un hébergement exécutant Rust et Next.js, une instance MongoDB privée avec stockage persistant, HTTPS, les cookies sécurisés et une configuration de proxy préservant l'origine des requêtes. Il faudra aussi remplacer les comptes de démonstration par des comptes vérifiés, ajouter une limitation des tentatives de connexion et organiser les sauvegardes avant d'accueillir des données réelles.
 

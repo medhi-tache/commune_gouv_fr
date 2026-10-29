@@ -8,6 +8,8 @@ La documentation, les commentaires et les messages destinés aux utilisateurs so
 - `backend/src/tests.rs` : tests d’intégration MongoDB et contrôle des accès.
 - `backend/src/fixtures.rs` : contenus fictifs de démonstration.
 - `frontend/app/api/[...path]/route.ts` : relais serveur Next.js vers Rust ; contrôle de l'origine des écritures et transmission du cookie de session.
+- `frontend/components/council-members.tsx` : liste du conseil et ajout de comptes par le maire.
+- `frontend/lib/api.ts` : requêtes du navigateur vers le relais Next.js.
 - `frontend/components/dashboard.tsx` : fil de publications, filtres, lecture détaillée, connexion et création de publication.
 - `frontend/app/globals.css` : styles partagés, cartes, formulaires et adaptation aux petits écrans.
 - `scripts/dev.mjs` : lancement et arrêt des deux serveurs.
@@ -25,7 +27,8 @@ MongoDB conserve les publications et les sessions dans quatre collections : `com
 3. L'accès direct à une publication privée applique le même contrôle. Un accès refusé renvoie `404` pour ne pas confirmer l'existence du document.
 4. Un auteur ne choisit pas son identité ni sa commune dans une requête. Les champs inconnus sont refusés à la création.
 5. Les filtres BSON sont construits à partir de champs explicitement autorisés ; aucune requête MongoDB fournie par le navigateur n’est exécutée. Les caractères spéciaux de recherche sont échappés pour une recherche littérale. Le contenu utilisateur est rendu comme du texte par React, sans HTML injecté.
-6. Toute future pièce jointe doit être soumise aux mêmes contrôles côté serveur. Ne pas placer de document privé dans un répertoire statique public.
+6. Seul un maire authentifié peut consulter la liste des membres et ajouter un conseiller à sa propre commune. Le rôle et la commune ne sont jamais acceptés dans le formulaire. Le mot de passe généré n’est renvoyé qu’à la création et seul son hash est stocké. Les doublons sont refusés par l’index unique sans modifier un compte existant.
+7. Toute future pièce jointe doit être soumise aux mêmes contrôles côté serveur. Ne pas placer de document privé dans un répertoire statique public.
 
 ## Vérification
 
@@ -39,7 +42,7 @@ Cette commande vérifie le format Rust, lance les tests d’intégration de l’
 
 Les tests utilisent des bases temporaires nommées `qomune_test_<UUID>`, indépendantes de `MONGODB_DATABASE`, puis les suppriment. Aucun test ne doit supprimer une base dont le nom vient directement de la configuration de l’application.
 
-Les tests couvrent l'accès anonyme, les liens privés, l'isolation entre communes, la publication par une conseillère, le refus d'usurpation de commune, la validation, les filtres, la déconnexion, l'expiration et la conservation des données lors de l'initialisation.
+Les tests couvrent l'accès anonyme, les liens privés, l'isolation entre communes, la publication par une conseillère, le refus d'usurpation de commune, la validation, les filtres, la déconnexion, l'expiration et la conservation des données lors de l'initialisation. Ils couvrent aussi l’ajout réservé au maire, la connexion des nouveaux membres, le refus d’usurpation de rôle ou de commune, la validation des adresses et les doublons, y compris lors de créations simultanées.
 
 ## Étendre le prototype
 
