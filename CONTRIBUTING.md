@@ -7,6 +7,8 @@ La documentation, les commentaires et les messages destinés aux utilisateurs so
 - `backend/src/main.rs` : modèles, initialisation MongoDB, authentification, et routes.
 - `backend/src/tests.rs` : tests d’intégration MongoDB et contrôle des accès.
 - `backend/src/fixtures.rs` : élus et publications fictifs dans six communes de démonstration.
+- `backend/src/discussion.rs` : commentaires internes et réactions, contrôle de commune et pagination.
+- `frontend/components/council-discussion.tsx` : réactions, liste des participants et fil de commentaires.
 - `backend/src/registration.rs` : inscription déclarative des maires, limitée au prototype.
 - `frontend/components/mayor-registration.tsx` : formulaire d’inscription avec choix de commune.
 - `AUTHENTIFICATION.md` : séparation entre le prototype et la vérification FranceConnect + RNE prévue en production.
@@ -66,3 +68,9 @@ Les tests d’intégration utilisent un petit jeu isolé pour vérifier les filt
 ## Inscription déclarative
 
 Les tests couvrent la création et la session d’un maire non vérifié, le choix d’une commune existante, les mots de passe trop courts, les champs supplémentaires, les doublons et les inscriptions simultanées. Le statut `unverified_prototype` ne doit jamais être traité comme une validation d’identité ou de mandat. Le serveur actuel refuse de démarrer hors de `QOMUNE_MODE=prototype` ; l’intégration FranceConnect et le rapprochement RNE restent à développer.
+
+## Confidentialité des échanges du conseil
+
+Les échanges ne sont pas des propriétés publiques d’une publication. Ils sont conservés dans `comments` et `reactions`, et ne sont lus que par les routes dédiées après contrôle de la session et de la commune. Cette règle s’applique aussi à une publication principale publique. Ne jamais enrichir une réponse du fil public avec ces compteurs ou ces contenus.
+
+Les réactions ont un identifiant déterministe par publication et membre, ainsi qu’un index unique sur ce couple. Les mises à jour sont idempotentes ; la suppression vise uniquement la réaction de la session. Les commentaires sont paginés avec un couple date/identifiant pour éviter les pertes lorsque plusieurs messages ont la même date. Les tests couvrent l’accès anonyme et intercommunal, les signatures imposées, les réactions répétées et concurrentes, leur retrait, la pagination et la conservation lors de la recréation de l’application.

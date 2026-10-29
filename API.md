@@ -18,6 +18,9 @@ Préfixe navigateur : `/api`. Le serveur Rust expose les mêmes chemins sans ce 
 | GET | `/publications` | Fil public par défaut ; au maximum 100 résultats, du plus récent au plus ancien. |
 | GET | `/publications/{id}` | Publication publique, ou publication privée de sa propre commune. |
 | POST | `/publications` | Création par un maire ou conseiller connecté. |
+| GET | `/publications/{id}/discussion` | Commentaires et réactions, uniquement pour les membres du conseil de cette commune. |
+| POST | `/publications/{id}/comments` | Ajouter un commentaire interne au conseil. |
+| POST | `/publications/{id}/reaction` | Définir ou retirer sa propre réaction interne. |
 
 ## Rechercher une commune
 
@@ -65,6 +68,23 @@ Le relais Next.js exige une origine identique à celle de la requête ainsi qu'u
 Le serveur impose le rôle `maire` et enregistre `verification_status=unverified_prototype`. Il ne vérifie ni l'identité ni le mandat. Un seul maire est autorisé par commune, même en cas de demandes simultanées ; les doublons d'adresse ou de commune renvoient `409`. Le rôle et les champs de vérification ne peuvent pas être fournis par le navigateur.
 
 La réponse `201` contient `{ "ok": true }` et pose le cookie de session ; `/auth/me` donne le profil. L'inscription est refusée hors du mode prototype. Le parcours FranceConnect + RNE prévu en production n'est pas encore disponible ; voir `AUTHENTIFICATION.md`.
+
+## Échanges internes au conseil
+
+Les trois routes d'échange exigent une session de maire ou de conseiller de la commune de la publication. Ce contrôle s'applique même si la publication principale est publique : un visiteur reçoit `401`, un membre d'une autre commune `404`. Les listes et lectures publiques de publications ne renvoient ni échanges, ni noms de réacteurs, ni compteurs internes.
+
+`GET /publications/{id}/discussion` renvoie :
+
+- `comments` : les 50 derniers commentaires, présentés dans l'ordre chronologique ;
+- `comments_count` : le nombre total de commentaires sur cette publication ;
+- `next_cursor` : un curseur opaque pour charger les commentaires précédents avec `?before=...`, ou `null` ;
+- `reactions` : `counts` par type, `total`, `mine` pour la réaction de la session ou `null`, et `members` avec les noms, fonctions et réactions des participants.
+
+`POST /publications/{id}/comments` accepte uniquement `{ "body": "Mon commentaire" }`. Le texte doit contenir 1 à 2 000 caractères après suppression des espaces aux extrémités. Le serveur renseigne l'auteur, sa commune et la date. Réponse `201` : le commentaire créé. Le contenu est affiché comme texte, sans interprétation HTML.
+
+`POST /publications/{id}/reaction` accepte uniquement `{ "reaction": "like" }`. Valeurs : `like`, `love`, `haha`, `wow`, `sad`, `angry`, ou `null` pour retirer sa réaction. L'envoi répété du même type ne crée pas de doublon ; l'interface envoie explicitement `null` lorsqu'un membre clique de nouveau sur sa réaction. La réponse `200` contient le nouvel objet de synthèse `reactions`. Un index unique garantit une seule réaction par membre et publication, même en cas d'accès simultanés.
+
+Aucun identifiant d'auteur, rôle ou commune n'est accepté dans les corps d'écriture. Il n'y a pas de notification ou de diffusion en temps réel ; la modification, la suppression et la modération des commentaires ne sont pas encore implémentées.
 
 ## Créer les comptes des membres du conseil
 

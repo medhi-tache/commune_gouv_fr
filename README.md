@@ -94,6 +94,21 @@ Le script transmet automatiquement l'adresse du backend à Next.js. Les fichiers
 
 Les noms des élus, les mandats et les contenus sont fictifs. Ce prototype n'est pas un service officiel de l'État.
 
+## Commentaires et réactions dans l'espace sécurisé
+
+Dans **Conseil municipal**, chaque publication dispose des boutons **Commenter** et **Réagir**, qui ouvrent ses échanges internes. Les maires et conseillers de la commune peuvent :
+
+- commenter sous leur nom, avec leur fonction et la date du message ;
+- choisir une réaction : 👍 J’aime, ❤️ J’adore, 😆 Haha, 😮 Waouh, 😢 Triste ou 😡 Grrr ;
+- changer leur réaction ou cliquer de nouveau sur la réaction sélectionnée pour la retirer ;
+- consulter les compteurs, les noms des membres ayant réagi et les commentaires précédents.
+
+Une seule réaction est conservée par membre et publication. Les commentaires contiennent de 1 à 2 000 caractères. Les 50 plus récents sont chargés à l'ouverture, puis le bouton **Voir les commentaires précédents** permet de remonter le fil. **Actualiser les échanges** recharge les contributions des autres membres ; il n'y a pas de mise à jour en temps réel dans ce prototype.
+
+**Ces échanges restent privés au conseil, même lorsque la publication principale est publique.** Les visiteurs et les membres d'une autre commune ne peuvent consulter ni les commentaires, ni les réactions, ni leurs compteurs. Les auteurs et la commune sont toujours déterminés par le serveur. Les données sont conservées dans MongoDB après un redémarrage.
+
+La modification et la suppression des commentaires ainsi que leur modération restent à développer.
+
 ## Référentiel des communes : data.gouv.fr / Insee
 
 Les fichiers du COG 2026 sont découverts dans les métadonnées du jeu de données officiel data.gouv.fr puis téléchargés depuis les URL de l'Insee qui y sont publiées. Les fichiers des départements et régions complètent le libellé de chaque commune.
@@ -138,7 +153,7 @@ Le nouveau compte reçoit obligatoirement le rôle de conseiller municipal dans 
 
 ## Données et configuration
 
-Le backend utilise la base MongoDB `qomune_prototype`, avec les collections `communes`, `members`, `sessions`, `publications` et `reference_imports` (traçabilité des imports). Le fichier `compose.yaml` fournit une instance locale avec un volume persistant et un port accessible uniquement sur la machine. Les publications restent présentes après un redémarrage.
+Le backend utilise la base MongoDB `qomune_prototype`, avec les collections `communes`, `members`, `sessions`, `publications`, `comments`, `reactions` et `reference_imports` (traçabilité des imports). Le fichier `compose.yaml` fournit une instance locale avec un volume persistant et un port accessible uniquement sur la machine. Les publications restent présentes après un redémarrage.
 
 Les comptes et publications de démonstration sont insérés avec `$setOnInsert` : une nouvelle initialisation ne remplace ni les comptes ni les publications existantes. Pour essayer un jeu de données neuf sans effacer l'ancien, lancer avec un autre nom de base : `MONGODB_DATABASE=qomune_autre_demo npm run dev`.
 
@@ -164,7 +179,7 @@ Les mots de passe sont hachés avec Argon2. Les sessions utilisent un cookie `Ht
 npm run check
 ```
 
-MongoDB doit être démarré avant cette commande. Elle vérifie le format Rust, lance les dix-sept tests, dont seize tests d’intégration contre MongoDB et un test d’intégrité du référentiel et construit le frontend avec vérification TypeScript. Chaque test crée une base temporaire `qomune_test_<UUID>` puis la supprime, sans toucher à la base de l’application. La variable `MONGODB_URI` permet aussi de choisir l’instance pour les tests.
+MongoDB doit être démarré avant cette commande. Elle vérifie le format Rust, lance les vingt-deux tests, dont vingt et un tests d’intégration contre MongoDB et un test d’intégrité du référentiel et construit le frontend avec vérification TypeScript. Chaque test crée une base temporaire `qomune_test_<UUID>` puis la supprime, sans toucher à la base de l’application. La variable `MONGODB_URI` permet aussi de choisir l’instance pour les tests.
 
 - [Guide du code et règles d'accès](CONTRIBUTING.md)
 - [Contrat de l'API](API.md)
@@ -174,7 +189,7 @@ Le code, ses commentaires explicatifs et la documentation du projet sont en fran
 
 ## État et limites du prototype
 
-Le prototype implémente le fil public, les filtres, la lecture détaillée, la connexion, l'espace du conseil, l'inscription déclarative des maires, l'ajout de conseillers par le maire et la création de publications textuelles publiques ou privées. Le référentiel comporte les 34 875 communes du COG 2026. Les comptes préconfigurés et les publications d'exemple restent limités à six communes ; aucun compte de maire n'est créé automatiquement pour les autres communes.
+Le prototype implémente le fil public, les filtres, la lecture détaillée, la connexion, l'espace du conseil, l'inscription déclarative des maires, l'ajout de conseillers par le maire et la création de publications textuelles publiques ou privées, ainsi que leurs commentaires et réactions internes au conseil. Le référentiel comporte les 34 875 communes du COG 2026. Les comptes préconfigurés et les publications d'exemple restent limités à six communes ; aucun compte de maire n'est créé automatiquement pour les autres communes.
 
 La vérification réelle des mandats, les invitations par e-mail, la récupération et le changement de mot de passe, la modification et la suppression des membres, les pièces jointes, la modification et la suppression des publications, les notifications et la modération restent à développer. Les requêtes du fil sont limitées aux 100 dernières publications correspondant aux filtres, sans pagination. La recherche est une recherche littérale par sous-chaîne, sans interprétation des opérateurs de regex.
 

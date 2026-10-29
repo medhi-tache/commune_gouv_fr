@@ -842,3 +842,308 @@ async fn une_seule_inscription_de_maire_par_commune_en_cas_de_concurrence() {
     );
     database.drop().await.unwrap();
 }
+
+#[tokio::test]
+async fn echanges_inaccessibles_aux_visiteurs_et_aux_autres_conseils() {
+    let (app, database) = setup().await;
+    let other = sign_in(&app, "maire.bordeaux@demo.qomune.fr").await;
+    let owner = sign_in(&app, "maire.annecy@demo.qomune.fr").await;
+    for publication in ["demo-1", "demo-8"] {
+        for (method, suffix, payload) in [
+            ("GET", "discussion", None),
+            (
+                "POST",
+                "comments",
+                Some(json!({"body":"Un message interne"})),
+            ),
+            ("POST", "reaction", Some(json!({"reaction":"like"}))),
+        ] {
+            let path = format!("/publications/{publication}/{suffix}");
+            assert_eq!(
+                request(&app, method, &path, None, payload.clone()).await.0,
+                StatusCode::UNAUTHORIZED
+            );
+            assert_eq!(
+                request(&app, method, &path, Some(&other), payload).await.0,
+                StatusCode::NOT_FOUND
+            );
+        }
+        let path = format!("/publications/{publication}/discussion");
+        assert_eq!(
+            request(&app, "GET", &path, Some(&owner), None).await.0,
+            StatusCode::OK
+        );
+    }
+    assert_eq!(
+        request(
+            &app,
+            "GET",
+            "/publications/inexistante/discussion",
+            Some(&owner),
+            None
+        )
+        .await
+        .0,
+        StatusCode::NOT_FOUND
+    );
+    database.drop().await.unwrap();
+}
+
+#[tokio::test]
+async fn commentaires_signes_et_conserves_sans_exposition_dans_le_fil_public() {
+    let (app, database) = setup().await;
+    let mayor = sign_in(&app, "maire.annecy@demo.qomune.fr").await;
+    let adviser = sign_in(&app, "conseil.annecy@demo.qomune.fr").await;
+    for (token, name, role) in [
+        (&mayor, "Camille Martin", "maire"),
+        (&adviser, "Léa Robert", "conseiller"),
+    ] {
+        let (status, comment, _) = request(
+            &app,
+            "POST",
+            "/publications/demo-1/comments",
+            Some(token),
+            Some(json!({"body":"  Un échange réservé au conseil.  "})),
+        )
+        .await;
+        assert_eq!(status, StatusCode::CREATED);
+        assert_eq!(comment["author_name"], name);
+        assert_eq!(comment["author_role"], role);
+        assert_eq!(comment["commune_id"], "74010");
+        assert_eq!(comment["body"], "Un échange réservé au conseil.");
+    }
+    for body in [" ".to_owned(), "x".repeat(2001)] {
+        assert_eq!(
+            request(
+                &app,
+                "POST",
+                "/publications/demo-1/comments",
+                Some(&mayor),
+                Some(json!({"body":body}))
+            )
+            .await
+            .0,
+            StatusCode::BAD_REQUEST
+        );
+    }
+    for field in ["author_id", "author_name", "commune_id"] {
+        let mut forged = json!({"body":"Un commentaire"});
+        forged[field] = json!("autre-identité");
+        assert_eq!(
+            request(
+                &app,
+                "POST",
+                "/publications/demo-1/comments",
+                Some(&adviser),
+                Some(forged)
+            )
+            .await
+            .0,
+            StatusCode::UNPROCESSABLE_ENTITY
+        );
+    }
+    let restarted = super::app(database.clone());
+    let (_, discussion, _) = request(
+        &restarted,
+        "GET",
+        "/publications/demo-1/discussion",
+        Some(&adviser),
+        None,
+    )
+    .await;
+    assert_eq!(discussion["comments_count"], 2);
+    assert_eq!(discussion["comments"].as_array().unwrap().len(), 2);
+    let (_, publication, _) = request(&app, "GET", "/publications/demo-1", None, None).await;
+    assert!(
+        publication.get("comments").is_none()
+            && publication.get("reactions").is_none()
+            && publication.get("comments_count").is_none()
+    );
+    database.drop().await.unwrap();
+}
+
+#[tokio::test]
+async fn reaction_unique_modifiable_et_retirable_par_son_auteur() {
+    let (app, database) = setup().await;
+    let mayor = sign_in(&app, "maire.annecy@demo.qomune.fr").await;
+    let adviser = sign_in(&app, "conseil.annecy@demo.qomune.fr").await;
+    let path = "/publications/demo-8/reaction";
+    for _ in 0..2 {
+        let (status, summary, _) = request(
+            &app,
+            "POST",
+            path,
+            Some(&mayor),
+            Some(json!({"reaction":"like"})),
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(summary["total"], 1);
+        assert_eq!(summary["counts"]["like"], 1);
+    }
+    let (_, summary, _) = request(
+        &app,
+        "POST",
+        path,
+        Some(&mayor),
+        Some(json!({"reaction":"love"})),
+    )
+    .await;
+    assert_eq!(summary["total"], 1);
+    assert_eq!(summary["mine"], "love");
+    assert_eq!(summary["counts"]["like"], 0);
+    let (_, summary, _) = request(
+        &app,
+        "POST",
+        path,
+        Some(&adviser),
+        Some(json!({"reaction":"haha"})),
+    )
+    .await;
+    assert_eq!(summary["total"], 2);
+    assert_eq!(summary["mine"], "haha");
+    let (_, summary, _) = request(
+        &app,
+        "POST",
+        path,
+        Some(&mayor),
+        Some(json!({"reaction":null})),
+    )
+    .await;
+    assert_eq!(summary["total"], 1);
+    assert_eq!(summary["counts"]["love"], 0);
+    assert!(summary["mine"].is_null());
+    assert_eq!(summary["members"][0]["author_name"], "Léa Robert");
+    assert_eq!(
+        request(
+            &app,
+            "POST",
+            path,
+            Some(&mayor),
+            Some(json!({"reaction":"invalide"}))
+        )
+        .await
+        .0,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+    assert_eq!(
+        request(
+            &app,
+            "POST",
+            path,
+            Some(&mayor),
+            Some(json!({"reaction":null,"member_id":"conseiller-74010"}))
+        )
+        .await
+        .0,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+    database.drop().await.unwrap();
+}
+
+#[tokio::test]
+async fn reactions_simultanees_ne_creent_pas_de_doublon() {
+    let (app, database) = setup().await;
+    let token = sign_in(&app, "maire.annecy@demo.qomune.fr").await;
+    let path = "/publications/demo-8/reaction";
+    let (first, second) = tokio::join!(
+        request(
+            &app,
+            "POST",
+            path,
+            Some(&token),
+            Some(json!({"reaction":"like"}))
+        ),
+        request(
+            &app,
+            "POST",
+            path,
+            Some(&token),
+            Some(json!({"reaction":"wow"}))
+        )
+    );
+    assert_eq!(first.0, StatusCode::OK);
+    assert_eq!(second.0, StatusCode::OK);
+    assert_eq!(
+        database
+            .collection::<Document>("reactions")
+            .count_documents(doc! {"publication_id":"demo-8","member_id":"maire-74010"})
+            .await
+            .unwrap(),
+        1
+    );
+    let (_, discussion, _) = request(
+        &app,
+        "GET",
+        "/publications/demo-8/discussion",
+        Some(&token),
+        None,
+    )
+    .await;
+    assert_eq!(discussion["reactions"]["total"], 1);
+    database.drop().await.unwrap();
+}
+
+#[tokio::test]
+async fn pagination_des_commentaires_sans_perte_ni_fuite() {
+    let (app, database) = setup().await;
+    let token = sign_in(&app, "maire.annecy@demo.qomune.fr").await;
+    let comments:Vec<_>=(0..53).map(|index|doc!{"id":Uuid::new_v4().to_string(),"publication_id":"demo-8","commune_id":"74010","author_id":"maire-74010","author_name":"Camille Martin","author_role":"maire","body":format!("Commentaire {index}"),"created_at":"2026-10-29T12:00:00Z"}).collect();
+    database
+        .collection::<Document>("comments")
+        .insert_many(comments)
+        .await
+        .unwrap();
+    let (_, first, _) = request(
+        &app,
+        "GET",
+        "/publications/demo-8/discussion",
+        Some(&token),
+        None,
+    )
+    .await;
+    assert_eq!(first["comments_count"], 53);
+    assert_eq!(first["comments"].as_array().unwrap().len(), 50);
+    let cursor = first["next_cursor"].as_str().unwrap().replace('|', "%7C");
+    let (_, second, _) = request(
+        &app,
+        "GET",
+        &format!("/publications/demo-8/discussion?before={cursor}"),
+        Some(&token),
+        None,
+    )
+    .await;
+    assert_eq!(second["comments"].as_array().unwrap().len(), 3);
+    assert!(second["next_cursor"].is_null());
+    let ids: std::collections::HashSet<_> = first["comments"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .chain(second["comments"].as_array().unwrap())
+        .map(|comment| comment["id"].as_str().unwrap())
+        .collect();
+    assert_eq!(ids.len(), 53);
+    let (_, unrelated, _) = request(
+        &app,
+        "GET",
+        &format!("/publications/demo-1/discussion?before={cursor}"),
+        Some(&token),
+        None,
+    )
+    .await;
+    assert_eq!(unrelated["comments_count"], 0);
+    assert!(unrelated["comments"].as_array().unwrap().is_empty());
+    assert_eq!(
+        request(
+            &app,
+            "GET",
+            "/publications/demo-8/discussion?before=invalide",
+            Some(&token),
+            None
+        )
+        .await
+        .0,
+        StatusCode::BAD_REQUEST
+    );
+    database.drop().await.unwrap();
+}

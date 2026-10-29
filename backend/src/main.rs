@@ -1,5 +1,6 @@
 //! API Rust / MongoDB du prototype Qomune.
 //! Les comptes de démonstration ne constituent pas une vérification de mandat.
+mod discussion;
 mod fixtures;
 mod reference;
 mod registration;
@@ -120,6 +121,7 @@ async fn connect(uri: &str, name: &str) -> mongodb::error::Result<Database> {
 
 /// Les ajouts initiaux sont idempotents : un redémarrage ne remplace jamais les données existantes.
 async fn initialize(database: &Database, password: &str) -> mongodb::error::Result<()> {
+    discussion::initialize(database).await?;
     for name in ["communes", "members", "publications"] {
         let index = IndexModel::builder()
             .keys(doc! {"id":1})
@@ -724,6 +726,9 @@ fn app(database: Database) -> Router {
         .route("/members", get(council_members).post(create_member))
         .route("/publications", get(publications).post(create_publication))
         .route("/publications/{id}", get(publication))
+        .route("/publications/{id}/discussion", get(discussion::read))
+        .route("/publications/{id}/comments", post(discussion::comment))
+        .route("/publications/{id}/reaction", post(discussion::react))
         .layer(DefaultBodyLimit::max(65536))
         .with_state(database)
 }

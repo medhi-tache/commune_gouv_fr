@@ -28,12 +28,14 @@ import {
   SlidersHorizontal,
   Sparkles,
   Users,
+  ThumbsUp,
   X,
 } from "lucide-react";
 
 import { api } from "../lib/api";
 import CouncilMembers from "./council-members";
 import MayorRegistration from "./mayor-registration";
+import CouncilDiscussion from "./council-discussion";
 import CommunePicker, { type Commune } from "./commune-picker";
 
 type CommuneCatalog = {
@@ -227,6 +229,9 @@ export default function Dashboard() {
   const [error, setError] = useState("");
   const [modal, setModal] = useState<Modal>(null);
   const [detail, setDetail] = useState<Publication | null>(null);
+  const [discussionFocus, setDiscussionFocus] = useState<
+    "comment" | "reaction" | undefined
+  >();
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState("");
   const [toast, setToast] = useState("");
@@ -418,8 +423,9 @@ export default function Dashboard() {
       setBusy(false);
     }
   }
-  async function read(item: Publication) {
+  async function read(item: Publication, focus?: "comment" | "reaction") {
     try {
+      setDiscussionFocus(focus);
       setDetail(await api<Publication>(`publications/${item.id}`));
     } catch (e) {
       setToast((e as Error).message);
@@ -831,6 +837,13 @@ export default function Dashboard() {
                       </button>
                     </div>
                   </div>
+                  {view === "council" && (
+                    <CouncilPostActions
+                      title={featured.title}
+                      onComment={() => read(featured, "comment")}
+                      onReact={() => read(featured, "reaction")}
+                    />
+                  )}
                 </article>
                 <div className="publication-grid">
                   {others.map((item) => (
@@ -856,6 +869,13 @@ export default function Dashboard() {
                           <ArrowUpRight size={19} />
                         </button>
                       </div>
+                      {view === "council" && (
+                        <CouncilPostActions
+                          title={item.title}
+                          onComment={() => read(item, "comment")}
+                          onReact={() => read(item, "reaction")}
+                        />
+                      )}
                     </article>
                   ))}
                 </div>
@@ -1210,12 +1230,23 @@ export default function Dashboard() {
             <div className="demo-notice">
               <LockKeyhole size={18} />
               <p>
-                Réservé au conseil municipal de{" "}
-                {communes.find((c) => c.id === detail.commune_id)?.name}.
+                Réservé au conseil de{" "}
+                {communeDesignation(
+                  communes.find((c) => c.id === detail.commune_id)?.name,
+                )}
+                .
               </p>
             </div>
           )}
           <div className="detail-body">{detail.body}</div>
+          {view === "council" && member?.commune_id === detail.commune_id && (
+            <CouncilDiscussion
+              key={detail.id}
+              publicationId={detail.id}
+              focus={discussionFocus}
+            />
+          )}
+
           <button className="text-button" onClick={() => setDetail(null)}>
             <ArrowLeft size={16} /> Revenir au fil
           </button>
@@ -1312,6 +1343,32 @@ function Author({ item }: { item: Publication }) {
             : "Membre du conseil municipal"}
         </small>
       </span>
+    </div>
+  );
+}
+
+/** Ces raccourcis n'apparaissent que dans le fil authentifié du conseil. */
+function CouncilPostActions({
+  title,
+  onComment,
+  onReact,
+}: {
+  title: string;
+  onComment: () => void;
+  onReact: () => void;
+}) {
+  return (
+    <div className="council-post-actions">
+      <button type="button" aria-label={`Réagir : ${title}`} onClick={onReact}>
+        <ThumbsUp size={15} /> Réagir
+      </button>
+      <button
+        type="button"
+        aria-label={`Commenter : ${title}`}
+        onClick={onComment}
+      >
+        <MessageSquare size={15} /> Commenter
+      </button>
     </div>
   );
 }
