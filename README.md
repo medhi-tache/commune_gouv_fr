@@ -4,6 +4,8 @@ Projet de diffusion de publications pour les 34 875 communes de France.
 
 **Stack : Rust · MongoDB · Next.js**
 
+**Cahiers des charges publics :** [consulter les versions 1, 2 et 3](docs/cahiers-des-charges/README.md). La [version 3](docs/cahiers-des-charges/cahier_des_charges_qomune_v3_public.pdf) décrit le périmètre le plus récent.
+
 ## Objectif
 
 Permettre aux maires et aux conseillers municipaux de chaque commune de publier des informations publiques pour les visiteurs et des informations privées pour leur conseil municipal.

@@ -10,3 +10,7 @@ backend/data/
 
 # Sauvegardes applicatives privées
 backups/
+
+# Documents contenant des accès privés : ne jamais les publier dans le dépôt public.
+*confidentiel*.pdf
+*confidential*.pdf
