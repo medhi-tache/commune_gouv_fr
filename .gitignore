@@ -7,3 +7,6 @@ backend/data/
 *.log
 *.tsbuildinfo
 .DS_Store
+
+# Sauvegardes applicatives privées
+backups/

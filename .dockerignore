@@ -1,0 +1,14 @@
+.git
+**/node_modules
+**/.next
+**/target
+**/data
+**/.env
+**/.env.local
+**/*.log
+**/*.tsbuildinfo
+work
+outputs
+
+# Ne jamais inclure les exports de sauvegarde dans les images.
+backups

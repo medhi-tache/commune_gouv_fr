@@ -213,3 +213,7 @@ Le tableau de bord présente :
 Les chiffres proviennent de MongoDB et incluent les données de démonstration. Aucune visite, adresse IP, durée de consultation ou identité de visiteur n’est collectée pour ces graphiques. Les graphiques ne révèlent ni les textes privés ni les coordonnées des élus. Les compteurs globaux décrivent l’état actuel de la base ; seuls les graphiques d’activité sont filtrés par période. Il n’y a pas encore de gestion des communes ou des comptes depuis cette première page de pilotage.
 
 Les routes `POST /admin/login`, `POST /admin/logout` et `GET /admin/statistics?days=30` passent par le relais `/api`. La session administrateur expire après deux heures et utilise un cookie HttpOnly, SameSite=Strict (Secure lorsque `COOKIE_SECURE=true`). Les résultats ne sont pas mis en cache. Les tests vérifient l’isolation des sessions, les périodes, les journées sans activité et la révocation des accès.
+
+## Hébergement OVHcloud
+
+La procédure et les fichiers de déploiement du prototype sont décrits dans [deploy/README.md](deploy/README.md). La configuration distante utilise `compose.ovh.yaml`, distinct de la base de développement locale.

@@ -1,0 +1,95 @@
+# Hébergement du prototype : seuls HTTP et HTTPS sont ouverts sur Internet.
+name: qomune
+services:
+  mongodb:
+    image: mongo:8
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: qomune_root
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?Secret MongoDB requis}
+      MONGO_INITDB_DATABASE: qomune
+      QOMUNE_DB_PASSWORD: ${QOMUNE_DB_PASSWORD:?Secret applicatif requis}
+    volumes:
+      - mongodb:/data/db
+      - ./deploy/mongo-init.js:/docker-entrypoint-initdb.d/qomune.js:ro
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mongosh",
+          "--quiet",
+          "--eval",
+          "quit(db.adminCommand('ping').ok ? 0 : 1)",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    logging: &logging
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    environment:
+      API_BIND: 0.0.0.0:8080
+      MONGODB_URI: mongodb://qomune:${QOMUNE_DB_PASSWORD}@mongodb:27017/qomune?authSource=qomune
+      MONGODB_DATABASE: qomune
+      QOMUNE_MODE: prototype
+      QOMUNE_ADMIN_PASSWORD: ${QOMUNE_ADMIN_PASSWORD:?Secret administrateur requis}
+      # Seuls les comptes fictifs de démonstration utilisent ce mot de passe public.
+      QOMUNE_DEMO_PASSWORD: commune-demo
+      COOKIE_SECURE: "true"
+    depends_on:
+      mongodb: { condition: service_healthy }
+    healthcheck:
+      test:
+        ["CMD", "curl", "--fail", "--silent", "http://127.0.0.1:8080/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 60s
+    logging: *logging
+  web:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    restart: unless-stopped
+    environment:
+      API_BASE_URL: http://api:8080
+      APP_ORIGIN: https://${QOMUNE_DOMAIN:?Domaine requis}
+    depends_on:
+      api: { condition: service_healthy }
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+    logging: *logging
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    environment:
+      QOMUNE_DOMAIN: ${QOMUNE_DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      web: { condition: service_healthy }
+    logging: *logging
+volumes:
+  mongodb:
+  caddy_data:
+  caddy_config:

@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 const config: NextConfig = {
+  // Serveur autonome utilisé par le conteneur OVHcloud.
+  output: "standalone",
   poweredByHeader: false,
   async headers() {
     return [

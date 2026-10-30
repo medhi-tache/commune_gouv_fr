@@ -1,0 +1,5 @@
+# Les certificats sont délivrés et renouvelés automatiquement pour le domaine configuré.
+{$QOMUNE_DOMAIN} {
+    encode zstd gzip
+    reverse_proxy web:3000
+}
