@@ -588,12 +588,13 @@ export default function Dashboard({ children }: { children?: ReactNode }) {
             </button>
             <span className="breadcrumb">L’espace des communes</span>
             <span className="prototype-badge">PROTOTYPE</span>
-            {/* Le document public est téléchargé sans quitter la commune. */}
+            {/* L’index public rassemble toutes les versions partageables du cahier des charges. */}
             <a
               className="specifications-link"
-              href="/documents/cahier_des_charges_qomune.pdf"
-              download="cahier_des_charges_qomune.pdf"
-              aria-label="Télécharger le cahier des charges (PDF)"
+              href="https://github.com/medhi-tache/commune_gouv_fr/blob/main/docs/cahiers-des-charges/README.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Consulter les cahiers des charges sur GitHub (nouvel onglet)"
             >
               Cahier des charges
             </a>
