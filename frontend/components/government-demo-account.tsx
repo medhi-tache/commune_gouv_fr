@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { LockKeyhole, LogOut, ShieldCheck } from "lucide-react";
+import GovernmentNationalPublisher from "./government-national-publisher";
 import { api } from "../lib/api";
 import type { GovernmentMember } from "../lib/government";
 
@@ -100,15 +101,21 @@ export default function GovernmentDemoAccount({
           <p>{account.function}</p>
           <p className="government-demo-email">{account.email}</p>
           <p>
-            Cette session permet de tester la connexion et la déconnexion. Elle
-            n’autorise aucune publication, aucun accès aux conseils municipaux
-            ni à l’administration.
+            Cette session permet de diffuser des publications nationales de
+            démonstration. Elle ne donne aucun accès aux conseils municipaux ni
+            à l’administration.
           </p>
           {account.slug !== member.slug && (
             <p>
               Pour tester le compte de {member.name}, déconnectez d’abord cette
               session.
             </p>
+          )}
+          {account.slug === member.slug && (
+            <GovernmentNationalPublisher
+              key={account.slug}
+              name={account.name}
+            />
           )}
           <button className="button" disabled={busy} onClick={logout}>
             <LogOut size={16} /> Se déconnecter du compte fictif

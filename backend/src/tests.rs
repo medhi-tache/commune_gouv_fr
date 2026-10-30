@@ -1558,3 +1558,251 @@ async fn visites_simultanees_et_periodes_bornees() {
     assert_eq!(summary["timeline"][0]["public"], 4);
     database.drop().await.unwrap();
 }
+
+#[tokio::test]
+async fn diffusion_nationale_unique_visible_dans_toutes_les_communes_et_signee() {
+    let (app, database) = setup().await;
+    government::initialize(&database).await.unwrap();
+    let (_, _, cookie) = request(
+        &app,
+        "POST",
+        "/government-demo/login",
+        None,
+        Some(json!({
+            "email":"sebastien-lecornu@gouvernement.demo.qomune.fr", "password":"gouvernement-demo"
+        })),
+    )
+    .await;
+    let cookie = cookie.unwrap();
+    let input = json!({"title":"Un essai national", "body":"Message fictif destiné à toutes les communes.", "category":"Services publics", "request_id":Uuid::new_v4().to_string()});
+    assert_eq!(
+        request(
+            &app,
+            "POST",
+            "/government-demo/publications",
+            None,
+            Some(input.clone())
+        )
+        .await
+        .0,
+        StatusCode::UNAUTHORIZED
+    );
+    let mayor = sign_in(&app, "maire.annecy@demo.qomune.fr").await;
+    assert_eq!(
+        request(
+            &app,
+            "POST",
+            "/government-demo/publications",
+            Some(&mayor),
+            Some(input.clone())
+        )
+        .await
+        .0,
+        StatusCode::UNAUTHORIZED
+    );
+    let (status, result, _) = request(
+        &app,
+        "POST",
+        "/government-demo/publications",
+        Some(&cookie),
+        Some(input.clone()),
+    )
+    .await;
+    assert_eq!(status, StatusCode::CREATED);
+    let id = result["id"].as_str().unwrap();
+    // Un double clic ou un nouvel essai réseau ne crée pas de copies supplémentaires.
+    let (a, b) = tokio::join!(
+        request(
+            &app,
+            "POST",
+            "/government-demo/publications",
+            Some(&cookie),
+            Some(input.clone())
+        ),
+        request(
+            &app,
+            "POST",
+            "/government-demo/publications",
+            Some(&cookie),
+            Some(input.clone())
+        )
+    );
+    assert_eq!(a.0, StatusCode::CREATED);
+    assert_eq!(b.1["id"], id);
+    assert_eq!(
+        database
+            .collection::<Document>("publications")
+            .count_documents(doc! {"scope":"national"})
+            .await
+            .unwrap(),
+        1
+    );
+    for commune in ["74010", "33063", "2A004", "97105"] {
+        let (status, posts, _) = request(
+            &app,
+            "GET",
+            &format!("/publications?commune={commune}&q=essai&category=Services%20publics"),
+            None,
+            None,
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK);
+        let posts = posts.as_array().unwrap();
+        assert_eq!(
+            posts.len(),
+            1,
+            "La recherche et la catégorie ne doivent pas écraser le filtre géographique"
+        );
+        assert_eq!(posts[0]["id"], id);
+        assert_eq!(posts[0]["scope"], "national");
+        assert_eq!(posts[0]["is_demo"], true);
+        assert_eq!(posts[0]["author_name"], "Sébastien Lecornu (compte fictif)");
+        assert_eq!(posts[0]["author_role"], "Premier ministre");
+        assert_eq!(
+            posts[0]["author_profile"],
+            "/gouvernement/sebastien-lecornu"
+        );
+        assert!(
+            posts[0]["body"]
+                .as_str()
+                .unwrap()
+                .starts_with("Publication fictive de démonstration.")
+        );
+        assert!(
+            posts[0]["title"]
+                .as_str()
+                .unwrap()
+                .starts_with("Démonstration — ")
+        );
+    }
+    let all = request(&app, "GET", "/publications", None, None).await.1;
+    assert_eq!(
+        all.as_array()
+            .unwrap()
+            .iter()
+            .filter(|p| p["id"] == id)
+            .count(),
+        1
+    );
+    let council = request(
+        &app,
+        "GET",
+        "/publications?scope=council",
+        Some(&mayor),
+        None,
+    )
+    .await
+    .1;
+    assert!(!council.as_array().unwrap().iter().any(|p| p["id"] == id));
+    assert_eq!(
+        request(&app, "GET", &format!("/publications/{id}"), None, None)
+            .await
+            .0,
+        StatusCode::OK
+    );
+    assert_eq!(
+        request(
+            &app,
+            "GET",
+            &format!("/publications/{id}/discussion"),
+            Some(&cookie),
+            None
+        )
+        .await
+        .0,
+        StatusCode::UNAUTHORIZED
+    );
+    let mut forged = input.clone();
+    forged["author_name"] = json!("Autre personne");
+    assert_eq!(
+        request(
+            &app,
+            "POST",
+            "/government-demo/publications",
+            Some(&cookie),
+            Some(forged)
+        )
+        .await
+        .0,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+    let mut invalid_input = input.clone();
+    invalid_input["title"] = json!("x");
+    assert_eq!(
+        request(
+            &app,
+            "POST",
+            "/government-demo/publications",
+            Some(&cookie),
+            Some(invalid_input)
+        )
+        .await
+        .0,
+        StatusCode::BAD_REQUEST
+    );
+    let (_, _, other) = request(&app,"POST","/government-demo/login",None,Some(json!({"email":"laurent-nunez@gouvernement.demo.qomune.fr","password":"gouvernement-demo"}))).await;
+    let other = other.unwrap();
+    assert!(
+        request(
+            &app,
+            "GET",
+            "/government-demo/publications",
+            Some(&other),
+            None
+        )
+        .await
+        .1
+        .as_array()
+        .unwrap()
+        .is_empty()
+    );
+    let second = request(
+        &app,
+        "POST",
+        "/government-demo/publications",
+        Some(&other),
+        Some(input.clone()),
+    )
+    .await
+    .1;
+    assert_ne!(
+        second["id"], id,
+        "Deux auteurs ne partagent jamais leur identifiant de diffusion"
+    );
+    assert_eq!(
+        request(
+            &app,
+            "GET",
+            "/government-demo/publications",
+            Some(&cookie),
+            None
+        )
+        .await
+        .1
+        .as_array()
+        .unwrap()
+        .len(),
+        1
+    );
+    database
+        .collection::<Document>("government_demo_sessions")
+        .update_many(
+            doc! {},
+            doc! {"$set":{"expires_at":DateTime::from_millis(0)}},
+        )
+        .await
+        .unwrap();
+    assert_eq!(
+        request(
+            &app,
+            "POST",
+            "/government-demo/publications",
+            Some(&cookie),
+            Some(input)
+        )
+        .await
+        .0,
+        StatusCode::UNAUTHORIZED
+    );
+    database.drop().await.unwrap();
+}

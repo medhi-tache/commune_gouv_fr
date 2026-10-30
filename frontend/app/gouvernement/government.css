@@ -394,3 +394,50 @@
     justify-content: center;
   }
 }
+
+/* La diffusion nationale reste explicitement fictive, avant et après l'envoi. */
+.government-national {
+  border-top: 1px solid var(--line);
+  margin: 25px 0;
+  padding-top: 25px;
+}
+.government-national-notice {
+  padding: 13px 16px;
+  background: #fff0f2;
+  border-left: 3px solid var(--red);
+}
+.government-national textarea,
+.government-national select {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #cdd3e2;
+  border-radius: 5px;
+  background: white;
+}
+.government-national textarea {
+  resize: vertical;
+}
+.government-national-success {
+  padding: 15px;
+  border: 1px solid #bdcde8;
+  background: var(--cream);
+  color: var(--blue) !important;
+}
+.government-national-success a {
+  text-decoration: underline;
+}
+.government-national-history {
+  margin-top: 28px;
+}
+.government-national-history ul {
+  list-style: none;
+  padding: 0;
+}
+.government-national-history li {
+  padding: 15px 0;
+  border-bottom: 1px solid var(--line);
+}
+.government-national-history li p {
+  margin: 8px 0 0;
+  font-size: 12px;
+}

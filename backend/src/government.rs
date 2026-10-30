@@ -173,22 +173,123 @@ pub async fn login(
     Ok(response)
 }
 
-pub async fn me(State(database): State<Database>, headers: HeaderMap) -> ApiResult<Json<Value>> {
-    let Some(token) = token(&headers) else {
-        return Ok(Json(json!({"account":null})));
+/// Ne reconnaît que le cookie et la collection de sessions du Gouvernement.
+async fn authenticated(database: &Database, headers: &HeaderMap) -> ApiResult<Option<DemoAccount>> {
+    let Some(token) = token(headers) else {
+        return Ok(None);
     };
     let session = database
         .collection::<Session>("government_demo_sessions")
         .find_one(doc! {"_id":token,"expires_at":{"$gt":DateTime::now()}})
         .await?;
     let Some(session) = session else {
-        return Ok(Json(json!({"account":null})));
+        return Ok(None);
     };
-    let account = database
+    Ok(database
         .collection::<StoredAccount>("government_demo_accounts")
         .find_one(doc! {"id":session.member_id,"is_demo":true})
+        .await?
+        .map(|record| record.account))
+}
+fn denied() -> ApiError {
+    ApiError(
+        StatusCode::UNAUTHORIZED,
+        "Connectez-vous à un compte fictif du Gouvernement.".into(),
+    )
+}
+pub async fn me(State(database): State<Database>, headers: HeaderMap) -> ApiResult<Json<Value>> {
+    Ok(Json(
+        json!({"account":authenticated(&database, &headers).await?}),
+    ))
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct NationalPublication {
+    title: String,
+    body: String,
+    category: String,
+    request_id: String,
+}
+
+/// Une diffusion nationale correspond à un seul document, sans 34 875 copies.
+/// La signature, la visibilité publique et les mentions fictives sont imposées par le serveur.
+pub async fn publish(
+    State(database): State<Database>,
+    headers: HeaderMap,
+    Json(input): Json<NationalPublication>,
+) -> ApiResult<(StatusCode, Json<Value>)> {
+    let author = authenticated(&database, &headers)
+        .await?
+        .ok_or_else(denied)?;
+    if !(3..=140).contains(&input.title.trim().chars().count())
+        || !(10..=10000).contains(&input.body.trim().chars().count())
+    {
+        return Err(invalid(
+            "Le titre doit contenir 3 à 140 caractères et le texte 10 à 10 000 caractères.",
+        ));
+    }
+    if ![
+        "Vie citoyenne",
+        "Travaux",
+        "Culture",
+        "Environnement",
+        "Services publics",
+    ]
+    .contains(&input.category.as_str())
+    {
+        return Err(invalid("Catégorie de diffusion nationale inconnue."));
+    }
+    let request_id = Uuid::parse_str(&input.request_id)
+        .map_err(|_| invalid("Identifiant de diffusion invalide."))?;
+    let id = format!("national-{}-{}", author.slug, request_id);
+    let record = doc! {
+        "id":&id, "author_id":&author.id, "commune_id":"", "scope":"national", "is_demo":true,
+        "title":format!("Démonstration — {}",input.title.trim()),
+        "body":format!("Publication fictive de démonstration. Ne constitue pas une communication officielle.\n\n{}",input.body.trim()),
+        "category":input.category, "visibility":"public",
+        "author_name":format!("{} (compte fictif)",author.name), "author_role":author.function,
+        "author_profile":format!("/gouvernement/{}",author.slug), "published_at":Utc::now().to_rfc3339()
+    };
+    let collection = database.collection::<Document>("publications");
+    // Un nouvel essai après une coupure réseau conserve le même identifiant, sans doublon.
+    if let Err(error) = collection
+        .update_one(doc! {"id":&id}, doc! {"$setOnInsert":record})
+        .upsert(true)
+        .await
+    {
+        if !matches!(error.kind.as_ref(),mongodb::error::ErrorKind::Write(mongodb::error::WriteFailure::WriteError(write)) if write.code==11000)
+        {
+            return Err(error.into());
+        }
+    }
+    Ok((
+        StatusCode::CREATED,
+        Json(json!({"id":id,"scope":"national","is_demo":true})),
+    ))
+}
+
+pub async fn publications(
+    State(database): State<Database>,
+    headers: HeaderMap,
+) -> ApiResult<Json<Vec<Publication>>> {
+    let author = authenticated(&database, &headers)
+        .await?
+        .ok_or_else(denied)?;
+    let records: Vec<StoredPublication> = database
+        .collection("publications")
+        .find(doc! {"author_id":author.id,"scope":"national","visibility":"public"})
+        .sort(doc! {"published_at":-1,"id":-1})
+        .limit(20)
+        .await?
+        .try_collect()
         .await?;
-    Ok(Json(json!({"account":account.map(|record|record.account)})))
+    Ok(Json(
+        records
+            .into_iter()
+            .map(|record| record.publication)
+            .collect(),
+    ))
 }
 
 pub async fn logout(State(database): State<Database>, headers: HeaderMap) -> ApiResult<Response> {

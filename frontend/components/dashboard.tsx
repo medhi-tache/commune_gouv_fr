@@ -61,6 +61,9 @@ type Publication = {
   author_name: string;
   author_role: string;
   published_at: string;
+  scope?: string;
+  is_demo?: boolean;
+  author_profile?: string;
 };
 type Modal = "login" | "create" | "about" | "members" | "register" | null;
 const categories = [
@@ -891,10 +894,11 @@ export default function Dashboard({ children }: { children?: ReactNode }) {
                         <div className="art-caption">
                           <span>LA VIE DE NOS COMMUNES</span>
                           <strong>
-                            {
-                              communes.find((c) => c.id === featured.commune_id)
-                                ?.name
-                            }
+                            {featured.scope === "national"
+                              ? "Toutes les communes"
+                              : communes.find(
+                                  (c) => c.id === featured.commune_id,
+                                )?.name}
                           </strong>
                         </div>
                       </div>
@@ -907,7 +911,7 @@ export default function Dashboard({ children }: { children?: ReactNode }) {
                           </button>
                         </h3>
                         <p className="excerpt">
-                          {featured.body.split("\n")[0]}
+                          {publicationExcerpt(featured)}
                         </p>
                         <div className="card-bottom">
                           <Author item={featured} />
@@ -943,7 +947,7 @@ export default function Dashboard({ children }: { children?: ReactNode }) {
                               {item.title}
                             </button>
                           </h3>
-                          <p className="excerpt">{item.body.split("\n")[0]}</p>
+                          <p className="excerpt">{publicationExcerpt(item)}</p>
                           <div className="card-bottom">
                             <Author item={item} />
                             <button
@@ -1309,14 +1313,23 @@ export default function Dashboard({ children }: { children?: ReactNode }) {
           </span>
           <h3 className="detail-title">{detail.title}</h3>
           <p className="publication-attribution">
-            Publié au nom de{" "}
-            <strong>
-              {communeDesignation(
-                communes.find((c) => c.id === detail.commune_id)?.name ||
-                  detail.commune_id,
-              )}
-            </strong>
-            , par <strong>{detail.author_name}</strong>.
+            {detail.scope === "national" ? (
+              <>
+                Publication nationale de démonstration, par{" "}
+                <strong>{detail.author_name}</strong>.
+              </>
+            ) : (
+              <>
+                Publié au nom de{" "}
+                <strong>
+                  {communeDesignation(
+                    communes.find((c) => c.id === detail.commune_id)?.name ||
+                      detail.commune_id,
+                  )}
+                </strong>
+                , par <strong>{detail.author_name}</strong>.
+              </>
+            )}
           </p>
           <Author item={detail} />
           {detail.visibility === "private" && (
@@ -1408,9 +1421,16 @@ function PublicationMeta({
       <span className="commune-emblem">
         <Landmark size={14} />
       </span>
-      <span className="commune-name">{commune?.name || item.commune_id}</span>
+      <span className="commune-name">
+        {item.scope === "national"
+          ? "Toutes les communes"
+          : commune?.name || item.commune_id}
+      </span>
       <span className="meta-separator">·</span>
       <time dateTime={item.published_at}>{dateLabel(item.published_at)}</time>
+      {item.scope === "national" && (
+        <span className="national-demo-tag">National · Démonstration</span>
+      )}
       {item.visibility === "private" && (
         <span className="private-tag">
           <LockKeyhole size={12} /> Privé
@@ -1419,21 +1439,36 @@ function PublicationMeta({
     </div>
   );
 }
+/** Le marquage fictif reste dans le titre et le badge ; l'extrait montre le message. */
+function publicationExcerpt(item: Publication) {
+  const content =
+    item.scope === "national"
+      ? item.body.split("\n\n").slice(1).join("\n\n")
+      : item.body;
+  return content.split("\n")[0];
+}
 function Author({ item }: { item: Publication }) {
   return (
     <div className="author">
       <span className="author-avatar">
         {item.author_name
           .split(" ")
+          .slice(0, 2)
           .map((n) => n[0])
           .join("")}
       </span>
       <span>
-        {item.author_name}
+        {item.author_profile ? (
+          <a href={item.author_profile}>{item.author_name}</a>
+        ) : (
+          item.author_name
+        )}
         <small>
-          {item.author_role === "maire"
-            ? "Maire"
-            : "Membre du conseil municipal"}
+          {item.scope === "national"
+            ? item.author_role
+            : item.author_role === "maire"
+              ? "Maire"
+              : "Membre du conseil municipal"}
         </small>
       </span>
     </div>

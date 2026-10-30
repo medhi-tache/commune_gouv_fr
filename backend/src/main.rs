@@ -104,6 +104,12 @@ struct Publication {
     author_name: String,
     author_role: String,
     published_at: String,
+    #[serde(default)]
+    scope: String,
+    #[serde(default)]
+    is_demo: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    author_profile: Option<String>,
 }
 /// L'identifiant d'auteur reste en base ; la signature conserve son état au moment de l'envoi.
 #[derive(Serialize, Deserialize)]
@@ -582,7 +588,14 @@ async fn publications(
         "public" => {
             filter.insert("visibility", "public");
             if let Some(commune) = filters.commune.filter(|c| !c.is_empty()) {
-                filter.insert("commune_id", commune);
+                // Une seule publication nationale est visible dans chaque fil communal.
+                // Le groupe géographique reste distinct du filtre de recherche textuelle.
+                filter.insert(
+                    "$and",
+                    vec![doc! {"$or":[
+                        {"commune_id":commune}, {"scope":"national"}
+                    ]}],
+                );
             }
         }
         "council" => {
@@ -710,6 +723,9 @@ async fn create_publication(
             author_name: user.name,
             author_role: user.role,
             published_at: Utc::now().to_rfc3339(),
+            scope: "commune".into(),
+            is_demo: false,
+            author_profile: None,
         },
     };
     database
@@ -734,6 +750,10 @@ fn app(database: Database) -> Router {
         .route("/government-demo/login", post(government::login))
         .route("/government-demo/logout", post(government::logout))
         .route("/government-demo/me", get(government::me))
+        .route(
+            "/government-demo/publications",
+            get(government::publications).post(government::publish),
+        )
         .route("/members", get(council_members).post(create_member))
         .route("/publications", get(publications).post(create_publication))
         .route("/publications/{id}", get(publication))

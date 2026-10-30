@@ -24,7 +24,13 @@ Ces fiches sont informatives et ne prouvent ni l’identité ni le mandat des pe
 
 Le prototype crée au démarrage **35 comptes de démonstration**, à partir du même annuaire. Ils n'appartiennent pas aux personnes citées et ne représentent aucune communication officielle. Sur chaque fiche, la section **Tester ce compte** permet d'ouvrir et fermer une session : identifiant `<slug>@gouvernement.demo.qomune.fr`, mot de passe public **`gouvernement-demo`**. Par exemple : `sebastien-lecornu@gouvernement.demo.qomune.fr`.
 
-Ces comptes sont conservés dans la collection MongoDB `government_demo_accounts`, avec un mot de passe haché Argon2. Leur création est idempotente. Les sessions de deux heures utilisent `government_demo_sessions` et un cookie HttpOnly distinct `qomune_government_demo`. Les routes `/government-demo/login`, `/government-demo/me` et `/government-demo/logout` ne donnent aucun droit de publication ni aucun accès aux conseils municipaux ou à l'administration. Aucun courrier d'invitation n'est envoyé et aucune adresse personnelle réelle n'est utilisée. Un bandeau **DÉMONSTRATION · COMPTE FICTIF** reste visible pendant le test.
+Ces comptes sont conservés dans la collection MongoDB `government_demo_accounts`, avec un mot de passe haché Argon2. Leur création est idempotente. Les sessions de deux heures utilisent `government_demo_sessions` et un cookie HttpOnly distinct `qomune_government_demo`. Les routes `/government-demo/login`, `/government-demo/me` et `/government-demo/logout` gèrent une session distincte. Elle autorise les diffusions nationales fictives décrites ci-dessous, sans accès aux conseils municipaux ni à l'administration. Aucun courrier d'invitation n'est envoyé et aucune adresse personnelle réelle n'est utilisée. Un bandeau **DÉMONSTRATION · COMPTE FICTIF** reste visible pendant le test.
+
+### Diffusion nationale en une action
+
+Après connexion sur sa fiche, chaque compte fictif du Gouvernement peut envoyer un titre, un message et une catégorie avec **Publier dans toutes les communes**. La diffusion apparaît dans les fils publics de toutes les communes, y compris après sélection d'une commune, recherche textuelle ou filtre de catégorie. Les espaces privés des conseils restent distincts.
+
+La route authentifiée `POST /government-demo/publications` conserve un seul document de portée `national`, accessible dans tous les fils publics ; elle ne crée pas de copies par commune. Le serveur impose la visibilité publique, la signature et la fonction issues de la session, ainsi que les mentions **Démonstration** et **compte fictif**. Un identifiant de demande UUID rend les nouvelles tentatives idempotentes pour un même auteur. Le formulaire conserve cet identifiant en cas d'erreur réseau. `GET /government-demo/publications` renvoie les 20 dernières diffusions de l'auteur connecté. Les comptes municipaux et les visiteurs ne peuvent pas utiliser cette route pour publier.
 
 ## Utilisateurs et publications
 

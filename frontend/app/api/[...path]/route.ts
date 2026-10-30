@@ -10,7 +10,7 @@ async function proxy(
 ) {
   const { path } = await context.params;
   const allowed =
-    /^(admin\/(login|logout|statistics)|government-demo\/(login|logout|me)|communes(?:\/meta)?|health|members|auth\/(login|logout|me|register)|publications(?:\/[a-zA-Z0-9-]+(?:\/(discussion|comments|reaction))?)?)$/;
+    /^(admin\/(login|logout|statistics)|government-demo\/(login|logout|me|publications)|communes(?:\/meta)?|health|members|auth\/(login|logout|me|register)|publications(?:\/[a-zA-Z0-9-]+(?:\/(discussion|comments|reaction))?)?)$/;
   const route = path.join("/");
   if (!allowed.test(route))
     return Response.json({ error: "Route introuvable." }, { status: 404 });
