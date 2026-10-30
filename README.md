@@ -199,7 +199,9 @@ Le domaine définitif envisagé `commune.gouv.fr` reste soumis à son attributio
 
 ## Administration et graphiques d’utilisation
 
-L’espace **Administration** est accessible depuis l’en-tête et à l’adresse `/administration`. Il dispose d’une authentification indépendante de celle des élus. Un maire ou un conseiller municipal ne peut pas consulter les statistiques globales avec sa session municipale.
+L’espace **Administration** est accessible depuis l’en-tête et à l’adresse `/administration` : chacun peut explorer ses graphiques sur des données entièrement fictives, sans compte et sans appel à l’API privée. Les filtres 7/30/90 jours, les classements et l’actualisation sont testables.
+
+L’administration réelle se trouve à `/administration/connexion`. Elle dispose d’une authentification indépendante de celle des élus. Un maire ou un conseiller municipal ne peut pas consulter les statistiques globales avec sa session municipale.
 
 Avec `npm run dev`, un mot de passe aléatoire est créé à la première utilisation dans `backend/data/administration-password.txt` (fichier local ignoré par Git, permissions limitées au propriétaire). Saisir ce mot de passe dans l’espace Administration. Il n’est jamais affiché dans les journaux ni intégré au frontend. Pour un lancement direct de Rust ou un hébergement distant, fournir `QOMUNE_ADMIN_PASSWORD` (16 à 200 caractères) via la configuration privée du serveur. Sa modification révoque les sessions administrateur existantes. Ne pas publier ce secret. Le compte configuré est conservé dans MongoDB sous forme de hash Argon2 ; retirer la variable ne supprime pas ce compte.
 

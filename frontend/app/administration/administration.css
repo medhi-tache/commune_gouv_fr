@@ -572,6 +572,7 @@
     font-size: 10px;
   }
   .admin-topbar {
+    flex-wrap: wrap;
     padding: 17px 20px;
     min-height: 65px;
   }

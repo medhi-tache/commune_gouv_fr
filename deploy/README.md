@@ -32,7 +32,7 @@ curl --fail https://qomune.fr/api/health
 curl --fail https://qomune.fr/api/communes/meta
 ```
 
-Vérifier également la page publique, le téléchargement du cahier des charges, le favicon, la connexion d’un élu et la connexion à `/administration`. Sans session administrateur, `/api/admin/statistics` doit répondre `401` ; les publications et échanges privés ne doivent pas être exposés au visiteur.
+Vérifier également la page publique, le téléchargement du cahier des charges, le favicon, la connexion d’un élu et la démonstration publique à `/administration` et la connexion privée à `/administration/connexion`. Sans session administrateur, `/api/admin/statistics` doit répondre `401` ; les publications et échanges privés ne doivent pas être exposés au visiteur.
 
 ## Mise à jour
 

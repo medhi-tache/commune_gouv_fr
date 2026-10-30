@@ -41,8 +41,8 @@ const dateLabel = (date: string) =>
     timeZone: "UTC",
   });
 
-/** Les données proviennent exclusivement de l'API protégée ; aucun indicateur n'est simulé. */
-export default function Administration() {
+/** La démonstration publique n'interroge jamais l'API des statistiques réelles. */
+export default function Administration({ demo = false }: { demo?: boolean }) {
   const [data, setData] = useState<Statistics | null>(null);
   const [days, setDays] = useState(30);
   const [password, setPassword] = useState("");
@@ -55,7 +55,9 @@ export default function Administration() {
     setBusy(true);
     setError("");
     try {
-      const result = await api<Statistics>(`admin/statistics?days=${period}`);
+      const result = demo
+        ? demonstration(period)
+        : await api<Statistics>(`admin/statistics?days=${period}`);
       setData(result);
       setDays(period);
       setAuthenticated(true);
@@ -122,15 +124,21 @@ export default function Administration() {
           qomune<span>.</span>
         </a>
         <span className="admin-caption">PILOTAGE DE LA PLATEFORME</span>
-        <a href="/administration" className="admin-nav-active">
+        <a
+          href={demo ? "/administration" : "/administration/connexion"}
+          className="admin-nav-active"
+        >
           <BarChart3 size={18} /> Vue d’ensemble
         </a>
         <div className="admin-sidebar-note">
           <ShieldCheck size={24} />
-          <strong>Un accès réservé</strong>
+          <strong>
+            {demo ? "Une démo ouverte à tous" : "Un accès réservé"}
+          </strong>
           <p>
-            Les statistiques globales sont accessibles uniquement à
-            l’administrateur.
+            {demo
+              ? "Explorez les graphiques avec des données fictives, sans compte ni mot de passe."
+              : "Les statistiques réelles sont accessibles uniquement à l’administrateur."}
           </p>
         </div>
         <a href="/" className="admin-back">
@@ -143,8 +151,17 @@ export default function Administration() {
             Administration <span className="prototype-badge">PROTOTYPE</span>
           </span>
           <span className="admin-session">
-            <LockKeyhole size={14} /> Espace protégé{" "}
-            {authenticated && (
+            <LockKeyhole size={14} />{" "}
+            {demo ? "Démonstration publique" : "Espace protégé"}{" "}
+            {demo && (
+              <a
+                href="/administration/connexion"
+                className="specifications-link"
+              >
+                Administration privée
+              </a>
+            )}
+            {authenticated && !demo && (
               <button
                 onClick={logout}
                 disabled={busy}
@@ -228,8 +245,9 @@ export default function Administration() {
                 <div className="admin-notice">
                   <span className="admin-live-dot" />
                   <span>
-                    Données réelles du prototype, incluant les comptes et
-                    publications de démonstration.
+                    {demo
+                      ? "Mode démonstration : toutes les statistiques affichées sont fictives. Testez librement les filtres, sans modifier de données."
+                      : "Données réelles du prototype, incluant les comptes et publications de démonstration."}
                   </span>
                 </div>
                 <div className="admin-kpis">
@@ -469,15 +487,19 @@ export default function Administration() {
                   <div>
                     <strong>Des indicateurs respectueux des échanges</strong>
                     <p>
-                      Seuls les volumes sont affichés ici. Le contenu des
-                      échanges privés et les coordonnées des élus ne sont pas
-                      exposés. Les visites, visiteurs uniques et durées de
-                      consultation ne sont pas encore mesurés.
+                      {demo
+                        ? "Cette démo est indépendante de la base du serveur. Elle ne donne accès à aucun compte ni échange privé. Les filtres et les graphiques sont utilisables librement."
+                        : "Seuls les volumes sont affichés ici. Le contenu des échanges privés et les coordonnées des élus ne sont pas exposés. Les visites, visiteurs uniques et durées de consultation ne sont pas encore mesurés."}
                     </p>
                   </div>
                 </div>
                 <footer className="admin-footer">
-                  <span>Qomune · Administration</span>
+                  <span>
+                    Qomune ·{" "}
+                    {demo
+                      ? "Administration de démonstration"
+                      : "Administration privée"}
+                  </span>
                   <span>
                     Actualisé le{" "}
                     {new Date(data.generated_at).toLocaleString("fr-FR")}
@@ -519,4 +541,75 @@ function Bars({
   ) : (
     <p className="admin-empty">Aucune publication sur cette période.</p>
   );
+}
+
+/** Jeu d'essai déterministe, indépendant des comptes et des publications du serveur. */
+function demonstration(days: number): Statistics {
+  const now = new Date();
+  const today = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate(),
+  );
+  const communes = [
+    "Annecy",
+    "Bordeaux",
+    "Nantes",
+    "Lyon",
+    "Saint-Malo",
+    "Strasbourg",
+  ];
+  const themes = [
+    "Vie citoyenne",
+    "Culture",
+    "Travaux",
+    "Environnement",
+    "Services publics",
+    "Conseil municipal",
+  ];
+  const timeline: Statistics["timeline"] = [];
+  const categoryCounts = new Map<string, number>();
+  const communeCounts = new Map<string, number>();
+  let publicTotal = 0,
+    privateTotal = 0;
+  for (let index = 0; index < 90; index++) {
+    const date = new Date(today - (89 - index) * 86400000)
+      .toISOString()
+      .slice(0, 10);
+    const publicCount = 1 + ((index * 7 + 3) % 9);
+    const privateCount = (index * 3 + 1) % 5;
+    publicTotal += publicCount;
+    privateTotal += privateCount;
+    if (index >= 90 - days) {
+      timeline.push({ date, public: publicCount, private: privateCount });
+      // Les classements et les thèmes se rapportent exactement à la période choisie.
+      for (let n = 0; n < publicCount + privateCount; n++) {
+        const theme = themes[(index + n) % themes.length];
+        const commune = communes[(index * 2 + n) % communes.length];
+        categoryCounts.set(theme, (categoryCounts.get(theme) || 0) + 1);
+        communeCounts.set(commune, (communeCounts.get(commune) || 0) + 1);
+      }
+    }
+  }
+  const ranking = (map: Map<string, number>) =>
+    Array.from(map, ([name, count]) => ({ name, count })).sort(
+      (a, b) => b.count - a.count || a.name.localeCompare(b.name, "fr"),
+    );
+  return {
+    days,
+    generated_at: now.toISOString(),
+    totals: {
+      communes: 34875,
+      registered_communes: 6,
+      members: 42,
+      mayors: 6,
+      public: publicTotal,
+      private: privateTotal,
+      comments: 168,
+      reactions: 327,
+    },
+    timeline,
+    categories: ranking(categoryCounts),
+    top_communes: ranking(communeCounts).slice(0, 5),
+  };
 }
