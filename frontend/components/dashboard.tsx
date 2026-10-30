@@ -214,7 +214,9 @@ function Dialog({
   );
 }
 
-export default function Dashboard() {
+/** Réutilise la navigation municipale pour les pages publiques du Gouvernement. */
+export default function Dashboard({ children }: { children?: ReactNode }) {
+  const councilRequestHandled = useRef(false);
   const [communes, setCommunes] = useState<Commune[]>([]);
   const [catalog, setCatalog] = useState<CommuneCatalog | null>(null);
   const [member, setMember] = useState<Member | null>(null);
@@ -275,7 +277,7 @@ export default function Dashboard() {
     return () => clearTimeout(timer);
   }, [query]);
   useEffect(() => {
-    if (!ready) return;
+    if (!ready || children) return;
     let current = true;
     setLoading(true);
     setError("");
@@ -298,12 +300,24 @@ export default function Dashboard() {
     return () => {
       current = false;
     };
-  }, [ready, view, member, commune, category, search, revision]);
+  }, [ready, view, member, commune, category, search, revision, children]);
   useEffect(() => {
     if (!toast) return;
     const timer = setTimeout(() => setToast(""), 5000);
     return () => clearTimeout(timer);
   }, [toast]);
+
+  // Le lien Conseil municipal des pages publiques conserve le parcours de connexion.
+  useEffect(() => {
+    if (!ready || children || councilRequestHandled.current) return;
+    councilRequestHandled.current = true;
+    if (
+      new URLSearchParams(window.location.search).get("espace") === "conseil"
+    ) {
+      if (member) setView("council");
+      else setModal("login");
+    }
+  }, [ready, member, children]);
 
   // Les noms des communes publiant dans le fil sont chargés par codes, indépendamment de la recherche.
   useEffect(() => {
@@ -353,6 +367,10 @@ export default function Dashboard() {
     setMenuOpen(false);
   }
   function changeView(next: "public" | "council") {
+    if (children) {
+      window.location.assign(next === "council" ? "/?espace=conseil" : "/");
+      return;
+    }
     setMenuOpen(false);
     if (next === "council" && !member) {
       openModal("login");
@@ -373,6 +391,10 @@ export default function Dashboard() {
       await api("auth/login", { email, password: data.get("password") });
       const session = await api<{ member: Member }>("auth/me");
       setMember(session.member);
+      if (children) {
+        window.location.assign("/?espace=conseil");
+        return;
+      }
       setView("council");
       setCategory("");
       setQuery("");
@@ -435,7 +457,7 @@ export default function Dashboard() {
   return (
     <div className="app-shell">
       <a className="skip-link" href="#main-content">
-        Aller aux publications
+        Aller au contenu
       </a>
       <aside
         id="main-navigation"
@@ -450,14 +472,18 @@ export default function Dashboard() {
         <div className="sidebar-caption">LE LIEN LOCAL</div>
         <nav aria-label="Navigation principale">
           <button
-            className={view === "public" ? "nav-item active" : "nav-item"}
+            className={
+              !children && view === "public" ? "nav-item active" : "nav-item"
+            }
             onClick={() => changeView("public")}
           >
             <Globe2 size={19} /> Publications publiques{" "}
             <span className="nav-indicator" />
           </button>
           <button
-            className={view === "council" ? "nav-item active" : "nav-item"}
+            className={
+              !children && view === "council" ? "nav-item active" : "nav-item"
+            }
             onClick={() => changeView("council")}
           >
             <LockKeyhole size={18} /> Conseil municipal{" "}
@@ -467,6 +493,14 @@ export default function Dashboard() {
               </span>
             )}
           </button>
+          <a
+            href="/gouvernement"
+            className={children ? "nav-item active" : "nav-item"}
+            aria-current={children ? "page" : undefined}
+          >
+            <Landmark size={19} /> Gouvernement
+            {children && <span className="nav-indicator" />}
+          </a>
         </nav>
         <div className="sidebar-line" />
         <p className="sidebar-label">VOTRE TERRITOIRE</p>
@@ -475,7 +509,7 @@ export default function Dashboard() {
           label="Choisir une commune"
           value={selectedCommune || null}
           onChange={selectCommune}
-          disabled={view === "council"}
+          disabled={Boolean(children) || view === "council"}
         />
         <p className="territory-help">
           L’information locale commence
@@ -618,321 +652,341 @@ export default function Dashboard() {
         </header>
 
         <main id="main-content">
-          <section className="page-heading">
-            <div>
-              <div className="eyebrow">
-                <span />{" "}
-                {view === "public"
-                  ? "L’INFORMATION AU PLUS PRÈS DE VOUS"
-                  : "VOTRE ESPACE DE TRAVAIL"}
-              </div>
-              <h1>
-                {view === "public"
-                  ? "La vie locale, en lien direct."
-                  : `Le conseil municipal${memberCommune ? ` ${/^[aeiouyhàâéèêëîïôùûü]/i.test(memberCommune.name) ? "d’" : "de "}${memberCommune.name}` : ""}.`}
-              </h1>
-              <p>
-                {view === "public"
-                  ? "Les actualités de vos communes, partagées par celles et ceux qui les font vivre."
-                  : "Informez les habitants et échangez avec les membres de votre conseil."}
-              </p>
-            </div>
-            {member && (
-              <div className="heading-actions">
-                {member.role === "maire" && (
-                  <button
-                    className="button"
-                    onClick={() => openModal("members")}
-                  >
-                    <Users size={17} /> Membres du conseil
-                  </button>
-                )}
-                <button
-                  className="button primary"
-                  onClick={() => {
-                    setVisibility("public");
-                    openModal("create");
-                  }}
-                >
-                  <Plus size={17} /> Publier
-                </button>
-              </div>
-            )}
-          </section>
-
-          <section
-            className={`welcome-banner ${view === "council" ? "private-banner" : ""}`}
-          >
-            <div className="welcome-copy">
-              <div className="banner-kicker">
-                {view === "public" ? (
-                  <>
-                    <Globe2 size={14} /> UN ESPACE PUBLIC, UN LIEN COMMUN
-                  </>
-                ) : (
-                  <>
-                    <ShieldCheck size={15} /> UN ESPACE RÉSERVÉ À VOTRE CONSEIL
-                  </>
-                )}
-              </div>
-              <h2>
-                {view === "public" ? (
-                  <>
-                    Votre commune a des choses
-                    <br />à vous partager.
-                  </>
-                ) : (
-                  <>
-                    La bonne information.
-                    <br />
-                    Les bons destinataires.
-                  </>
-                )}
-              </h2>
-              <p>
-                {view === "public"
-                  ? "Projets, initiatives, rendez-vous… Retrouvez l’essentiel de la vie de votre territoire, en toute simplicité."
-                  : "Chaque publication peut être publique ou réservée aux membres de votre conseil municipal."}
-              </p>
-              <div className="banner-note">
-                {view === "public" ? (
-                  <>
-                    <span className="tiny-flags">
-                      <i />
-                      <i />
-                      <i />
-                    </span>{" "}
-                    Des communes et des citoyens, plus proches.
-                  </>
-                ) : (
-                  <>
-                    <LockKeyhole size={14} /> L’accès privé est vérifié par le
-                    serveur.
-                  </>
-                )}
-              </div>
-            </div>
-            <TownIllustration />
-          </section>
-
-          <section className="feed-section" aria-labelledby="feed-title">
-            <div className="section-title">
-              <div>
-                <h2 id="feed-title">
-                  {view === "public"
-                    ? "Le fil des communes"
-                    : "Les publications du conseil"}
-                  <span className="count-badge">
-                    {loading ? "…" : publications.length}
-                  </span>
-                </h2>
-                <p>
-                  {selectedCommune
-                    ? `${selectedCommune.name} · ${selectedCommune.department}`
-                    : "Un regard sur ce qui se passe dans nos territoires."}
-                </p>
-              </div>
-              <span className="latest-label">
-                <ArrowDown size={14} /> Les plus récentes
-              </span>
-            </div>
-
-            <div className="filter-bar">
-              <label className="search-field">
-                <Search size={19} />
-                <input
-                  aria-label="Rechercher une publication"
-                  placeholder="Rechercher une publication…"
-                  value={query}
-                  maxLength={200}
-                  onChange={(e) => setQuery(e.target.value)}
-                />
-                {query && (
-                  <button
-                    className="icon-button"
-                    aria-label="Effacer la recherche"
-                    onClick={() => setQuery("")}
-                  >
-                    <X size={15} />
-                  </button>
-                )}
-              </label>
-              <CommunePicker
-                label="Filtrer par commune"
-                value={selectedCommune || null}
-                onChange={selectCommune}
-                disabled={view === "council"}
-              />
-              <div className="filter-select category-select">
-                <SlidersHorizontal size={17} />
-                <select
-                  aria-label="Filtrer par thème"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                >
-                  <option value="">Tous les thèmes</option>
-                  {categories.map((c) => (
-                    <option key={c}>{c}</option>
-                  ))}
-                </select>
-                <ChevronDown size={15} />
-              </div>
-            </div>
-            <div className="theme-tabs" aria-label="Thèmes">
-              <button
-                className={!category ? "selected" : ""}
-                onClick={() => setCategory("")}
-              >
-                Tout le fil
-              </button>
-              {categories
-                .filter((c) => c !== "Conseil municipal" || view === "council")
-                .map((c) => (
-                  <button
-                    key={c}
-                    className={category === c ? "selected" : ""}
-                    onClick={() => setCategory(c)}
-                  >
-                    <CategoryIcon category={c} />
-                    {c}
-                  </button>
-                ))}
-            </div>
-
-            {error ? (
-              <div role="alert" className="empty-state">
-                <ShieldCheck size={30} />
-                <h3>Le fil n’est pas disponible</h3>
-                <p>{error}</p>
-                <button
-                  className="button"
-                  onClick={() => setRevision((n) => n + 1)}
-                >
-                  Réessayer
-                </button>
-              </div>
-            ) : loading ? (
-              <div role="status" className="loading-state">
-                <span className="spinner" /> Chargement des publications…
-              </div>
-            ) : !featured ? (
-              <div className="empty-state">
-                <MessageSquare size={30} />
-                <h3>Aucune publication pour le moment</h3>
-                <p>
-                  {query || category || commune
-                    ? "Essayez une autre recherche ou élargissez vos filtres."
-                    : "Les publications de la commune apparaîtront ici."}
-                </p>
-                <button
-                  className="button"
-                  onClick={() => {
-                    setQuery("");
-                    setCategory("");
-                    setCommune("");
-                  }}
-                >
-                  Réinitialiser les filtres
-                </button>
-              </div>
-            ) : (
-              <>
-                <article className="featured-card">
-                  <div
-                    className={`featured-art art-${featured.category === "Travaux" ? "green" : featured.category === "Culture" ? "rose" : "blue"}`}
-                  >
-                    <span className="art-label">
-                      <CategoryIcon category={featured.category} size={14} />
-                      {featured.category}
-                    </span>
-                    <TownIllustration />
-                    <div className="art-caption">
-                      <span>LA VIE DE NOS COMMUNES</span>
-                      <strong>
-                        {
-                          communes.find((c) => c.id === featured.commune_id)
-                            ?.name
-                        }
-                      </strong>
-                    </div>
+          {children || (
+            <>
+              <section className="page-heading">
+                <div>
+                  <div className="eyebrow">
+                    <span />{" "}
+                    {view === "public"
+                      ? "L’INFORMATION AU PLUS PRÈS DE VOUS"
+                      : "VOTRE ESPACE DE TRAVAIL"}
                   </div>
-                  <div className="featured-body">
-                    <PublicationMeta item={featured} communes={communes} />
-                    <span className="featured-kicker">À LA UNE DU FIL</span>
-                    <h3>
-                      <button onClick={() => read(featured)}>
-                        {featured.title}
-                      </button>
-                    </h3>
-                    <p className="excerpt">{featured.body.split("\n")[0]}</p>
-                    <div className="card-bottom">
-                      <Author item={featured} />
+                  <h1>
+                    {view === "public"
+                      ? "La vie locale, en lien direct."
+                      : `Le conseil municipal${memberCommune ? ` ${/^[aeiouyhàâéèêëîïôùûü]/i.test(memberCommune.name) ? "d’" : "de "}${memberCommune.name}` : ""}.`}
+                  </h1>
+                  <p>
+                    {view === "public"
+                      ? "Les actualités de vos communes, partagées par celles et ceux qui les font vivre."
+                      : "Informez les habitants et échangez avec les membres de votre conseil."}
+                  </p>
+                </div>
+                {member && (
+                  <div className="heading-actions">
+                    {member.role === "maire" && (
                       <button
-                        className="read-button"
-                        onClick={() => read(featured)}
-                        aria-label={`Lire : ${featured.title}`}
+                        className="button"
+                        onClick={() => openModal("members")}
                       >
-                        <ArrowUpRight size={21} />
+                        <Users size={17} /> Membres du conseil
                       </button>
-                    </div>
+                    )}
+                    <button
+                      className="button primary"
+                      onClick={() => {
+                        setVisibility("public");
+                        openModal("create");
+                      }}
+                    >
+                      <Plus size={17} /> Publier
+                    </button>
                   </div>
-                  {view === "council" && (
-                    <CouncilPostActions
-                      title={featured.title}
-                      onComment={() => read(featured, "comment")}
-                      onReact={() => read(featured, "reaction")}
-                    />
-                  )}
-                </article>
-                <div className="publication-grid">
-                  {others.map((item) => (
-                    <article className="publication-card" key={item.id}>
-                      <PublicationMeta item={item} communes={communes} />
-                      <span
-                        className={`category-pill pill-${item.category === "Culture" ? "rose" : item.category === "Environnement" ? "green" : "blue"}`}
-                      >
-                        <CategoryIcon category={item.category} size={13} />
-                        {item.category}
+                )}
+              </section>
+
+              <section
+                className={`welcome-banner ${view === "council" ? "private-banner" : ""}`}
+              >
+                <div className="welcome-copy">
+                  <div className="banner-kicker">
+                    {view === "public" ? (
+                      <>
+                        <Globe2 size={14} /> UN ESPACE PUBLIC, UN LIEN COMMUN
+                      </>
+                    ) : (
+                      <>
+                        <ShieldCheck size={15} /> UN ESPACE RÉSERVÉ À VOTRE
+                        CONSEIL
+                      </>
+                    )}
+                  </div>
+                  <h2>
+                    {view === "public" ? (
+                      <>
+                        Votre commune a des choses
+                        <br />à vous partager.
+                      </>
+                    ) : (
+                      <>
+                        La bonne information.
+                        <br />
+                        Les bons destinataires.
+                      </>
+                    )}
+                  </h2>
+                  <p>
+                    {view === "public"
+                      ? "Projets, initiatives, rendez-vous… Retrouvez l’essentiel de la vie de votre territoire, en toute simplicité."
+                      : "Chaque publication peut être publique ou réservée aux membres de votre conseil municipal."}
+                  </p>
+                  <div className="banner-note">
+                    {view === "public" ? (
+                      <>
+                        <span className="tiny-flags">
+                          <i />
+                          <i />
+                          <i />
+                        </span>{" "}
+                        Des communes et des citoyens, plus proches.
+                      </>
+                    ) : (
+                      <>
+                        <LockKeyhole size={14} /> L’accès privé est vérifié par
+                        le serveur.
+                      </>
+                    )}
+                  </div>
+                </div>
+                <TownIllustration />
+              </section>
+
+              <section className="feed-section" aria-labelledby="feed-title">
+                <div className="section-title">
+                  <div>
+                    <h2 id="feed-title">
+                      {view === "public"
+                        ? "Le fil des communes"
+                        : "Les publications du conseil"}
+                      <span className="count-badge">
+                        {loading ? "…" : publications.length}
                       </span>
-                      <h3>
-                        <button onClick={() => read(item)}>{item.title}</button>
-                      </h3>
-                      <p className="excerpt">{item.body.split("\n")[0]}</p>
-                      <div className="card-bottom">
-                        <Author item={item} />
-                        <button
-                          className="read-button"
-                          onClick={() => read(item)}
-                          aria-label={`Lire : ${item.title}`}
-                        >
-                          <ArrowUpRight size={19} />
-                        </button>
+                    </h2>
+                    <p>
+                      {selectedCommune
+                        ? `${selectedCommune.name} · ${selectedCommune.department}`
+                        : "Un regard sur ce qui se passe dans nos territoires."}
+                    </p>
+                  </div>
+                  <span className="latest-label">
+                    <ArrowDown size={14} /> Les plus récentes
+                  </span>
+                </div>
+
+                <div className="filter-bar">
+                  <label className="search-field">
+                    <Search size={19} />
+                    <input
+                      aria-label="Rechercher une publication"
+                      placeholder="Rechercher une publication…"
+                      value={query}
+                      maxLength={200}
+                      onChange={(e) => setQuery(e.target.value)}
+                    />
+                    {query && (
+                      <button
+                        className="icon-button"
+                        aria-label="Effacer la recherche"
+                        onClick={() => setQuery("")}
+                      >
+                        <X size={15} />
+                      </button>
+                    )}
+                  </label>
+                  <CommunePicker
+                    label="Filtrer par commune"
+                    value={selectedCommune || null}
+                    onChange={selectCommune}
+                    disabled={view === "council"}
+                  />
+                  <div className="filter-select category-select">
+                    <SlidersHorizontal size={17} />
+                    <select
+                      aria-label="Filtrer par thème"
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                    >
+                      <option value="">Tous les thèmes</option>
+                      {categories.map((c) => (
+                        <option key={c}>{c}</option>
+                      ))}
+                    </select>
+                    <ChevronDown size={15} />
+                  </div>
+                </div>
+                <div className="theme-tabs" aria-label="Thèmes">
+                  <button
+                    className={!category ? "selected" : ""}
+                    onClick={() => setCategory("")}
+                  >
+                    Tout le fil
+                  </button>
+                  {categories
+                    .filter(
+                      (c) => c !== "Conseil municipal" || view === "council",
+                    )
+                    .map((c) => (
+                      <button
+                        key={c}
+                        className={category === c ? "selected" : ""}
+                        onClick={() => setCategory(c)}
+                      >
+                        <CategoryIcon category={c} />
+                        {c}
+                      </button>
+                    ))}
+                </div>
+
+                {error ? (
+                  <div role="alert" className="empty-state">
+                    <ShieldCheck size={30} />
+                    <h3>Le fil n’est pas disponible</h3>
+                    <p>{error}</p>
+                    <button
+                      className="button"
+                      onClick={() => setRevision((n) => n + 1)}
+                    >
+                      Réessayer
+                    </button>
+                  </div>
+                ) : loading ? (
+                  <div role="status" className="loading-state">
+                    <span className="spinner" /> Chargement des publications…
+                  </div>
+                ) : !featured ? (
+                  <div className="empty-state">
+                    <MessageSquare size={30} />
+                    <h3>Aucune publication pour le moment</h3>
+                    <p>
+                      {query || category || commune
+                        ? "Essayez une autre recherche ou élargissez vos filtres."
+                        : "Les publications de la commune apparaîtront ici."}
+                    </p>
+                    <button
+                      className="button"
+                      onClick={() => {
+                        setQuery("");
+                        setCategory("");
+                        setCommune("");
+                      }}
+                    >
+                      Réinitialiser les filtres
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <article className="featured-card">
+                      <div
+                        className={`featured-art art-${featured.category === "Travaux" ? "green" : featured.category === "Culture" ? "rose" : "blue"}`}
+                      >
+                        <span className="art-label">
+                          <CategoryIcon
+                            category={featured.category}
+                            size={14}
+                          />
+                          {featured.category}
+                        </span>
+                        <TownIllustration />
+                        <div className="art-caption">
+                          <span>LA VIE DE NOS COMMUNES</span>
+                          <strong>
+                            {
+                              communes.find((c) => c.id === featured.commune_id)
+                                ?.name
+                            }
+                          </strong>
+                        </div>
+                      </div>
+                      <div className="featured-body">
+                        <PublicationMeta item={featured} communes={communes} />
+                        <span className="featured-kicker">À LA UNE DU FIL</span>
+                        <h3>
+                          <button onClick={() => read(featured)}>
+                            {featured.title}
+                          </button>
+                        </h3>
+                        <p className="excerpt">
+                          {featured.body.split("\n")[0]}
+                        </p>
+                        <div className="card-bottom">
+                          <Author item={featured} />
+                          <button
+                            className="read-button"
+                            onClick={() => read(featured)}
+                            aria-label={`Lire : ${featured.title}`}
+                          >
+                            <ArrowUpRight size={21} />
+                          </button>
+                        </div>
                       </div>
                       {view === "council" && (
                         <CouncilPostActions
-                          title={item.title}
-                          onComment={() => read(item, "comment")}
-                          onReact={() => read(item, "reaction")}
+                          title={featured.title}
+                          onComment={() => read(featured, "comment")}
+                          onReact={() => read(featured, "reaction")}
                         />
                       )}
                     </article>
-                  ))}
-                </div>
-                <div className="feed-end">
-                  <span />
-                  <span>Vous êtes à jour dans ce fil</span>
-                  <span />
-                </div>
-              </>
-            )}
-          </section>
+                    <div className="publication-grid">
+                      {others.map((item) => (
+                        <article className="publication-card" key={item.id}>
+                          <PublicationMeta item={item} communes={communes} />
+                          <span
+                            className={`category-pill pill-${item.category === "Culture" ? "rose" : item.category === "Environnement" ? "green" : "blue"}`}
+                          >
+                            <CategoryIcon category={item.category} size={13} />
+                            {item.category}
+                          </span>
+                          <h3>
+                            <button onClick={() => read(item)}>
+                              {item.title}
+                            </button>
+                          </h3>
+                          <p className="excerpt">{item.body.split("\n")[0]}</p>
+                          <div className="card-bottom">
+                            <Author item={item} />
+                            <button
+                              className="read-button"
+                              onClick={() => read(item)}
+                              aria-label={`Lire : ${item.title}`}
+                            >
+                              <ArrowUpRight size={19} />
+                            </button>
+                          </div>
+                          {view === "council" && (
+                            <CouncilPostActions
+                              title={item.title}
+                              onComment={() => read(item, "comment")}
+                              onReact={() => read(item, "reaction")}
+                            />
+                          )}
+                        </article>
+                      ))}
+                    </div>
+                    <div className="feed-end">
+                      <span />
+                      <span>Vous êtes à jour dans ce fil</span>
+                      <span />
+                    </div>
+                  </>
+                )}
+              </section>
+            </>
+          )}
           <footer className="page-footer">
             <span>
               <Landmark size={15} /> Qomune · Le lien local
             </span>
             <span>
-              {catalog?.total.toLocaleString("fr-FR") || "…"} communes · COG{" "}
-              {catalog?.vintage || "…"} · publications de démonstration
+              {children ? (
+                "Gouvernement · annuaire public"
+              ) : (
+                <>
+                  {catalog?.total.toLocaleString("fr-FR") || "…"} communes · COG{" "}
+                  {catalog?.vintage || "…"} · publications de démonstration
+                </>
+              )}
             </span>
             <button onClick={() => openModal("about")}>
               À propos <ArrowUpRight size={13} />

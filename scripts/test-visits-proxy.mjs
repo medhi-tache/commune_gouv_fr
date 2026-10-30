@@ -42,7 +42,13 @@ const context = {
 };
 vm.runInNewContext(code, context);
 const { proxy, config } = context.exports;
-for (const path of ["/", "/administration", "/administration/connexion"]) {
+for (const path of [
+  "/",
+  "/gouvernement",
+  "/gouvernement/sebastien-lecornu",
+  "/administration",
+  "/administration/connexion",
+]) {
   assert.equal(
     unstable_doesMiddlewareMatch({ config, nextConfig: {}, url: path }),
     true,
@@ -73,6 +79,8 @@ async function visit(path, headers = {}, method = "GET") {
 }
 for (const [path, page] of [
   ["/?email=ne-pas-transmettre@example.fr", "public"],
+  ["/gouvernement", "public"],
+  ["/gouvernement/sebastien-lecornu", "public"],
   ["/administration", "admin_demo"],
   ["/administration/connexion", "admin_private"],
 ]) {

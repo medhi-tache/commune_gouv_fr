@@ -1,0 +1,283 @@
+{
+  "source_url": "https://www.info.gouv.fr/composition-du-gouvernement",
+  "checked_at": "2026-10-30",
+  "members": [
+    {
+      "slug": "sebastien-lecornu",
+      "name": "Sébastien Lecornu",
+      "role": "Premier ministre",
+      "ministries": ["Premier ministre"],
+      "official_url": "https://www.info.gouv.fr/personnalite/sebastien-lecornu"
+    },
+    {
+      "slug": "laurent-panifous",
+      "name": "Laurent Panifous",
+      "role": "Ministre délégué auprès du Premier ministre, chargé des Relations avec le Parlement",
+      "ministries": ["Premier ministre"],
+      "official_url": "https://www.info.gouv.fr/personnalite/laurent-panifous"
+    },
+    {
+      "slug": "maud-bregeon",
+      "name": "Maud Bregeon",
+      "role": "Ministre déléguée, porte-parole du Gouvernement auprès du Premier ministre et ministre déléguée, chargée de l'Énergie auprès du ministre de l'Économie, des Finances et de la Souveraineté industrielle, énergétique et numérique",
+      "ministries": [
+        "Premier ministre",
+        "Ministère de l’Économie, des Finances et de la Souveraineté industrielle, énergétique et numérique"
+      ],
+      "official_url": "https://www.info.gouv.fr/personnalite/maud-bregeon"
+    },
+    {
+      "slug": "aurore-berge",
+      "name": "Aurore Bergé",
+      "role": "Ministre déléguée auprès du Premier ministre, chargée de l'Égalité entre les femmes et les hommes et de la Lutte contre les discriminations",
+      "ministries": ["Premier ministre"],
+      "official_url": "https://www.info.gouv.fr/personnalite/aurore-berge"
+    },
+    {
+      "slug": "laurent-nunez",
+      "name": "Laurent Nunez",
+      "role": "Ministre de l’Intérieur",
+      "ministries": ["Ministère de l'Intérieur"],
+      "official_url": "https://www.info.gouv.fr/personnalite/laurent-nunez"
+    },
+    {
+      "slug": "jean-didier-berger",
+      "name": "Jean-Didier Berger",
+      "role": "Ministre délégué auprès du ministre de l'Intérieur",
+      "ministries": ["Ministère de l'Intérieur"],
+      "official_url": "https://www.info.gouv.fr/personnalite/jean-didier-berger"
+    },
+    {
+      "slug": "marie-pierre-vedrenne",
+      "name": "Marie-Pierre Vedrenne",
+      "role": "Ministre déléguée auprès du ministre de l’Intérieur, chargée de la Citoyenneté",
+      "ministries": ["Ministère de l'Intérieur"],
+      "official_url": "https://www.info.gouv.fr/personnalite/marie-pierre-vedrenne"
+    },
+    {
+      "slug": "catherine-vautrin",
+      "name": "Catherine Vautrin",
+      "role": "Ministre des Armées et des Anciens combattants",
+      "ministries": ["Ministère des Armées et des Anciens combattants"],
+      "official_url": "https://www.info.gouv.fr/personnalite/catherine-vautrin"
+    },
+    {
+      "slug": "alice-rufo",
+      "name": "Alice Rufo",
+      "role": "Ministre déléguée auprès de la ministre des Armées et des Anciens combattants",
+      "ministries": ["Ministère des Armées et des Anciens combattants"],
+      "official_url": "https://www.info.gouv.fr/personnalite/alice-rufo"
+    },
+    {
+      "slug": "jean-pierre-farandou",
+      "name": "Jean-Pierre Farandou",
+      "role": "Ministre du Travail et des Solidarités",
+      "ministries": ["Ministère du Travail et des Solidarités"],
+      "official_url": "https://www.info.gouv.fr/personnalite/jean-pierre-farandou"
+    },
+    {
+      "slug": "sabrina-roubache",
+      "name": "Sabrina Roubache",
+      "role": "Ministre déléguée auprès du ministre du Travail et des Solidarités et du ministre de l'Éducation nationale, chargée de l'Enseignement et de la Formation professionnels et de l’Apprentissage",
+      "ministries": [
+        "Ministère du Travail et des Solidarités",
+        "Ministère de l'Éducation nationale"
+      ],
+      "official_url": "https://www.info.gouv.fr/personnalite/sabrina-agresti-roubache"
+    },
+    {
+      "slug": "monique-barbut",
+      "name": "Monique Barbut",
+      "role": "Ministre de la Transition écologique, de la Biodiversité et des Négociations internationales sur le climat et la nature",
+      "ministries": [
+        "Ministère de la Transition écologique, de la Biodiversité et des Négociations internationales sur le climat et la nature"
+      ],
+      "official_url": "https://www.info.gouv.fr/personnalite/monique-barbut"
+    },
+    {
+      "slug": "catherine-chabaud",
+      "name": "Catherine Chabaud",
+      "role": "Ministre déléguée auprès de la ministre de la Transition écologique, de la Biodiversité et des Négociations internationales sur le climat et la nature, chargée de la Mer et de la Pêche",
+      "ministries": [
+        "Ministère de la Transition écologique, de la Biodiversité et des Négociations internationales sur le climat et la nature"
+      ],
+      "official_url": "https://www.info.gouv.fr/personnalite/catherine-chabaud"
+    },
+    {
+      "slug": "mathieu-lefevre",
+      "name": "Mathieu Lefèvre",
+      "role": "Ministre délégué auprès de la ministre de la Transition écologique, de la Biodiversité et des Négociations internationales sur le climat et la nature, chargé de la Transition écologique",
+      "ministries": [
+        "Ministère de la Transition écologique, de la Biodiversité et des Négociations internationales sur le climat et la nature"
+      ],
+      "official_url": "https://www.info.gouv.fr/personnalite/mathieu-lefevre"
+    },
+    {
+      "slug": "gerald-darmanin",
+      "name": "Gérald Darmanin",
+      "role": "Garde des Sceaux, ministre de la Justice",
+      "ministries": ["Ministère de la Justice"],
+      "official_url": "https://www.info.gouv.fr/personnalite/gerald-darmanin"
+    },
+    {
+      "slug": "roland-lescure",
+      "name": "Roland Lescure",
+      "role": "Ministre de l’Économie, des Finances et de la Souveraineté industrielle, énergétique et numérique",
+      "ministries": [
+        "Ministère de l’Économie, des Finances et de la Souveraineté industrielle, énergétique et numérique"
+      ],
+      "official_url": "https://www.info.gouv.fr/personnalite/roland-lescure"
+    },
+    {
+      "slug": "sebastien-martin",
+      "name": "Sébastien Martin",
+      "role": "Ministre délégué auprès du ministre de l’Économie, des Finances et de la Souveraineté industrielle, énergétique et numérique, chargé de l'Industrie",
+      "ministries": [
+        "Ministère de l’Économie, des Finances et de la Souveraineté industrielle, énergétique et numérique"
+      ],
+      "official_url": "https://www.info.gouv.fr/personnalite/sebastien-martin"
+    },
+    {
+      "slug": "anne-le-henanff",
+      "name": "Anne Le Henanff",
+      "role": "Ministre déléguée auprès du ministre de l’Économie, des Finances et de la Souveraineté industrielle, énergétique et numérique, chargée de l’Intelligence artificielle et du Numérique",
+      "ministries": [
+        "Ministère de l’Économie, des Finances et de la Souveraineté industrielle, énergétique et numérique"
+      ],
+      "official_url": "https://www.info.gouv.fr/personnalite/anne-le-henanff"
+    },
+    {
+      "slug": "serge-papin",
+      "name": "Serge Papin",
+      "role": "Ministre des Petites et moyennes entreprises, du Commerce, de l’Artisanat, du Tourisme et du Pouvoir d’achat",
+      "ministries": [
+        "Ministère des Petites et moyennes entreprises, du Commerce, de l’Artisanat et du Tourisme et du Pouvoir d’achat"
+      ],
+      "official_url": "https://www.info.gouv.fr/personnalite/serge-papin"
+    },
+    {
+      "slug": "annie-genevard",
+      "name": "Annie Genevard",
+      "role": "Ministre de l’Agriculture, de l’Agro-alimentaire et de la Souveraineté alimentaire",
+      "ministries": [
+        "Ministère de l’Agriculture, de l’Agro-alimentaire et de la Souveraineté alimentaire"
+      ],
+      "official_url": "https://www.info.gouv.fr/personnalite/annie-genevard"
+    },
+    {
+      "slug": "edouard-geffray",
+      "name": "Édouard Geffray",
+      "role": "Ministre de l’Éducation nationale",
+      "ministries": ["Ministère de l'Éducation nationale"],
+      "official_url": "https://www.info.gouv.fr/personnalite/edouard-geffray"
+    },
+    {
+      "slug": "jean-noel-barrot",
+      "name": "Jean-Noël Barrot",
+      "role": "Ministre de l’Europe et des Affaires étrangères",
+      "ministries": ["Ministère de l'Europe et des Affaires étrangères"],
+      "official_url": "https://www.info.gouv.fr/personnalite/jean-noel-barrot"
+    },
+    {
+      "slug": "benjamin-haddad",
+      "name": "Benjamin Haddad",
+      "role": "Ministre délégué auprès du ministre de l’Europe et des Affaires étrangères, chargé de l’Europe",
+      "ministries": ["Ministère de l'Europe et des Affaires étrangères"],
+      "official_url": "https://www.info.gouv.fr/personnalite/benjamin-haddad"
+    },
+    {
+      "slug": "nicolas-forissier",
+      "name": "Nicolas Forissier",
+      "role": "Ministre délégué auprès du ministre de l’Europe et des Affaires étrangères, chargé du Commerce extérieur et de l'Attractivité",
+      "ministries": ["Ministère de l'Europe et des Affaires étrangères"],
+      "official_url": "https://www.info.gouv.fr/personnalite/nicolas-forissier"
+    },
+    {
+      "slug": "eleonore-caroit",
+      "name": "Éléonore Caroit",
+      "role": "Ministre déléguée auprès du ministre de l’Europe et des Affaires étrangères, chargée de la Francophonie, des Partenariats internationaux et des Français de l’étranger",
+      "ministries": ["Ministère de l'Europe et des Affaires étrangères"],
+      "official_url": "https://www.info.gouv.fr/personnalite/eleonore-caroit"
+    },
+    {
+      "slug": "stephanie-rist",
+      "name": "Stéphanie Rist",
+      "role": "Ministre de la Santé, des Familles, de l’Autonomie et des Personnes handicapées",
+      "ministries": [
+        "Ministère de la Santé, des Familles, de l’Autonomie et des Personnes handicapées"
+      ],
+      "official_url": "https://www.info.gouv.fr/personnalite/stephanie-rist"
+    },
+    {
+      "slug": "camille-galliard-minier",
+      "name": "Camille Galliard-Minier",
+      "role": "Ministre déléguée, auprès de la ministre de la Santé, des Familles, de l’Autonomie et des Personnes handicapées, chargée de l’Autonomie et des Personnes handicapées",
+      "ministries": [
+        "Ministère de la Santé, des Familles, de l’Autonomie et des Personnes handicapées"
+      ],
+      "official_url": "https://www.info.gouv.fr/personnalite/camille-galliard-minier"
+    },
+    {
+      "slug": "catherine-pegard",
+      "name": "Catherine Pégard",
+      "role": "Ministre de la Culture",
+      "ministries": ["Ministère de la Culture"],
+      "official_url": "https://www.info.gouv.fr/personnalite/catherine-pegard"
+    },
+    {
+      "slug": "naima-moutchou",
+      "name": "Naïma Moutchou",
+      "role": "Ministre des Outre-mer",
+      "ministries": ["Ministère des Outre-mer"],
+      "official_url": "https://www.info.gouv.fr/personnalite/naima-moutchou"
+    },
+    {
+      "slug": "francoise-gatel",
+      "name": "Françoise Gatel",
+      "role": "Ministre de l’Aménagement du territoire et de la Décentralisation",
+      "ministries": [
+        "Ministère de l'Aménagement du territoire et de la Décentralisation"
+      ],
+      "official_url": "https://www.info.gouv.fr/personnalite/francoise-gatel"
+    },
+    {
+      "slug": "david-amiel",
+      "name": "David Amiel",
+      "role": "Ministre de l’Action et des Comptes publics",
+      "ministries": ["Ministère de l’Action et des Comptes publics"],
+      "official_url": "https://www.info.gouv.fr/personnalite/david-amiel"
+    },
+    {
+      "slug": "philippe-baptiste",
+      "name": "Philippe Baptiste",
+      "role": "Ministre de l’Enseignement supérieur, de la Recherche et de l’Espace",
+      "ministries": [
+        "Ministère de l’Enseignement supérieur, de la Recherche et de l’Espace"
+      ],
+      "official_url": "https://www.info.gouv.fr/personnalite/philippe-baptiste"
+    },
+    {
+      "slug": "marina-ferrari",
+      "name": "Marina Ferrari",
+      "role": "Ministre des Sports, de la Jeunesse et de la Vie associative",
+      "ministries": [
+        "Ministère des Sports, de la Jeunesse et de la Vie associative"
+      ],
+      "official_url": "https://www.info.gouv.fr/personnalite/marina-ferrari"
+    },
+    {
+      "slug": "philippe-tabarot",
+      "name": "Philippe Tabarot",
+      "role": "Ministre des Transports",
+      "ministries": ["Ministère des Transports"],
+      "official_url": "https://www.info.gouv.fr/personnalite/philippe-tabarot"
+    },
+    {
+      "slug": "vincent-jeanbrun",
+      "name": "Vincent Jeanbrun",
+      "role": "Ministre de la Ville et du Logement",
+      "ministries": ["Ministère de la Ville et du Logement"],
+      "official_url": "https://www.info.gouv.fr/personnalite/vincent-jeanbrun"
+    }
+  ]
+}

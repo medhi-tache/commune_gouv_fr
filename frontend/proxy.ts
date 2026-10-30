@@ -19,7 +19,8 @@ export function proxy(request: NextRequest, event: NextFetchEvent) {
     !prefetch
   ) {
     const page =
-      request.nextUrl.pathname === "/"
+      request.nextUrl.pathname === "/" ||
+      request.nextUrl.pathname.startsWith("/gouvernement")
         ? "public"
         : request.nextUrl.pathname === "/administration"
           ? "admin_demo"
@@ -49,5 +50,10 @@ export function proxy(request: NextRequest, event: NextFetchEvent) {
   return NextResponse.next();
 }
 export const config = {
-  matcher: ["/", "/administration", "/administration/connexion"],
+  matcher: [
+    "/",
+    "/gouvernement/:path*",
+    "/administration",
+    "/administration/connexion",
+  ],
 };

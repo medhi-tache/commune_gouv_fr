@@ -12,6 +12,14 @@ Permettre aux maires et aux conseillers municipaux de chaque commune de publier 
 
 Le prototype charge les **34 875 communes actuelles** de France métropolitaine et des DROM du **Code officiel géographique 2026 de l’Insee**, référencé sur [data.gouv.fr](https://www.data.gouv.fr/datasets/code-officiel-geographique-1). Les communes déléguées, les communes associées et les arrondissements municipaux sont exclus (`TYPECOM=COM`).
 
+## Annuaire du Gouvernement
+
+Le lien **Gouvernement**, sous **Conseil municipal**, ouvre `/gouvernement`. La recherche porte sur le nom, la fonction complète et les rattachements ministériels, sans tenir compte des accents. Chaque membre possède une fiche publique `/gouvernement/[slug]`, avec sa fonction et un lien vers son profil officiel sur info.gouv.fr.
+
+Les 35 personnes sont issues de la [composition officielle du Gouvernement](https://www.info.gouv.fr/composition-du-gouvernement), consultée le **30 octobre 2026**. Le fichier `frontend/reference/government.json` conserve cette photographie datée ; les doubles rattachements sont regroupés par personne. Ce fichier n'est pas synchronisé automatiquement : toute actualisation doit vérifier à nouveau la composition et les liens officiels, mettre à jour `checked_at`, puis reconstruire et déployer le frontend. La date de consultation ne représente pas une date de nomination.
+
+Ces fiches sont informatives et ne créent aucun compte de ministre. Les consultations de l'annuaire et des profils sont comptées parmi les pages publiques dans les statistiques de visites existantes, sans information sur l'identité des visiteurs.
+
 ## Utilisateurs et publications
 
 | Utilisateur | Accès et actions |
