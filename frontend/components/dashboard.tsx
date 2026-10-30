@@ -549,11 +549,20 @@ export default function Dashboard() {
             >
               GitHub
             </a>
-            <a className="specifications-link" href="/administration">
-              Administration
+            <a
+              className="specifications-link"
+              href="https://www.linkedin.com/in/medhi-thomas-adrien-tache-1b46a2447/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Le créateur sur LinkedIn (nouvel onglet)"
+            >
+              Le créateur
             </a>
           </div>
           <div className="topbar-actions">
+            <a className="specifications-link" href="/administration">
+              Administration
+            </a>
             {member ? (
               <>
                 <span className="account-name">
