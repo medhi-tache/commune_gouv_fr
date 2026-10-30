@@ -619,3 +619,24 @@
     flex-wrap: wrap;
   }
 }
+
+/* Courbe de fréquentation réservée à l'administration privée. */
+.admin-visits {
+  margin-bottom: 20px;
+}
+.admin-visit-totals {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: #63718a;
+  margin: 12px 0 18px;
+}
+.admin-visit-totals strong {
+  color: #172342;
+  margin-left: 7px;
+}
+.admin-visit-note {
+  line-height: 1.7;
+  margin-bottom: 12px;
+}

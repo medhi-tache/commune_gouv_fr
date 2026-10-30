@@ -7,6 +7,7 @@ mod reference;
 mod registration;
 #[cfg(test)]
 mod tests;
+mod visits;
 
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier, password_hash::SaltString};
 use axum::{
@@ -123,6 +124,7 @@ async fn connect(uri: &str, name: &str) -> mongodb::error::Result<Database> {
 /// Les ajouts initiaux sont idempotents : un redémarrage ne remplace jamais les données existantes.
 async fn initialize(database: &Database, password: &str) -> mongodb::error::Result<()> {
     discussion::initialize(database).await?;
+    visits::initialize(database).await?;
     for name in ["communes", "members", "publications"] {
         let index = IndexModel::builder()
             .keys(doc! {"id":1})
@@ -718,6 +720,7 @@ async fn create_publication(
 fn app(database: Database) -> Router {
     Router::new()
         .route("/health", get(health))
+        .route("/internal/visits", post(visits::record))
         .route("/admin/login", post(administration::login))
         .route("/admin/logout", post(administration::logout))
         .route("/admin/statistics", get(administration::statistics))
@@ -753,6 +756,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .map_err(|_| "Initialisation MongoDB impossible.")?;
     if let Ok(password) = std::env::var("QOMUNE_ADMIN_PASSWORD") {
         administration::configure(&database, &password).await?;
+    }
+    if let Ok(key) = std::env::var("QOMUNE_METRICS_KEY") {
+        visits::configure(&database, &key).await?;
     }
     let count = reference::import(&database)
         .await

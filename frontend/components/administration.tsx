@@ -14,10 +14,12 @@ import {
   Users,
 } from "lucide-react";
 import { api } from "../lib/api";
+import VisitsChart, { type VisitMetrics } from "./visits-chart";
 
 type Statistic = { name: string; count: number };
 type Statistics = {
   days: number;
+  visits?: VisitMetrics;
   generated_at: string;
   totals: {
     communes: number;
@@ -311,6 +313,9 @@ export default function Administration({ demo = false }: { demo?: boolean }) {
                     ))}
                   </div>
                 </div>
+                {!demo && data.visits && (
+                  <VisitsChart visits={data.visits} days={data.days} />
+                )}
                 <div className="admin-charts">
                   <section className="admin-panel admin-timeline">
                     <div className="admin-panel-heading">
@@ -489,7 +494,7 @@ export default function Administration({ demo = false }: { demo?: boolean }) {
                     <p>
                       {demo
                         ? "Cette démo est indépendante de la base du serveur. Elle ne donne accès à aucun compte ni échange privé. Les filtres et les graphiques sont utilisables librement."
-                        : "Seuls les volumes sont affichés ici. Le contenu des échanges privés et les coordonnées des élus ne sont pas exposés. Les visites, visiteurs uniques et durées de consultation ne sont pas encore mesurés."}
+                        : "Seuls les volumes sont affichés ici. Le contenu des échanges privés et les coordonnées des élus ne sont pas exposés. Les pages vues sont agrégées sans identifier les visiteurs. Les personnes uniques et les durées de consultation ne sont pas mesurées."}
                     </p>
                   </div>
                 </div>

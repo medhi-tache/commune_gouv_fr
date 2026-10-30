@@ -3,10 +3,12 @@
 from pathlib import Path
 import os
 import secrets
+import sys
 
 root = Path(__file__).resolve().parents[1]
 path = root / ".env"
 values = {
+    "QOMUNE_METRICS_KEY": secrets.token_hex(32),
     "QOMUNE_DOMAIN": "qomune.fr",
     "MONGO_ROOT_PASSWORD": secrets.token_hex(32),
     "QOMUNE_DB_PASSWORD": secrets.token_hex(32),
@@ -16,6 +18,14 @@ values = {
 try:
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
 except FileExistsError:
+    if "--add-metrics-key" in sys.argv:
+        existing = path.read_text()
+        if not any(line.startswith("QOMUNE_METRICS_KEY=") for line in existing.splitlines()):
+            with path.open("a") as file:
+                file.write("\nQOMUNE_METRICS_KEY=" + secrets.token_hex(32) + "\n")
+            path.chmod(0o600)
+        print("Clé de mesure configurée ; secrets existants conservés.")
+        raise SystemExit(0)
     raise SystemExit("Configuration existante conservée : aucune modification.")
 with os.fdopen(fd, "w") as file:
     file.write("# Secrets du serveur, à conserver hors du dépôt Git.\n")

@@ -1303,3 +1303,140 @@ async fn administration_periodes_vides_et_revocation_des_sessions() {
     );
     database.drop().await.unwrap();
 }
+
+async fn record_visit(app: &Router, key: Option<&str>, body: Value) -> StatusCode {
+    let mut builder = Request::builder()
+        .method("POST")
+        .uri("/internal/visits")
+        .header(header::CONTENT_TYPE, "application/json");
+    if let Some(key) = key {
+        builder = builder.header("x-qomune-metrics-key", key);
+    }
+    app.clone()
+        .oneshot(builder.body(Body::from(body.to_string())).unwrap())
+        .await
+        .unwrap()
+        .status()
+}
+#[tokio::test]
+async fn visites_anonymes_protegees_et_sans_donnees_individuelles() {
+    let (app, database) = setup().await;
+    let key = "cle-de-mesure-de-test-avec-32-caracteres";
+    visits::configure(&database, key).await.unwrap();
+    assert_eq!(
+        record_visit(&app, None, json!({"page":"public"})).await,
+        StatusCode::FORBIDDEN
+    );
+    assert_eq!(
+        record_visit(
+            &app,
+            Some("mauvaise-cle-longue-de-plus-de-32-caracteres"),
+            json!({"page":"public"})
+        )
+        .await,
+        StatusCode::FORBIDDEN
+    );
+    assert_eq!(
+        record_visit(&app, Some(key), json!({"page":"inconnue"})).await,
+        StatusCode::BAD_REQUEST
+    );
+    assert_eq!(
+        record_visit(&app, Some(key), json!({"page":"public","ip":"127.0.0.1"})).await,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+    for page in ["public", "admin_demo", "admin_private"] {
+        assert_eq!(
+            record_visit(&app, Some(key), json!({"page":page})).await,
+            StatusCode::NO_CONTENT
+        );
+    }
+    assert_eq!(
+        request(&app, "GET", "/admin/statistics", None, None)
+            .await
+            .0,
+        StatusCode::UNAUTHORIZED
+    );
+    let mayor = sign_in(&app, "maire.annecy@demo.qomune.fr").await;
+    assert_eq!(
+        request(&app, "GET", "/admin/statistics", Some(&mayor), None)
+            .await
+            .0,
+        StatusCode::UNAUTHORIZED
+    );
+    administration::configure(&database, "secret-administrateur-test-2026")
+        .await
+        .unwrap();
+    let (_, _, cookie) = request(
+        &app,
+        "POST",
+        "/admin/login",
+        None,
+        Some(json!({"password":"secret-administrateur-test-2026"})),
+    )
+    .await;
+    let (status, stats, _) = request(
+        &app,
+        "GET",
+        "/admin/statistics?days=7",
+        cookie.as_deref(),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(stats["visits"]["total"], 3);
+    let days = stats["visits"]["timeline"].as_array().unwrap();
+    assert_eq!(days.len(), 7);
+    assert_eq!(days[0]["measured"], false);
+    assert_eq!(days[6]["measured"], true);
+    assert_eq!(days[6]["public"], 1);
+    assert_eq!(days[6]["admin_demo"], 1);
+    assert_eq!(days[6]["admin_private"], 1);
+    let row = database
+        .collection::<Document>("daily_visits")
+        .find_one(doc! {})
+        .await
+        .unwrap()
+        .unwrap();
+    assert!(row.keys().all(|key| {
+        [
+            "_id",
+            "date",
+            "expires_at",
+            "public",
+            "admin_demo",
+            "admin_private",
+        ]
+        .contains(&key.as_str())
+    }));
+    assert!(!stats.to_string().contains(key));
+    database.drop().await.unwrap();
+}
+#[tokio::test]
+async fn visites_simultanees_et_periodes_bornees() {
+    let (app, database) = setup().await;
+    let key = "cle-de-mesure-de-test-avec-32-caracteres";
+    visits::configure(&database, key).await.unwrap();
+    let results = futures_util::future::join_all(
+        (0..20).map(|_| record_visit(&app, Some(key), json!({"page":"public"}))),
+    )
+    .await;
+    assert!(results.iter().all(|s| *s == StatusCode::NO_CONTENT));
+    let today = Utc::now().date_naive();
+    let start = today - Duration::days(6);
+    for (date, n) in [
+        (start, 4_i64),
+        (start - Duration::days(1), 8),
+        (today + Duration::days(1), 16),
+    ] {
+        database
+            .collection::<Document>("daily_visits")
+            .insert_one(doc! {"_id":date.to_string(),"public":n})
+            .await
+            .unwrap();
+    }
+    let summary = visits::summary(&database, start, today).await.unwrap();
+    assert_eq!(summary["total"], 24);
+    assert_eq!(summary["timeline"][6]["public"], 20);
+    assert_eq!(summary["timeline"][0]["public"], 4);
+    database.drop().await.unwrap();
+}

@@ -212,10 +212,14 @@ Le tableau de bord présente :
 - les publications quotidiennes, les thèmes et les cinq communes les plus actives sur 7, 30 ou 90 jours calendaires en UTC, aujourd’hui inclus ;
 - une répartition globale publique/privée et un tableau quotidien accessible en complément du graphique.
 
-Les chiffres proviennent de MongoDB et incluent les données de démonstration. Aucune visite, adresse IP, durée de consultation ou identité de visiteur n’est collectée pour ces graphiques. Les graphiques ne révèlent ni les textes privés ni les coordonnées des élus. Les compteurs globaux décrivent l’état actuel de la base ; seuls les graphiques d’activité sont filtrés par période. Il n’y a pas encore de gestion des communes ou des comptes depuis cette première page de pilotage.
+Les chiffres proviennent de MongoDB et incluent les données de démonstration. Le graphique « Connexions au site », réservé à l’administration privée, compte les chargements de pages HTML par jour pour tous les visiteurs, connectés ou non. Il ne mesure pas des personnes uniques : chaque rechargement compte, et des robots peuvent être inclus. Aucun cookie de suivi, IP, email, identifiant individuel, paramètre d’URL ou durée n’est enregistré pour cette mesure. Les contrôles de santé, les requêtes API, les fichiers statiques et les préchargements sont exclus. Les ouvertures de vues internes sans navigation HTML ne constituent pas une nouvelle visite. Les compteurs agrégés sont conservés au maximum 91 jours. L’historique démarre à l’activation ; les dates antérieures sont signalées comme non mesurées. Les graphiques ne révèlent ni les textes privés ni les coordonnées des élus. Les compteurs globaux décrivent l’état actuel de la base ; les graphiques d’activité et de fréquentation sont filtrés par période. Il n’y a pas encore de gestion des communes ou des comptes depuis cette première page de pilotage.
 
 Les routes `POST /admin/login`, `POST /admin/logout` et `GET /admin/statistics?days=30` passent par le relais `/api`. La session administrateur expire après deux heures et utilise un cookie HttpOnly, SameSite=Strict (Secure lorsque `COOKIE_SECURE=true`). Les résultats ne sont pas mis en cache. Les tests vérifient l’isolation des sessions, les périodes, les journées sans activité et la révocation des accès.
 
 ## Hébergement OVHcloud
 
 La procédure et les fichiers de déploiement du prototype sont décrits dans [deploy/README.md](deploy/README.md). La configuration distante utilise `compose.ovh.yaml`, distinct de la base de développement locale.
+
+Le comptage est réalisé côté Next.js, en arrière-plan, via `POST /internal/visits` : cette route ne passe pas par le relais public `/api` et exige une clé serveur `QOMUNE_METRICS_KEY`. La démonstration publique ne présente aucune mesure réelle de fréquentation. En local, `npm run dev` génère automatiquement la clé dans `backend/data/metrics-key.txt` ; pour des services lancés séparément, fournir la même clé privée au frontend et au backend.
+
+Le filtrage des pages vues est testé par `node scripts/test-visits-proxy.mjs` et inclus dans `npm run check`.

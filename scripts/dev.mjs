@@ -27,6 +27,17 @@ if (!process.env.QOMUNE_ADMIN_PASSWORD) {
     `Mot de passe administrateur local : fichier ${adminPasswordFile}`,
   );
 }
+// La clé de mesure reste côté serveur et ne donne aucun accès administrateur.
+if (!process.env.QOMUNE_METRICS_KEY) {
+  mkdirSync(resolve(root, "backend/data"), { recursive: true });
+  const file = resolve(root, "backend/data/metrics-key.txt");
+  if (!existsSync(file))
+    writeFileSync(file, randomBytes(32).toString("hex"), {
+      mode: 0o600,
+      flag: "wx",
+    });
+  process.env.QOMUNE_METRICS_KEY = readFileSync(file, "utf8").trim();
+}
 const webPort = process.env.WEB_PORT || "3000";
 const apiBind = process.env.API_BIND || "127.0.0.1:8080";
 const children = [];

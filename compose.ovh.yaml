@@ -37,6 +37,7 @@ services:
       MONGODB_URI: mongodb://qomune:${QOMUNE_DB_PASSWORD}@mongodb:27017/qomune?authSource=qomune
       MONGODB_DATABASE: qomune
       QOMUNE_MODE: prototype
+      QOMUNE_METRICS_KEY: ${QOMUNE_METRICS_KEY:?Clé de mesure requise}
       QOMUNE_ADMIN_PASSWORD: ${QOMUNE_ADMIN_PASSWORD:?Secret administrateur requis}
       # Seuls les comptes fictifs de démonstration utilisent ce mot de passe public.
       QOMUNE_DEMO_PASSWORD: commune-demo
@@ -58,6 +59,7 @@ services:
     restart: unless-stopped
     environment:
       API_BASE_URL: http://api:8080
+      QOMUNE_METRICS_KEY: ${QOMUNE_METRICS_KEY:?Clé de mesure requise}
       APP_ORIGIN: https://${QOMUNE_DOMAIN:?Domaine requis}
     depends_on:
       api: { condition: service_healthy }

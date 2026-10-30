@@ -238,6 +238,7 @@ pub async fn statistics(
     .await?;
     Ok(Json(json!({
         "days":days,"generated_at":Utc::now().to_rfc3339(),
+        "visits":visits::summary(&database,start,today).await?,
         "totals":{
             "communes":count(&database,"communes",doc! {}).await?,
             "registered_communes":active.first().map(|r|number(r,"count")).unwrap_or(0),

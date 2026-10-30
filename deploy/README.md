@@ -60,3 +60,12 @@ Copier les sauvegardes vers un emplacement privé distinct du serveur et tester 
 - [Installation officielle Docker sur Ubuntu](https://docs.docker.com/engine/install/ubuntu/)
 - [Serveur autonome Next.js](https://nextjs.org/docs/app/api-reference/config/next-config-js/output)
 - [HTTPS automatique Caddy](https://caddyserver.com/docs/automatic-https)
+
+## Activer le suivi des pages vues sur un serveur déjà installé
+
+```sh
+python3 deploy/configure.py --add-metrics-key
+sudo docker compose -f compose.ovh.yaml up --build -d api web
+```
+
+La migration ajoute seulement la clé de mesure manquante dans `.env` et conserve tous les secrets existants. Le graphique des visites est réservé à `/administration/connexion`. Il agrège les chargements HTML de tous les visiteurs, sans cookies de suivi, IP ou identité. Les métriques ne sont pas des visiteurs uniques ; les préchargements et les contrôles de santé ne comptent pas. Les journées précédant l'activation sont indiquées comme non mesurées. La collecte n'empêche pas l'ouverture du site en cas d'indisponibilité de la mesure.
