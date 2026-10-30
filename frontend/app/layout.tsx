@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
+import { socialMetadata } from "../lib/social-metadata";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Qomune — Votre commune, en lien direct",
-  description:
-    "Prototype de publication des communes : actualités publiques et espace du conseil municipal.",
+  ...socialMetadata(
+    "Qomune — Votre commune, en lien direct",
+    "Découvrez Qomune, le prototype indépendant de publication des communes : actualités locales et espace des élus.",
+    "/",
+  ),
   robots: { index: false, follow: false },
 };
 export default function RootLayout({

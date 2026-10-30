@@ -1,5 +1,6 @@
 import GovernmentDemoAccount from "../../../components/government-demo-account";
 import type { Metadata } from "next";
+import { socialMetadata } from "../../../lib/social-metadata";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowUpRight, Landmark } from "lucide-react";
 import {
@@ -19,11 +20,12 @@ export async function generateMetadata({
 }: ProfileProps): Promise<Metadata> {
   const { slug } = await params;
   const member = government.members.find((item) => item.slug === slug);
-  return {
-    title: member
-      ? `${member.name} — Gouvernement · Qomune`
-      : "Profil introuvable — Qomune",
-  };
+  if (!member) return { title: "Profil introuvable — Qomune" };
+  return socialMetadata(
+    `${member.name} — Gouvernement · Qomune`,
+    `Fiche publique de ${member.name} : ${member.role}. Prototype Qomune, sans caractère officiel.`,
+    `/gouvernement/${member.slug}`,
+  );
 }
 
 /** Les profils ne créent aucun compte et ne permettent pas de publier au nom d'un ministre. */

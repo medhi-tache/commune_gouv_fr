@@ -14,6 +14,12 @@ Permettre aux maires et aux conseillers municipaux de chaque commune de publier 
 
 Le prototype charge les **34 875 communes actuelles** de France métropolitaine et des DROM du **Code officiel géographique 2026 de l’Insee**, référencé sur [data.gouv.fr](https://www.data.gouv.fr/datasets/code-officiel-geographique-1). Les communes déléguées, les communes associées et les arrondissements municipaux sont exclus (`TYPECOM=COM`).
 
+## Aperçu des liens sur les réseaux sociaux
+
+Les pages déclarent des métadonnées Open Graph et Twitter Card avec une image PNG publique de **1200 × 630 pixels**, le logo Qomune, le domaine `qomune.fr` et la mention **Prototype indépendant**. L'image est accessible à `/images/qomune-partage-v1.png`. Le titre, la description et l'URL de partage correspondent à la page consultée ; aucune donnée de session ni statistique privée n'est intégrée.
+
+Le fichier `frontend/lib/social-metadata.ts` centralise ces informations. Le visuel est généré depuis le logo existant par `node scripts/generate-sharing-card.mjs`, puis conservé dans `frontend/public/images/`. Aucun compte de réseau social ni envoi automatique de publication n'est nécessaire pour fournir ces informations aux plateformes de partage.
+
 ## Présidence de la République
 
 Le lien **Présidence de la République**, placé au-dessus de **Gouvernement**, ouvre `/presidence`. La fiche d'Emmanuel Macron présente sa fonction de président de la République, distincte des membres du Gouvernement, et renvoie vers sa [fiche officielle sur le site de l’Élysée](https://www.elysee.fr/emmanuel-macron), consultée le **30 octobre 2026**. Le référentiel daté `frontend/reference/presidency.json` est maintenu manuellement et partagé par le frontend et le backend.

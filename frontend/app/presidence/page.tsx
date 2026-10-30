@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
+import { socialMetadata } from "../../lib/social-metadata";
 import { ArrowUpRight, Flag } from "lucide-react";
 import Dashboard from "../../components/dashboard";
 import GovernmentDemoAccount from "../../components/government-demo-account";
 import presidency from "../../reference/presidency.json";
 import "../gouvernement/government.css";
 
-export const metadata: Metadata = {
-  title: "Présidence de la République — Qomune",
-  description:
-    "Fiche du président de la République et compte fictif de démonstration pour publier dans les communes.",
-};
+export const metadata: Metadata = socialMetadata(
+  "Présidence de la République — Qomune",
+  "Fiche publique du président de la République dans Qomune, prototype indépendant sans caractère officiel.",
+  "/presidence",
+);
 
 /** La Présidence est présentée séparément de la composition du Gouvernement. */
 export default function PresidencyPage() {
