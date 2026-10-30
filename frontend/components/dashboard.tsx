@@ -1112,8 +1112,8 @@ export default function Dashboard({
               <div>
                 <strong>Connexion de démonstration</strong>
                 <p>
-                  Identités et mandats fictifs. Mot de passe :{" "}
-                  <code>commune-demo</code>
+                  Identités et mandats fictifs. Utilisez le mot de passe qui
+                  vous a été communiqué.
                 </p>
               </div>
             </div>
@@ -1188,7 +1188,7 @@ export default function Dashboard({
                 name="password"
                 autoComplete="current-password"
                 key={demoLogin ? "demo-password" : "member-password"}
-                defaultValue={demoLogin ? "commune-demo" : ""}
+                defaultValue=""
                 required
                 maxLength={200}
               />

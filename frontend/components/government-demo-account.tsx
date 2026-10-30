@@ -24,8 +24,6 @@ export default function GovernmentDemoAccount({
   institution?: "gouvernement" | "presidence";
 }) {
   const email = `${member.slug}@${institution}.demo.qomune.fr`;
-  const demoPassword =
-    institution === "presidence" ? "presidence-demo" : "gouvernement-demo";
   const [account, setAccount] = useState<DemoAccount | null>(null);
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(true);
@@ -131,8 +129,8 @@ export default function GovernmentDemoAccount({
       ) : (
         <form className="government-demo-form" onSubmit={login}>
           <p>
-            Identifiants publics, réservés au prototype. Mot de passe :{" "}
-            <strong>{demoPassword}</strong>
+            Compte de test réservé au prototype. Saisissez le mot de passe qui
+            vous a été communiqué.
           </p>
           <label>
             Identifiant de démonstration

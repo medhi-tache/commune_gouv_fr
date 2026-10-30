@@ -24,7 +24,7 @@ Le fichier `frontend/lib/social-metadata.ts` centralise ces informations. Le vis
 
 Le lien **Présidence de la République**, placé au-dessus de **Gouvernement**, ouvre `/presidence`. La fiche d'Emmanuel Macron présente sa fonction de président de la République, distincte des membres du Gouvernement, et renvoie vers sa [fiche officielle sur le site de l’Élysée](https://www.elysee.fr/emmanuel-macron), consultée le **30 octobre 2026**. Le référentiel daté `frontend/reference/presidency.json` est maintenu manuellement et partagé par le frontend et le backend.
 
-Un compte **fictif de démonstration**, sans lien avec la personne citée ni avec l’Élysée, est créé au démarrage : `emmanuel-macron@presidence.demo.qomune.fr`, mot de passe public **`presidence-demo`**. Depuis cette fiche, il permet de publier dans toutes les communes ou dans une commune choisie, avec les mêmes contrôles de destination et de non-duplication que les comptes fictifs du Gouvernement. Les messages sont obligatoirement publics, marqués **Démonstration**, signés **Emmanuel Macron (compte fictif)** avec sa fonction et rattachés à la rubrique Présidence.
+Un compte **fictif de démonstration**, sans lien avec la personne citée ni avec l’Élysée, est créé au démarrage : `emmanuel-macron@presidence.demo.qomune.fr`. Depuis cette fiche, il permet de publier dans toutes les communes ou dans une commune choisie, avec les mêmes contrôles de destination et de non-duplication que les comptes fictifs du Gouvernement. Les messages sont obligatoirement publics, marqués **Démonstration**, signés **Emmanuel Macron (compte fictif)** avec sa fonction et rattachés à la rubrique Présidence.
 
 Ce compte réutilise les routes de démonstration `/government-demo/*` et leur session isolée des accès municipaux et administrateur. Son institution `presidence` est attribuée par le serveur. Il n'est pas inclus dans la liste des 35 membres du Gouvernement et ne donne accès à aucun échange privé. Les pages vues de la rubrique sont comptées dans les statistiques publiques existantes. Une communication présidentielle officielle nécessiterait une vérification d'identité et d'habilitation, absente du prototype.
 
@@ -40,7 +40,7 @@ Depuis l’annuaire et les fiches, le sélecteur de territoire ouvre le fil publ
 
 ### Comptes fictifs du Gouvernement
 
-Le prototype crée au démarrage **35 comptes de démonstration**, à partir du même annuaire. Ils n'appartiennent pas aux personnes citées et ne représentent aucune communication officielle. Sur chaque fiche, la section **Tester ce compte** permet d'ouvrir et fermer une session : identifiant `<slug>@gouvernement.demo.qomune.fr`, mot de passe public **`gouvernement-demo`**. Par exemple : `sebastien-lecornu@gouvernement.demo.qomune.fr`.
+Le prototype crée au démarrage **35 comptes de démonstration**, à partir du même annuaire. Ils n'appartiennent pas aux personnes citées et ne représentent aucune communication officielle. Les mots de passe ne sont ni affichés ni préremplis dans les formulaires. Ils doivent être communiqués séparément par le responsable du prototype. Sur chaque fiche, la section **Tester ce compte** permet d'ouvrir et fermer une session : identifiant `<slug>@gouvernement.demo.qomune.fr`. Par exemple : `sebastien-lecornu@gouvernement.demo.qomune.fr`.
 
 Ces comptes sont conservés dans la collection MongoDB `government_demo_accounts`, avec un mot de passe haché Argon2. Leur création est idempotente. Les sessions de deux heures utilisent `government_demo_sessions` et un cookie HttpOnly distinct `qomune_government_demo`. Les routes `/government-demo/login`, `/government-demo/me` et `/government-demo/logout` gèrent une session distincte. Elle autorise les diffusions fictives nationales ou communales décrites ci-dessous, sans accès aux conseils municipaux ni à l'administration. Aucun courrier d'invitation n'est envoyé et aucune adresse personnelle réelle n'est utilisée. Un bandeau **DÉMONSTRATION · COMPTE FICTIF** reste visible pendant le test.
 
@@ -116,7 +116,7 @@ Le script transmet automatiquement l'adresse du backend à Next.js. Les fichiers
 
 1. Consulter le fil public sans connexion. Filtrer par commune, thème ou mot recherché, puis ouvrir une publication.
 2. Cliquer sur **Espace élus**. Le formulaire permet de choisir une commune et un compte de démonstration.
-3. Se connecter avec l'un des comptes ci-dessous. Le mot de passe initial commun est **`commune-demo`**.
+3. Se connecter avec l'un des comptes ci-dessous. Saisir le mot de passe communiqué par le responsable du prototype.
 4. Cliquer sur **Publier**, choisir **Publique** ou **Privée**, puis remplir et envoyer le formulaire.
 5. Se déconnecter : seules les publications publiques restent visibles. Un autre conseil municipal n'accède pas aux publications privées de cette commune.
 
@@ -206,7 +206,7 @@ MongoDB doit rester un service interne. La configuration Docker locale ne prévo
 | `APP_ORIGIN` | Origine HTTP locale calculée depuis la requête | Origine publique exacte à autoriser derrière un proxy, par exemple `https://qomune.fr`. |
 | `MONGODB_URI` | `mongodb://127.0.0.1:27017` | Adresse interne de MongoDB ; peut contenir des identifiants à conserver hors de Git. |
 | `MONGODB_DATABASE` | `qomune_prototype` | Nom de la base de l’application. |
-| `QOMUNE_DEMO_PASSWORD` | `commune-demo` | Mot de passe de création des comptes, uniquement à la première initialisation de la base. |
+| `QOMUNE_DEMO_PASSWORD` | Valeur non publiée dans cette documentation | Mot de passe de création des comptes, uniquement à la première initialisation de la base. |
 | `COOKIE_SECURE` | `false` | Activer avec `true` sur le backend derrière HTTPS. |
 
 Les mots de passe sont hachés avec Argon2. Les sessions utilisent un cookie `HttpOnly`, `SameSite=Strict`, expirent au bout de huit heures et sont révoquées à la déconnexion. Le serveur Rust reste lié à l'interface locale par défaut ; le navigateur utilise le relais Next.js sur la même origine.

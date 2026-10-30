@@ -20,7 +20,7 @@ sudo docker compose -f compose.ovh.yaml up --build -d
 sudo docker compose -f compose.ovh.yaml ps
 ```
 
-Le script de configuration crée `.env` avec des secrets aléatoires et des permissions `0600`. Il refuse de remplacer un fichier existant. Conserver ce fichier en lieu sûr, hors de Git ; ne pas copier les secrets de développement sur le serveur. L’administrateur utilise la valeur `QOMUNE_ADMIN_PASSWORD` de ce fichier, qui est propre au serveur. Les comptes municipaux fictifs conservent le mot de passe public `commune-demo` afin de permettre les essais décrits par l’interface ; ne pas les utiliser pour des informations réelles.
+Le script de configuration crée `.env` avec des secrets aléatoires et des permissions `0600`. Il refuse de remplacer un fichier existant. Conserver ce fichier en lieu sûr, hors de Git ; ne pas copier les secrets de développement sur le serveur. L’administrateur utilise la valeur `QOMUNE_ADMIN_PASSWORD` de ce fichier, qui est propre au serveur. Les mots de passe des comptes fictifs doivent être communiqués séparément par le responsable du prototype ; ils ne sont pas affichés dans les formulaires et ces comptes ne doivent pas être utilisés pour des informations réelles.
 
 Le domaine `QOMUNE_DOMAIN` doit pointer vers l’IPv4 du serveur. Ne configurer une entrée AAAA que lorsque la connectivité IPv6 a été vérifiée. Ouvrir 80/443 pour le site et réserver autant que possible SSH aux adresses d’administration. Caddy obtient et renouvelle le certificat automatiquement après propagation du DNS. Les messageries du domaine ne nécessitent aucune modification.
 
