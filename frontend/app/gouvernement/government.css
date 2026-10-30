@@ -441,3 +441,27 @@
   margin: 8px 0 0;
   font-size: 12px;
 }
+
+.government-audience {
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 16px;
+  display: grid;
+  gap: 14px;
+}
+.government-audience legend {
+  padding: 0 5px;
+  font-weight: 700;
+}
+.government-audience label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.government-audience input {
+  width: auto;
+  margin: 0;
+}
+.government-national .commune-trigger {
+  width: 100%;
+}

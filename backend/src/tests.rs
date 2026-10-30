@@ -1806,3 +1806,99 @@ async fn diffusion_nationale_unique_visible_dans_toutes_les_communes_et_signee()
     );
     database.drop().await.unwrap();
 }
+
+#[tokio::test]
+async fn gouvernement_peut_cibler_une_commune_sans_diffuser_aux_autres() {
+    let (app, database) = setup().await;
+    government::initialize(&database).await.unwrap();
+    let (_,_,cookie) = request(&app,"POST","/government-demo/login",None,Some(json!({"email":"sebastien-lecornu@gouvernement.demo.qomune.fr","password":"gouvernement-demo"}))).await;
+    let cookie = cookie.unwrap();
+    let payload = json!({"title":"Un message pour Annecy","body":"Une publication fictive destinée uniquement à Annecy.","category":"Services publics","request_id":Uuid::new_v4().to_string(),"commune_id":"74010"});
+    let (status, receipt, _) = request(
+        &app,
+        "POST",
+        "/government-demo/publications",
+        Some(&cookie),
+        Some(payload.clone()),
+    )
+    .await;
+    assert_eq!(status, StatusCode::CREATED);
+    assert_eq!(receipt["scope"], "commune");
+    assert_eq!(receipt["commune_name"], "Annecy");
+    let id = receipt["id"].as_str().unwrap();
+    for (commune, expected) in [("74010", true), ("33063", false), ("44109", false)] {
+        let (_, posts, _) = request(
+            &app,
+            "GET",
+            &format!("/publications?commune={commune}"),
+            None,
+            None,
+        )
+        .await;
+        assert_eq!(
+            posts
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|post| post["id"] == id),
+            expected
+        );
+    }
+    let post = request(&app, "GET", &format!("/publications/{id}"), None, None)
+        .await
+        .1;
+    assert_eq!(post["commune_id"], "74010");
+    assert_eq!(post["visibility"], "public");
+    assert_eq!(post["is_demo"], true);
+    assert_eq!(post["author_role"], "Premier ministre");
+    let history = request(
+        &app,
+        "GET",
+        "/government-demo/publications",
+        Some(&cookie),
+        None,
+    )
+    .await
+    .1;
+    assert_eq!(history.as_array().unwrap().len(), 1);
+    assert_eq!(history[0]["commune_name"], "Annecy");
+    // Une nouvelle tentative ne change ni la destination initiale ni le reçu.
+    let mut retry = payload.clone();
+    retry["commune_id"] = json!("33063");
+    let replay = request(
+        &app,
+        "POST",
+        "/government-demo/publications",
+        Some(&cookie),
+        Some(retry),
+    )
+    .await
+    .1;
+    assert_eq!(replay["commune_id"], "74010");
+    assert_eq!(
+        database
+            .collection::<Document>("publications")
+            .count_documents(doc! {"id":id})
+            .await
+            .unwrap(),
+        1
+    );
+    for code in ["99999", "", "74010,33063"] {
+        let mut invalid = payload.clone();
+        invalid["commune_id"] = json!(code);
+        invalid["request_id"] = json!(Uuid::new_v4().to_string());
+        assert_eq!(
+            request(
+                &app,
+                "POST",
+                "/government-demo/publications",
+                Some(&cookie),
+                Some(invalid)
+            )
+            .await
+            .0,
+            StatusCode::BAD_REQUEST
+        );
+    }
+    database.drop().await.unwrap();
+}

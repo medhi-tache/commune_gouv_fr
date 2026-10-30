@@ -205,11 +205,12 @@ pub async fn me(State(database): State<Database>, headers: HeaderMap) -> ApiResu
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct NationalPublication {
+pub struct GovernmentPublication {
     title: String,
     body: String,
     category: String,
     request_id: String,
+    commune_id: Option<String>,
 }
 
 /// Une diffusion nationale correspond à un seul document, sans 34 875 copies.
@@ -217,7 +218,7 @@ pub struct NationalPublication {
 pub async fn publish(
     State(database): State<Database>,
     headers: HeaderMap,
-    Json(input): Json<NationalPublication>,
+    Json(input): Json<GovernmentPublication>,
 ) -> ApiResult<(StatusCode, Json<Value>)> {
     let author = authenticated(&database, &headers)
         .await?
@@ -238,13 +239,42 @@ pub async fn publish(
     ]
     .contains(&input.category.as_str())
     {
-        return Err(invalid("Catégorie de diffusion nationale inconnue."));
+        return Err(invalid("Catégorie de diffusion inconnue."));
     }
     let request_id = Uuid::parse_str(&input.request_id)
         .map_err(|_| invalid("Identifiant de diffusion invalide."))?;
+    // Une destination communale doit provenir du référentiel officiel chargé en base.
+    // Sans code, la diffusion reste nationale et rétrocompatible avec le premier formulaire.
+    let target = match input.commune_id {
+        Some(code) => {
+            if code.len() != 5 || !code.bytes().all(|c| c.is_ascii_alphanumeric()) {
+                return Err(invalid("Choisissez une commune valide."));
+            }
+            Some(
+                database
+                    .collection::<Commune>("communes")
+                    .find_one(doc! {"id":code})
+                    .await?
+                    .ok_or_else(|| {
+                        invalid("La commune choisie n’existe pas dans le référentiel.")
+                    })?,
+            )
+        }
+        None => None,
+    };
+    let scope = if target.is_some() {
+        "commune"
+    } else {
+        "national"
+    };
+    let commune_id = target
+        .as_ref()
+        .map(|commune| commune.id.as_str())
+        .unwrap_or("");
+    let commune_name = target.as_ref().map(|commune| commune.name.as_str());
     let id = format!("national-{}-{}", author.slug, request_id);
     let record = doc! {
-        "id":&id, "author_id":&author.id, "commune_id":"", "scope":"national", "is_demo":true,
+        "id":&id, "author_id":&author.id, "commune_id":commune_id, "commune_name":commune_name, "scope":scope, "is_demo":true,
         "title":format!("Démonstration — {}",input.title.trim()),
         "body":format!("Publication fictive de démonstration. Ne constitue pas une communication officielle.\n\n{}",input.body.trim()),
         "category":input.category, "visibility":"public",
@@ -263,9 +293,18 @@ pub async fn publish(
             return Err(error.into());
         }
     }
+    // Le reçu reflète le premier envoi, même si un client réutilise son identifiant de demande.
+    let saved = collection
+        .find_one(doc! {"id":&id})
+        .await?
+        .ok_or_else(not_found)?;
     Ok((
         StatusCode::CREATED,
-        Json(json!({"id":id,"scope":"national","is_demo":true})),
+        Json(json!({
+            "id":id, "scope":saved.get_str("scope").unwrap_or("national"),
+            "commune_id":saved.get_str("commune_id").unwrap_or(""),
+            "commune_name":saved.get_str("commune_name").ok(), "is_demo":true
+        })),
     ))
 }
 
@@ -278,7 +317,7 @@ pub async fn publications(
         .ok_or_else(denied)?;
     let records: Vec<StoredPublication> = database
         .collection("publications")
-        .find(doc! {"author_id":author.id,"scope":"national","visibility":"public"})
+        .find(doc! {"author_id":author.id,"scope":{"$in":["national","commune"]},"is_demo":true,"visibility":"public"})
         .sort(doc! {"published_at":-1,"id":-1})
         .limit(20)
         .await?

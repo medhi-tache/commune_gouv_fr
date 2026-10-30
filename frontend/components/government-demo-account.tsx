@@ -101,9 +101,9 @@ export default function GovernmentDemoAccount({
           <p>{account.function}</p>
           <p className="government-demo-email">{account.email}</p>
           <p>
-            Cette session permet de diffuser des publications nationales de
-            démonstration. Elle ne donne aucun accès aux conseils municipaux ni
-            à l’administration.
+            Cette session permet de diffuser des publications de démonstration
+            dans toutes les communes ou dans une commune choisie. Elle ne donne
+            aucun accès aux conseils municipaux ni à l’administration.
           </p>
           {account.slug !== member.slug && (
             <p>

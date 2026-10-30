@@ -59,13 +59,17 @@ export default function CommunePicker({
     if (!open) return;
     positionPopup();
     input.current?.focus();
-    const outside = (event: PointerEvent) => {
+    const outside = (event: Event) => {
       if (!root.current?.contains(event.target as Node)) setOpen(false);
     };
+    // Le clic sur un bouton ne reçoit pas toujours le focus dans Safari.
+    // Fermer sur blur pouvait retirer le résultat avant son événement click.
     document.addEventListener("pointerdown", outside);
+    document.addEventListener("focusin", outside);
     window.addEventListener("resize", positionPopup);
     return () => {
       document.removeEventListener("pointerdown", outside);
+      document.removeEventListener("focusin", outside);
       window.removeEventListener("resize", positionPopup);
     };
   }, [open]);
@@ -105,10 +109,6 @@ export default function CommunePicker({
     <div
       className={`commune-picker ${compact ? "compact" : ""}`}
       ref={root}
-      onBlur={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget as Node | null))
-          setOpen(false);
-      }}
       onKeyDown={(event) => {
         if (event.key === "Escape" && open) {
           event.preventDefault();

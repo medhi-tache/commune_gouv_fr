@@ -64,6 +64,7 @@ type Publication = {
   scope?: string;
   is_demo?: boolean;
   author_profile?: string;
+  commune_name?: string;
 };
 type Modal = "login" | "create" | "about" | "members" | "register" | null;
 const categories = [
@@ -1332,10 +1333,12 @@ export default function Dashboard({ children }: { children?: ReactNode }) {
           </span>
           <h3 className="detail-title">{detail.title}</h3>
           <p className="publication-attribution">
-            {detail.scope === "national" ? (
+            {detail.is_demo && detail.author_profile ? (
               <>
-                Publication nationale de démonstration, par{" "}
-                <strong>{detail.author_name}</strong>.
+                {detail.scope === "national"
+                  ? "Publication nationale de démonstration"
+                  : `Publication de démonstration destinée à ${detail.commune_name || detail.commune_id}`}
+                , par <strong>{detail.author_name}</strong>.
               </>
             ) : (
               <>
@@ -1447,8 +1450,11 @@ function PublicationMeta({
       </span>
       <span className="meta-separator">·</span>
       <time dateTime={item.published_at}>{dateLabel(item.published_at)}</time>
-      {item.scope === "national" && (
-        <span className="national-demo-tag">National · Démonstration</span>
+      {item.is_demo && item.author_profile && (
+        <span className="national-demo-tag">
+          {item.scope === "national" ? "National" : "Gouvernement"} ·
+          Démonstration
+        </span>
       )}
       {item.visibility === "private" && (
         <span className="private-tag">
@@ -1461,7 +1467,7 @@ function PublicationMeta({
 /** Le marquage fictif reste dans le titre et le badge ; l'extrait montre le message. */
 function publicationExcerpt(item: Publication) {
   const content =
-    item.scope === "national"
+    item.is_demo && item.author_profile
       ? item.body.split("\n\n").slice(1).join("\n\n")
       : item.body;
   return content.split("\n")[0];
@@ -1483,7 +1489,7 @@ function Author({ item }: { item: Publication }) {
           item.author_name
         )}
         <small>
-          {item.scope === "national"
+          {item.is_demo && item.author_profile
             ? item.author_role
             : item.author_role === "maire"
               ? "Maire"
