@@ -20,6 +20,8 @@ Les 35 personnes sont issues de la [composition officielle du Gouvernement](http
 
 Ces fiches sont informatives et ne prouvent ni l’identité ni le mandat des personnes citées. Les consultations de l'annuaire et des profils sont comptées parmi les pages publiques dans les statistiques de visites existantes, sans information sur l'identité des visiteurs.
 
+Depuis l’annuaire et les fiches, le sélecteur de territoire ouvre le fil public de la commune choisie. Le paramètre `?commune=CODE_INSEE` conserve ce choix après rechargement et peut être partagé. Les deux sélecteurs du fil public restent synchronisés.
+
 ### Comptes fictifs du Gouvernement
 
 Le prototype crée au démarrage **35 comptes de démonstration**, à partir du même annuaire. Ils n'appartiennent pas aux personnes citées et ne représentent aucune communication officielle. Sur chaque fiche, la section **Tester ce compte** permet d'ouvrir et fermer une session : identifiant `<slug>@gouvernement.demo.qomune.fr`, mot de passe public **`gouvernement-demo`**. Par exemple : `sebastien-lecornu@gouvernement.demo.qomune.fr`.

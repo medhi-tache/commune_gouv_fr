@@ -248,6 +248,15 @@ export default function Dashboard({ children }: { children?: ReactNode }) {
   const [email, setEmail] = useState("maire.annecy@demo.qomune.fr");
   const [visibility, setVisibility] = useState<"public" | "private">("public");
 
+  // Le choix effectué depuis l'annuaire ouvre le fil communal et survit au rechargement.
+  useEffect(() => {
+    if (children) return;
+    const code = new URLSearchParams(window.location.search)
+      .get("commune")
+      ?.toUpperCase();
+    if (code && /^[A-Z0-9]{5}$/.test(code)) setCommune(code);
+  }, [children]);
+
   useEffect(() => {
     let current = true;
     Promise.all([
@@ -351,6 +360,16 @@ export default function Dashboard({ children }: { children?: ReactNode }) {
   }, [commune, member, publications, communes]);
 
   function selectCommune(selected: Commune | null) {
+    if (children) {
+      window.location.assign(
+        selected ? `/?commune=${encodeURIComponent(selected.id)}` : "/",
+      );
+      return;
+    }
+    const url = new URL(window.location.href);
+    if (selected) url.searchParams.set("commune", selected.id);
+    else url.searchParams.delete("commune");
+    window.history.replaceState(null, "", url);
     if (selected)
       setCommunes((previous) => [
         ...new Map([...previous, selected].map((c) => [c.id, c])).values(),
@@ -512,7 +531,7 @@ export default function Dashboard({ children }: { children?: ReactNode }) {
           label="Choisir une commune"
           value={selectedCommune || null}
           onChange={selectCommune}
-          disabled={Boolean(children) || view === "council"}
+          disabled={!children && view === "council"}
         />
         <p className="territory-help">
           L’information locale commence
