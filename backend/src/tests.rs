@@ -63,6 +63,124 @@ async fn sign_in(app: &Router, email: &str) -> String {
     assert_eq!(status, StatusCode::OK);
     cookie.unwrap()
 }
+
+#[tokio::test]
+async fn comptes_gouvernement_fictifs_connectables_et_isoles() {
+    let (app, database) = setup().await;
+    government::initialize(&database).await.unwrap();
+    government::initialize(&database).await.unwrap();
+    let accounts: Vec<Document> = database
+        .collection("government_demo_accounts")
+        .find(doc! {})
+        .await
+        .unwrap()
+        .try_collect()
+        .await
+        .unwrap();
+    assert_eq!(accounts.len(), 35, "Aucun doublon après un redémarrage");
+    let mut last_cookie = String::new();
+    for account in &accounts {
+        assert!(account.get_bool("is_demo").unwrap());
+        assert!(!account.get_str("function").unwrap().is_empty());
+        assert!(
+            account
+                .get_str("password_hash")
+                .unwrap()
+                .starts_with("$argon2")
+        );
+        let (status, _, cookie) = request(
+            &app,
+            "POST",
+            "/government-demo/login",
+            None,
+            Some(json!({"email":account.get_str("email").unwrap(),"password":"gouvernement-demo"})),
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK);
+        last_cookie = cookie.unwrap();
+        let (_, profile, _) =
+            request(&app, "GET", "/government-demo/me", Some(&last_cookie), None).await;
+        assert_eq!(profile["account"]["slug"], account.get_str("slug").unwrap());
+        assert_eq!(profile["account"]["is_demo"], true);
+        assert!(profile["account"].get("password_hash").is_none());
+    }
+    assert!(last_cookie.starts_with("qomune_government_demo="));
+    assert!(
+        request(&app, "GET", "/auth/me", Some(&last_cookie), None)
+            .await
+            .1["member"]
+            .is_null()
+    );
+    for path in [
+        "/publications?scope=council",
+        "/members",
+        "/admin/statistics",
+    ] {
+        assert_eq!(
+            request(&app, "GET", path, Some(&last_cookie), None).await.0,
+            StatusCode::UNAUTHORIZED
+        );
+    }
+    assert_eq!(
+        request(
+            &app,
+            "POST",
+            "/publications",
+            Some(&last_cookie),
+            Some(json!({
+                "title":"Essai gouvernement", "body":"Une publication qui doit être refusée.",
+                "category":"Vie citoyenne", "visibility":"public"
+            }))
+        )
+        .await
+        .0,
+        StatusCode::UNAUTHORIZED
+    );
+    // Même en renommant son cookie, une session de démonstration ne devient pas municipale.
+    let forged = last_cookie.replace("qomune_government_demo=", "qomune_session=");
+    assert_eq!(
+        request(&app, "GET", "/members", Some(&forged), None)
+            .await
+            .0,
+        StatusCode::UNAUTHORIZED
+    );
+    assert_eq!(
+        request(
+            &app,
+            "POST",
+            "/government-demo/login",
+            None,
+            Some(json!({
+                "email":accounts[0].get_str("email").unwrap(), "password":"incorrect"
+            }))
+        )
+        .await
+        .0,
+        StatusCode::UNAUTHORIZED
+    );
+    request(
+        &app,
+        "POST",
+        "/government-demo/logout",
+        Some(&last_cookie),
+        Some(json!({})),
+    )
+    .await;
+    assert!(
+        request(&app, "GET", "/government-demo/me", Some(&last_cookie), None)
+            .await
+            .1["account"]
+            .is_null()
+    );
+    let municipal = sign_in(&app, "maire.annecy@demo.qomune.fr").await;
+    assert!(
+        request(&app, "GET", "/government-demo/me", Some(&municipal), None)
+            .await
+            .1["account"]
+            .is_null()
+    );
+    database.drop().await.unwrap();
+}
 #[tokio::test]
 async fn visiteurs_sans_acces_aux_publications_privees() {
     let (app, database) = setup().await;

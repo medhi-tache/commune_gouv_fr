@@ -4,6 +4,8 @@ WORKDIR /src
 COPY backend/Cargo.toml backend/Cargo.lock ./
 COPY backend/src ./src
 COPY backend/reference ./reference
+# Annuaire commun : les comptes de démonstration reprennent les mêmes noms et fonctions.
+COPY frontend/reference /frontend/reference
 RUN cargo build --release --locked
 
 FROM debian:bookworm-slim

@@ -3,6 +3,7 @@
 mod administration;
 mod discussion;
 mod fixtures;
+mod government;
 mod reference;
 mod registration;
 #[cfg(test)]
@@ -730,6 +731,9 @@ fn app(database: Database) -> Router {
         .route("/auth/register", post(registration::register))
         .route("/auth/logout", post(logout))
         .route("/auth/me", get(me))
+        .route("/government-demo/login", post(government::login))
+        .route("/government-demo/logout", post(government::logout))
+        .route("/government-demo/me", get(government::me))
         .route("/members", get(council_members).post(create_member))
         .route("/publications", get(publications).post(create_publication))
         .route("/publications/{id}", get(publication))
@@ -754,6 +758,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     initialize(&database, &password)
         .await
         .map_err(|_| "Initialisation MongoDB impossible.")?;
+    government::initialize(&database).await?;
     if let Ok(password) = std::env::var("QOMUNE_ADMIN_PASSWORD") {
         administration::configure(&database, &password).await?;
     }

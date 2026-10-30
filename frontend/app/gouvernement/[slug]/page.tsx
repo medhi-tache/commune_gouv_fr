@@ -1,3 +1,4 @@
+import GovernmentDemoAccount from "../../../components/government-demo-account";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowUpRight, Landmark } from "lucide-react";
@@ -79,6 +80,7 @@ export default async function GovernmentProfile({ params }: ProfileProps) {
           <span className="sr-only"> sur info.gouv.fr (nouvel onglet)</span>
         </a>
       </section>
+      <GovernmentDemoAccount member={member} />
       <p className="government-note">
         Source :{" "}
         <a

@@ -18,7 +18,13 @@ Le lien **Gouvernement**, sous **Conseil municipal**, ouvre `/gouvernement`. La 
 
 Les 35 personnes sont issues de la [composition officielle du Gouvernement](https://www.info.gouv.fr/composition-du-gouvernement), consultée le **30 octobre 2026**. Le fichier `frontend/reference/government.json` conserve cette photographie datée ; les doubles rattachements sont regroupés par personne. Ce fichier n'est pas synchronisé automatiquement : toute actualisation doit vérifier à nouveau la composition et les liens officiels, mettre à jour `checked_at`, puis reconstruire et déployer le frontend. La date de consultation ne représente pas une date de nomination.
 
-Ces fiches sont informatives et ne créent aucun compte de ministre. Les consultations de l'annuaire et des profils sont comptées parmi les pages publiques dans les statistiques de visites existantes, sans information sur l'identité des visiteurs.
+Ces fiches sont informatives et ne prouvent ni l’identité ni le mandat des personnes citées. Les consultations de l'annuaire et des profils sont comptées parmi les pages publiques dans les statistiques de visites existantes, sans information sur l'identité des visiteurs.
+
+### Comptes fictifs du Gouvernement
+
+Le prototype crée au démarrage **35 comptes de démonstration**, à partir du même annuaire. Ils n'appartiennent pas aux personnes citées et ne représentent aucune communication officielle. Sur chaque fiche, la section **Tester ce compte** permet d'ouvrir et fermer une session : identifiant `<slug>@gouvernement.demo.qomune.fr`, mot de passe public **`gouvernement-demo`**. Par exemple : `sebastien-lecornu@gouvernement.demo.qomune.fr`.
+
+Ces comptes sont conservés dans la collection MongoDB `government_demo_accounts`, avec un mot de passe haché Argon2. Leur création est idempotente. Les sessions de deux heures utilisent `government_demo_sessions` et un cookie HttpOnly distinct `qomune_government_demo`. Les routes `/government-demo/login`, `/government-demo/me` et `/government-demo/logout` ne donnent aucun droit de publication ni aucun accès aux conseils municipaux ou à l'administration. Aucun courrier d'invitation n'est envoyé et aucune adresse personnelle réelle n'est utilisée. Un bandeau **DÉMONSTRATION · COMPTE FICTIF** reste visible pendant le test.
 
 ## Utilisateurs et publications
 
