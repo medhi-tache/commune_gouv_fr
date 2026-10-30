@@ -1147,3 +1147,159 @@ async fn pagination_des_commentaires_sans_perte_ni_fuite() {
     );
     database.drop().await.unwrap();
 }
+
+#[tokio::test]
+async fn administration_authentification_independante_et_statistiques_agregees() {
+    let (app, database) = setup().await;
+    assert_eq!(
+        request(&app, "GET", "/admin/statistics", None, None)
+            .await
+            .0,
+        StatusCode::UNAUTHORIZED
+    );
+    let mayor = sign_in(&app, "maire.annecy@demo.qomune.fr").await;
+    assert_eq!(
+        request(&app, "GET", "/admin/statistics", Some(&mayor), None)
+            .await
+            .0,
+        StatusCode::UNAUTHORIZED
+    );
+    assert_eq!(
+        request(
+            &app,
+            "POST",
+            "/admin/login",
+            None,
+            Some(json!({"password":"absent"}))
+        )
+        .await
+        .0,
+        StatusCode::SERVICE_UNAVAILABLE
+    );
+    administration::configure(&database, "mot-de-passe-admin-test-2026")
+        .await
+        .unwrap();
+    assert_eq!(
+        request(
+            &app,
+            "POST",
+            "/admin/login",
+            None,
+            Some(json!({"password":"incorrect"}))
+        )
+        .await
+        .0,
+        StatusCode::UNAUTHORIZED
+    );
+    let (status, _, cookie) = request(
+        &app,
+        "POST",
+        "/admin/login",
+        None,
+        Some(json!({"password":"mot-de-passe-admin-test-2026"})),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    let token = cookie.unwrap();
+    let (status, stats, _) =
+        request(&app, "GET", "/admin/statistics?days=30", Some(&token), None).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(stats["timeline"].as_array().unwrap().len(), 30);
+    assert_eq!(stats["totals"]["public"], 7);
+    assert_eq!(stats["totals"]["private"], 2);
+    assert_eq!(stats["totals"]["members"], 7);
+    assert_eq!(stats["totals"]["registered_communes"], 6);
+    assert!(!stats.to_string().contains("author_name"));
+    assert!(!stats.to_string().contains("password"));
+    assert!(!stats.to_string().contains("@demo"));
+    assert_eq!(
+        request(
+            &app,
+            "GET",
+            "/publications?scope=council",
+            Some(&token),
+            None
+        )
+        .await
+        .0,
+        StatusCode::UNAUTHORIZED
+    );
+    assert_eq!(
+        request(
+            &app,
+            "GET",
+            "/admin/statistics?days=365",
+            Some(&token),
+            None
+        )
+        .await
+        .0,
+        StatusCode::BAD_REQUEST
+    );
+    request(&app, "POST", "/admin/logout", Some(&token), Some(json!({}))).await;
+    assert_eq!(
+        request(&app, "GET", "/admin/statistics", Some(&token), None)
+            .await
+            .0,
+        StatusCode::UNAUTHORIZED
+    );
+    database.drop().await.unwrap();
+}
+
+#[tokio::test]
+async fn administration_periodes_vides_et_revocation_des_sessions() {
+    let (app, database) = setup().await;
+    administration::configure(&database, "mot-de-passe-admin-test-2026")
+        .await
+        .unwrap();
+    let (_, _, cookie) = request(
+        &app,
+        "POST",
+        "/admin/login",
+        None,
+        Some(json!({"password":"mot-de-passe-admin-test-2026"})),
+    )
+    .await;
+    let token = cookie.unwrap();
+    database
+        .collection::<Document>("publications")
+        .delete_many(doc! {})
+        .await
+        .unwrap();
+    let today = Utc::now().date_naive();
+    for (id, date, visibility) in [
+        ("first", today - Duration::days(6), "public"),
+        ("today", today, "private"),
+        ("old", today - Duration::days(7), "public"),
+        ("future", today + Duration::days(1), "private"),
+    ] {
+        database.collection::<Document>("publications").insert_one(doc! {"id":id,"commune_id":"74010","category":"Culture","published_at":format!("{date}T12:00:00+00:00"),"visibility":visibility}).await.unwrap();
+    }
+    let (_, stats, _) = request(&app, "GET", "/admin/statistics?days=7", Some(&token), None).await;
+    let timeline = stats["timeline"].as_array().unwrap();
+    assert_eq!(timeline.len(), 7);
+    assert_eq!(timeline[0]["public"], 1);
+    assert_eq!(timeline[6]["private"], 1);
+    assert_eq!(timeline[1]["public"], 0);
+    assert_eq!(stats["categories"][0]["count"], 2);
+    assert_eq!(stats["top_communes"][0]["count"], 2);
+    database
+        .collection::<Document>("publications")
+        .delete_many(doc! {})
+        .await
+        .unwrap();
+    let (_, empty, _) = request(&app, "GET", "/admin/statistics?days=90", Some(&token), None).await;
+    assert_eq!(empty["timeline"].as_array().unwrap().len(), 90);
+    assert!(empty["categories"].as_array().unwrap().is_empty());
+    assert_eq!(empty["totals"]["public"], 0);
+    administration::configure(&database, "un-autre-secret-admin-2026")
+        .await
+        .unwrap();
+    assert_eq!(
+        request(&app, "GET", "/admin/statistics", Some(&token), None)
+            .await
+            .0,
+        StatusCode::UNAUTHORIZED
+    );
+    database.drop().await.unwrap();
+}

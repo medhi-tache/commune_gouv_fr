@@ -2,8 +2,31 @@
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { randomBytes } from "node:crypto";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
+// Un secret propre à cette installation locale ; jamais de mot de passe administrateur public.
+const adminPasswordFile = resolve(
+  root,
+  "backend/data/administration-password.txt",
+);
+if (!process.env.QOMUNE_ADMIN_PASSWORD) {
+  if (!existsSync(adminPasswordFile)) {
+    mkdirSync(resolve(root, "backend/data"), { recursive: true });
+    writeFileSync(adminPasswordFile, randomBytes(24).toString("base64url"), {
+      mode: 0o600,
+      flag: "wx",
+    });
+  }
+  process.env.QOMUNE_ADMIN_PASSWORD = readFileSync(
+    adminPasswordFile,
+    "utf8",
+  ).trim();
+  console.log(
+    `Mot de passe administrateur local : fichier ${adminPasswordFile}`,
+  );
+}
 const webPort = process.env.WEB_PORT || "3000";
 const apiBind = process.env.API_BIND || "127.0.0.1:8080";
 const children = [];

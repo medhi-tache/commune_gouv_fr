@@ -1,5 +1,6 @@
 //! API Rust / MongoDB du prototype Qomune.
 //! Les comptes de démonstration ne constituent pas une vérification de mandat.
+mod administration;
 mod discussion;
 mod fixtures;
 mod reference;
@@ -717,6 +718,9 @@ async fn create_publication(
 fn app(database: Database) -> Router {
     Router::new()
         .route("/health", get(health))
+        .route("/admin/login", post(administration::login))
+        .route("/admin/logout", post(administration::logout))
+        .route("/admin/statistics", get(administration::statistics))
         .route("/communes", get(communes))
         .route("/communes/meta", get(communes_meta))
         .route("/auth/login", post(login))
@@ -747,6 +751,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     initialize(&database, &password)
         .await
         .map_err(|_| "Initialisation MongoDB impossible.")?;
+    if let Ok(password) = std::env::var("QOMUNE_ADMIN_PASSWORD") {
+        administration::configure(&database, &password).await?;
+    }
     let count = reference::import(&database)
         .await
         .map_err(|_| "Import du référentiel des communes impossible.")?;

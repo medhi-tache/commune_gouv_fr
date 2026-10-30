@@ -196,3 +196,20 @@ La vérification réelle des mandats, les invitations par e-mail, la récupérat
 Le prototype fonctionne localement et n'est pas déployé sur les domaines prévus. Pour une mise en ligne réelle sur qomune.fr, prévoir un hébergement exécutant Rust et Next.js, une instance MongoDB privée avec stockage persistant, HTTPS, les cookies sécurisés et une configuration de proxy préservant l'origine des requêtes. Il faudra aussi remplacer les comptes de démonstration par des comptes vérifiés, ajouter une limitation des tentatives de connexion et organiser les sauvegardes avant d'accueillir des données réelles.
 
 Le domaine définitif envisagé `commune.gouv.fr` reste soumis à son attribution et à sa configuration.
+
+## Administration et graphiques d’utilisation
+
+L’espace **Administration** est accessible depuis l’en-tête et à l’adresse `/administration`. Il dispose d’une authentification indépendante de celle des élus. Un maire ou un conseiller municipal ne peut pas consulter les statistiques globales avec sa session municipale.
+
+Avec `npm run dev`, un mot de passe aléatoire est créé à la première utilisation dans `backend/data/administration-password.txt` (fichier local ignoré par Git, permissions limitées au propriétaire). Saisir ce mot de passe dans l’espace Administration. Il n’est jamais affiché dans les journaux ni intégré au frontend. Pour un lancement direct de Rust ou un hébergement distant, fournir `QOMUNE_ADMIN_PASSWORD` (16 à 200 caractères) via la configuration privée du serveur. Sa modification révoque les sessions administrateur existantes. Ne pas publier ce secret. Le compte configuré est conservé dans MongoDB sous forme de hash Argon2 ; retirer la variable ne supprime pas ce compte.
+
+Le tableau de bord présente :
+
+- les communes disposant d’au moins un compte municipal, les membres et les maires ;
+- les volumes actuels de publications publiques et privées, de commentaires et de réactions ;
+- les publications quotidiennes, les thèmes et les cinq communes les plus actives sur 7, 30 ou 90 jours calendaires en UTC, aujourd’hui inclus ;
+- une répartition globale publique/privée et un tableau quotidien accessible en complément du graphique.
+
+Les chiffres proviennent de MongoDB et incluent les données de démonstration. Aucune visite, adresse IP, durée de consultation ou identité de visiteur n’est collectée pour ces graphiques. Les graphiques ne révèlent ni les textes privés ni les coordonnées des élus. Les compteurs globaux décrivent l’état actuel de la base ; seuls les graphiques d’activité sont filtrés par période. Il n’y a pas encore de gestion des communes ou des comptes depuis cette première page de pilotage.
+
+Les routes `POST /admin/login`, `POST /admin/logout` et `GET /admin/statistics?days=30` passent par le relais `/api`. La session administrateur expire après deux heures et utilise un cookie HttpOnly, SameSite=Strict (Secure lorsque `COOKIE_SECURE=true`). Les résultats ne sont pas mis en cache. Les tests vérifient l’isolation des sessions, les périodes, les journées sans activité et la révocation des accès.

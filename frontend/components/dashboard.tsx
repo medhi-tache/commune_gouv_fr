@@ -531,6 +531,27 @@ export default function Dashboard() {
             </button>
             <span className="breadcrumb">L’espace des communes</span>
             <span className="prototype-badge">PROTOTYPE</span>
+            {/* Le document public est téléchargé sans quitter la commune. */}
+            <a
+              className="specifications-link"
+              href="/documents/cahier_des_charges_qomune.pdf"
+              download="cahier_des_charges_qomune.pdf"
+              aria-label="Télécharger le cahier des charges (PDF)"
+            >
+              Cahier des charges
+            </a>
+            <a
+              className="specifications-link"
+              href="https://github.com/medhi-tache/commune_gouv_fr"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Consulter le dépôt GitHub (nouvel onglet)"
+            >
+              GitHub
+            </a>
+            <a className="specifications-link" href="/administration">
+              Administration
+            </a>
           </div>
           <div className="topbar-actions">
             {member ? (

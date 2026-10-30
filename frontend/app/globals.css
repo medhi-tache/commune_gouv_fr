@@ -297,6 +297,20 @@ p {
   gap: 7px;
   align-items: center;
 }
+.specifications-link {
+  color: var(--blue);
+  font-size: 11px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.specifications-link:hover {
+  color: var(--navy);
+}
+.specifications-link:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
 .button {
   display: inline-flex;
   align-items: center;
