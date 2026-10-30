@@ -45,6 +45,7 @@ const { proxy, config } = context.exports;
 for (const path of [
   "/",
   "/gouvernement",
+  "/presidence",
   "/gouvernement/sebastien-lecornu",
   "/administration",
   "/administration/connexion",
@@ -80,6 +81,7 @@ async function visit(path, headers = {}, method = "GET") {
 for (const [path, page] of [
   ["/?email=ne-pas-transmettre@example.fr", "public"],
   ["/gouvernement", "public"],
+  ["/presidence", "public"],
   ["/gouvernement/sebastien-lecornu", "public"],
   ["/administration", "admin_demo"],
   ["/administration/connexion", "admin_private"],

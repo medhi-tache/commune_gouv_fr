@@ -115,7 +115,7 @@ export default function GovernmentNationalPublisher({
       </h3>
       <p>
         Diffusion publique vers toutes les communes ou une commune choisie,
-        depuis le compte fictif de <strong>{name}</strong>.
+        depuis le compte fictif associé à <strong>{name}</strong>.
       </p>
       <p className="government-national-notice">
         Chaque message porte automatiquement la mention « Démonstration » et

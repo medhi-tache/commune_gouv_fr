@@ -1,4 +1,4 @@
-//! Comptes de démonstration du Gouvernement, isolés des élus municipaux et de l'administration.
+//! Comptes fictifs du Gouvernement et de la Présidence, isolés des élus municipaux et de l'administration.
 use super::*;
 
 const DEMO_PASSWORD: &str = "gouvernement-demo";
@@ -8,6 +8,11 @@ const COOKIE_NAME: &str = "qomune_government_demo";
 struct Directory {
     checked_at: String,
     members: Vec<DirectoryMember>,
+}
+#[derive(Deserialize)]
+struct Presidency {
+    checked_at: String,
+    member: DirectoryMember,
 }
 #[derive(Deserialize)]
 struct DirectoryMember {
@@ -26,6 +31,8 @@ pub struct DemoAccount {
     email: String,
     is_demo: bool,
     source_checked_at: String,
+    #[serde(default)]
+    institution: String,
 }
 #[derive(Deserialize)]
 struct StoredAccount {
@@ -34,7 +41,7 @@ struct StoredAccount {
     password_hash: String,
 }
 
-/// Création idempotente : les redémarrages ne dupliquent pas les 35 comptes.
+/// Création idempotente : les redémarrages ne dupliquent pas les comptes fictifs.
 /// Le référentiel est commun au frontend et au binaire Rust.
 pub async fn initialize(database: &Database) -> Result<(), Box<dyn std::error::Error>> {
     let directory: Directory = serde_json::from_str(include_str!(concat!(
@@ -81,7 +88,7 @@ pub async fn initialize(database: &Database) -> Result<(), Box<dyn std::error::E
                         "slug": &person.slug, "name": person.name, "function": person.role,
                         "ministries": person.ministries,
                         "email": format!("{}@gouvernement.demo.qomune.fr", person.slug),
-                        "is_demo": true, "source_checked_at": &directory.checked_at
+                        "is_demo": true, "source_checked_at": &directory.checked_at, "institution":"gouvernement"
                     },
                     "$setOnInsert": {"id":id, "password_hash":&hash}
                 },
@@ -89,6 +96,28 @@ pub async fn initialize(database: &Database) -> Result<(), Box<dyn std::error::E
             .upsert(true)
             .await?;
     }
+    // La Présidence reste hors de la liste des 35 membres du Gouvernement.
+    // Son compte est fictif et possède un mot de passe public distinct.
+    let presidency: Presidency = serde_json::from_str(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../frontend/reference/presidency.json"
+    )))?;
+    let person = presidency.member;
+    let id = format!("demo-presidence-{}", person.slug);
+    let salt = SaltString::encode_b64(Uuid::new_v4().as_bytes())
+        .map_err(|_| "Création du sel de démonstration impossible.")?;
+    let hash = Argon2::default()
+        .hash_password(b"presidence-demo", &salt)
+        .map_err(|_| "Création du secret de démonstration impossible.")?
+        .to_string();
+    accounts.update_one(doc! {"id":&id},doc! {
+        "$set": {
+            "slug":&person.slug,"name":person.name,"function":person.role,"ministries":person.ministries,
+            "email":format!("{}@presidence.demo.qomune.fr",person.slug),"institution":"presidence",
+            "is_demo":true,"source_checked_at":presidency.checked_at
+        },
+        "$setOnInsert":{"id":id,"password_hash":hash}
+    }).upsert(true).await?;
     Ok(())
 }
 
@@ -194,7 +223,7 @@ async fn authenticated(database: &Database, headers: &HeaderMap) -> ApiResult<Op
 fn denied() -> ApiError {
     ApiError(
         StatusCode::UNAUTHORIZED,
-        "Connectez-vous à un compte fictif du Gouvernement.".into(),
+        "Connectez-vous à un compte fictif du Gouvernement ou de la Présidence.".into(),
     )
 }
 pub async fn me(State(database): State<Database>, headers: HeaderMap) -> ApiResult<Json<Value>> {
@@ -272,14 +301,25 @@ pub async fn publish(
         .map(|commune| commune.id.as_str())
         .unwrap_or("");
     let commune_name = target.as_ref().map(|commune| commune.name.as_str());
-    let id = format!("national-{}-{}", author.slug, request_id);
+    let presidency = author.institution == "presidence";
+    let id = format!(
+        "{}-{}-{}",
+        if presidency { "presidence" } else { "national" },
+        author.slug,
+        request_id
+    );
+    let author_profile = if presidency {
+        "/presidence".to_owned()
+    } else {
+        format!("/gouvernement/{}", author.slug)
+    };
     let record = doc! {
         "id":&id, "author_id":&author.id, "commune_id":commune_id, "commune_name":commune_name, "scope":scope, "is_demo":true,
         "title":format!("Démonstration — {}",input.title.trim()),
         "body":format!("Publication fictive de démonstration. Ne constitue pas une communication officielle.\n\n{}",input.body.trim()),
         "category":input.category, "visibility":"public",
         "author_name":format!("{} (compte fictif)",author.name), "author_role":author.function,
-        "author_profile":format!("/gouvernement/{}",author.slug), "published_at":Utc::now().to_rfc3339()
+        "author_profile":author_profile,"author_institution":&author.institution, "published_at":Utc::now().to_rfc3339()
     };
     let collection = database.collection::<Document>("publications");
     // Un nouvel essai après une coupure réseau conserve le même identifiant, sans doublon.

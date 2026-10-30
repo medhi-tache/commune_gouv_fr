@@ -112,6 +112,8 @@ struct Publication {
     author_profile: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     commune_name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    author_institution: Option<String>,
 }
 /// L'identifiant d'auteur reste en base ; la signature conserve son état au moment de l'envoi.
 #[derive(Serialize, Deserialize)]
@@ -729,6 +731,7 @@ async fn create_publication(
             is_demo: false,
             author_profile: None,
             commune_name: None,
+            author_institution: None,
         },
     };
     database

@@ -71,7 +71,7 @@ async fn comptes_gouvernement_fictifs_connectables_et_isoles() {
     government::initialize(&database).await.unwrap();
     let accounts: Vec<Document> = database
         .collection("government_demo_accounts")
-        .find(doc! {})
+        .find(doc! {"institution":"gouvernement"})
         .await
         .unwrap()
         .try_collect()
@@ -1900,5 +1900,116 @@ async fn gouvernement_peut_cibler_une_commune_sans_diffuser_aux_autres() {
             StatusCode::BAD_REQUEST
         );
     }
+    database.drop().await.unwrap();
+}
+
+#[tokio::test]
+async fn presidence_fictive_distincte_du_gouvernement_et_diffusions_bornees() {
+    let (app, database) = setup().await;
+    government::initialize(&database).await.unwrap();
+    government::initialize(&database).await.unwrap();
+    let accounts = database.collection::<Document>("government_demo_accounts");
+    assert_eq!(
+        accounts
+            .count_documents(doc! {"institution":"gouvernement"})
+            .await
+            .unwrap(),
+        35
+    );
+    assert_eq!(
+        accounts
+            .count_documents(doc! {"institution":"presidence"})
+            .await
+            .unwrap(),
+        1
+    );
+    assert_eq!(request(&app,"POST","/government-demo/login",None,Some(json!({"email":"emmanuel-macron@presidence.demo.qomune.fr","password":"gouvernement-demo"}))).await.0,StatusCode::UNAUTHORIZED);
+    let (status,_,cookie) = request(&app,"POST","/government-demo/login",None,Some(json!({"email":"emmanuel-macron@presidence.demo.qomune.fr","password":"presidence-demo"}))).await;
+    assert_eq!(status, StatusCode::OK);
+    let cookie = cookie.unwrap();
+    let profile = request(&app, "GET", "/government-demo/me", Some(&cookie), None)
+        .await
+        .1;
+    assert_eq!(profile["account"]["institution"], "presidence");
+    assert_eq!(profile["account"]["function"], "Président de la République");
+    assert_eq!(profile["account"]["is_demo"], true);
+    for target in [None, Some("74010")] {
+        let mut payload = json!({"title":"Test fictif de la Présidence","body":"Un message de démonstration qui ne constitue pas une communication officielle.","category":"Services publics","request_id":Uuid::new_v4().to_string()});
+        if let Some(code) = target {
+            payload["commune_id"] = json!(code);
+        }
+        let (status, receipt, _) = request(
+            &app,
+            "POST",
+            "/government-demo/publications",
+            Some(&cookie),
+            Some(payload),
+        )
+        .await;
+        assert_eq!(status, StatusCode::CREATED);
+        let id = receipt["id"].as_str().unwrap();
+        let item = request(&app, "GET", &format!("/publications/{id}"), None, None)
+            .await
+            .1;
+        assert_eq!(item["author_name"], "Emmanuel Macron (compte fictif)");
+        assert_eq!(item["author_role"], "Président de la République");
+        assert_eq!(item["author_institution"], "presidence");
+        assert_eq!(item["author_profile"], "/presidence");
+        assert_eq!(item["is_demo"], true);
+        for commune in ["74010", "33063"] {
+            let posts = request(
+                &app,
+                "GET",
+                &format!("/publications?commune={commune}"),
+                None,
+                None,
+            )
+            .await
+            .1;
+            assert_eq!(
+                posts.as_array().unwrap().iter().any(|p| p["id"] == id),
+                target.is_none() || target == Some(commune)
+            );
+        }
+    }
+    assert_eq!(
+        request(
+            &app,
+            "GET",
+            "/government-demo/publications",
+            Some(&cookie),
+            None
+        )
+        .await
+        .1
+        .as_array()
+        .unwrap()
+        .len(),
+        2
+    );
+    for path in [
+        "/publications?scope=council",
+        "/members",
+        "/admin/statistics",
+    ] {
+        assert_eq!(
+            request(&app, "GET", path, Some(&cookie), None).await.0,
+            StatusCode::UNAUTHORIZED
+        );
+    }
+    request(
+        &app,
+        "POST",
+        "/government-demo/logout",
+        Some(&cookie),
+        Some(json!({})),
+    )
+    .await;
+    assert!(
+        request(&app, "GET", "/government-demo/me", Some(&cookie), None)
+            .await
+            .1["account"]
+            .is_null()
+    );
     database.drop().await.unwrap();
 }

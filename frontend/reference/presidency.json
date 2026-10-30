@@ -1,0 +1,11 @@
+{
+  "source_url": "https://www.elysee.fr/emmanuel-macron",
+  "checked_at": "2026-10-30",
+  "member": {
+    "slug": "emmanuel-macron",
+    "name": "Emmanuel Macron",
+    "role": "Président de la République",
+    "ministries": ["Présidence de la République"],
+    "official_url": "https://www.elysee.fr/emmanuel-macron"
+  }
+}

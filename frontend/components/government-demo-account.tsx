@@ -12,15 +12,20 @@ type DemoAccount = {
   function: string;
   email: string;
   is_demo: boolean;
+  institution: string;
 };
 
 /** Une session de démonstration distincte, sans droit sur les espaces municipaux. */
 export default function GovernmentDemoAccount({
   member,
+  institution = "gouvernement",
 }: {
   member: GovernmentMember;
+  institution?: "gouvernement" | "presidence";
 }) {
-  const email = `${member.slug}@gouvernement.demo.qomune.fr`;
+  const email = `${member.slug}@${institution}.demo.qomune.fr`;
+  const demoPassword =
+    institution === "presidence" ? "presidence-demo" : "gouvernement-demo";
   const [account, setAccount] = useState<DemoAccount | null>(null);
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(true);
@@ -84,9 +89,9 @@ export default function GovernmentDemoAccount({
         <LockKeyhole size={20} /> Tester ce compte
       </h2>
       <p>
-        Ce compte de test est inspiré de la fiche publique de {member.name}. Il
-        n’appartient pas à cette personne et ne représente aucune communication
-        officielle.
+        Ce compte de test est inspiré de la fiche publique suivante :{" "}
+        {member.name}. Il n’appartient pas à cette personne et ne représente
+        aucune communication officielle.
       </p>
       {loading ? (
         <p role="status">Chargement de la session…</p>
@@ -105,18 +110,20 @@ export default function GovernmentDemoAccount({
             dans toutes les communes ou dans une commune choisie. Elle ne donne
             aucun accès aux conseils municipaux ni à l’administration.
           </p>
-          {account.slug !== member.slug && (
+          {(account.slug !== member.slug ||
+            account.institution !== institution) && (
             <p>
-              Pour tester le compte de {member.name}, déconnectez d’abord cette
-              session.
+              Pour tester le compte fictif associé à {member.name}, déconnectez
+              d’abord cette session.
             </p>
           )}
-          {account.slug === member.slug && (
-            <GovernmentNationalPublisher
-              key={account.slug}
-              name={account.name}
-            />
-          )}
+          {account.slug === member.slug &&
+            account.institution === institution && (
+              <GovernmentNationalPublisher
+                key={account.slug}
+                name={account.name}
+              />
+            )}
           <button className="button" disabled={busy} onClick={logout}>
             <LogOut size={16} /> Se déconnecter du compte fictif
           </button>
@@ -125,7 +132,7 @@ export default function GovernmentDemoAccount({
         <form className="government-demo-form" onSubmit={login}>
           <p>
             Identifiants publics, réservés au prototype. Mot de passe :{" "}
-            <strong>gouvernement-demo</strong>
+            <strong>{demoPassword}</strong>
           </p>
           <label>
             Identifiant de démonstration

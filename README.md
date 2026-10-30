@@ -14,6 +14,14 @@ Permettre aux maires et aux conseillers municipaux de chaque commune de publier 
 
 Le prototype charge les **34 875 communes actuelles** de France métropolitaine et des DROM du **Code officiel géographique 2026 de l’Insee**, référencé sur [data.gouv.fr](https://www.data.gouv.fr/datasets/code-officiel-geographique-1). Les communes déléguées, les communes associées et les arrondissements municipaux sont exclus (`TYPECOM=COM`).
 
+## Présidence de la République
+
+Le lien **Présidence de la République**, placé au-dessus de **Gouvernement**, ouvre `/presidence`. La fiche d'Emmanuel Macron présente sa fonction de président de la République, distincte des membres du Gouvernement, et renvoie vers sa [fiche officielle sur le site de l’Élysée](https://www.elysee.fr/emmanuel-macron), consultée le **30 octobre 2026**. Le référentiel daté `frontend/reference/presidency.json` est maintenu manuellement et partagé par le frontend et le backend.
+
+Un compte **fictif de démonstration**, sans lien avec la personne citée ni avec l’Élysée, est créé au démarrage : `emmanuel-macron@presidence.demo.qomune.fr`, mot de passe public **`presidence-demo`**. Depuis cette fiche, il permet de publier dans toutes les communes ou dans une commune choisie, avec les mêmes contrôles de destination et de non-duplication que les comptes fictifs du Gouvernement. Les messages sont obligatoirement publics, marqués **Démonstration**, signés **Emmanuel Macron (compte fictif)** avec sa fonction et rattachés à la rubrique Présidence.
+
+Ce compte réutilise les routes de démonstration `/government-demo/*` et leur session isolée des accès municipaux et administrateur. Son institution `presidence` est attribuée par le serveur. Il n'est pas inclus dans la liste des 35 membres du Gouvernement et ne donne accès à aucun échange privé. Les pages vues de la rubrique sont comptées dans les statistiques publiques existantes. Une communication présidentielle officielle nécessiterait une vérification d'identité et d'habilitation, absente du prototype.
+
 ## Annuaire du Gouvernement
 
 Le lien **Gouvernement**, sous **Conseil municipal**, ouvre `/gouvernement`. La recherche porte sur le nom, la fonction complète et les rattachements ministériels, sans tenir compte des accents. Chaque membre possède une fiche publique `/gouvernement/[slug]`, avec sa fonction et un lien vers son profil officiel sur info.gouv.fr.

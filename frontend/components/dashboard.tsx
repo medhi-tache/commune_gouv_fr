@@ -16,6 +16,7 @@ import {
   Check,
   ChevronDown,
   Globe2,
+  Flag,
   Landmark,
   Leaf,
   LockKeyhole,
@@ -65,6 +66,7 @@ type Publication = {
   is_demo?: boolean;
   author_profile?: string;
   commune_name?: string;
+  author_institution?: string;
 };
 type Modal = "login" | "create" | "about" | "members" | "register" | null;
 const categories = [
@@ -219,7 +221,13 @@ function Dialog({
 }
 
 /** Réutilise la navigation municipale pour les pages publiques du Gouvernement. */
-export default function Dashboard({ children }: { children?: ReactNode }) {
+export default function Dashboard({
+  children,
+  section = "gouvernement",
+}: {
+  children?: ReactNode;
+  section?: "gouvernement" | "presidence";
+}) {
   const councilRequestHandled = useRef(false);
   const [communes, setCommunes] = useState<Commune[]>([]);
   const [catalog, setCatalog] = useState<CommuneCatalog | null>(null);
@@ -517,12 +525,37 @@ export default function Dashboard({ children }: { children?: ReactNode }) {
             )}
           </button>
           <a
+            href="/presidence"
+            className={
+              children && section === "presidence"
+                ? "nav-item active"
+                : "nav-item"
+            }
+            aria-current={
+              children && section === "presidence" ? "page" : undefined
+            }
+          >
+            <Flag size={19} />
+            <span className="nav-label">Présidence de la République</span>
+            {children && section === "presidence" && (
+              <span className="nav-indicator" />
+            )}
+          </a>
+          <a
             href="/gouvernement"
-            className={children ? "nav-item active" : "nav-item"}
-            aria-current={children ? "page" : undefined}
+            className={
+              children && section === "gouvernement"
+                ? "nav-item active"
+                : "nav-item"
+            }
+            aria-current={
+              children && section === "gouvernement" ? "page" : undefined
+            }
           >
             <Landmark size={19} /> Gouvernement
-            {children && <span className="nav-indicator" />}
+            {children && section === "gouvernement" && (
+              <span className="nav-indicator" />
+            )}
           </a>
         </nav>
         <div className="sidebar-line" />
@@ -1005,7 +1038,11 @@ export default function Dashboard({ children }: { children?: ReactNode }) {
             </span>
             <span>
               {children ? (
-                "Gouvernement · annuaire public"
+                section === "presidence" ? (
+                  "Présidence de la République · fiche publique"
+                ) : (
+                  "Gouvernement · annuaire public"
+                )
               ) : (
                 <>
                   {catalog?.total.toLocaleString("fr-FR") || "…"} communes · COG{" "}
@@ -1453,8 +1490,14 @@ function PublicationMeta({
       <time dateTime={item.published_at}>{dateLabel(item.published_at)}</time>
       {item.is_demo && item.author_profile && (
         <span className="national-demo-tag">
-          {item.scope === "national" ? "National" : "Gouvernement"} ·
-          Démonstration
+          {item.author_institution === "presidence"
+            ? item.scope === "national"
+              ? "Présidence · National"
+              : "Présidence"
+            : item.scope === "national"
+              ? "National"
+              : "Gouvernement"}{" "}
+          · Démonstration
         </span>
       )}
       {item.visibility === "private" && (

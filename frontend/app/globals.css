@@ -2423,3 +2423,16 @@ h1 {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+
+/* Le nom complet de la Présidence reste lisible dans la navigation étroite. */
+.nav-label {
+  min-width: 0;
+  white-space: normal;
+  line-height: 1.5;
+  flex: 1;
+}
+
+/* La navigation reste entièrement accessible lorsque la hauteur d'écran est réduite. */
+.sidebar {
+  overflow-y: auto;
+}
