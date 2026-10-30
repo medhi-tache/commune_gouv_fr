@@ -554,9 +554,18 @@ export default function Dashboard() {
               href="https://www.linkedin.com/in/medhi-thomas-adrien-tache-1b46a2447/"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Le créateur sur LinkedIn (nouvel onglet)"
+              aria-label="LinkedIn (nouvel onglet)"
             >
-              Le créateur
+              LinkedIn
+            </a>
+            <a
+              className="specifications-link"
+              href="https://www.facebook.com/profile.php?id=61596023150910"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Facebook (nouvel onglet)"
+            >
+              Facebook
             </a>
           </div>
           <div className="topbar-actions">
