@@ -9,6 +9,7 @@ root = Path(__file__).resolve().parents[1]
 path = root / ".env"
 values = {
     "QOMUNE_METRICS_KEY": secrets.token_hex(32),
+    "QOMUNE_PREFECTURE_DEMO_SECRET": secrets.token_hex(32),
     "QOMUNE_DOMAIN": "qomune.fr",
     "MONGO_ROOT_PASSWORD": secrets.token_hex(32),
     "QOMUNE_DB_PASSWORD": secrets.token_hex(32),
@@ -18,6 +19,14 @@ values = {
 try:
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
 except FileExistsError:
+    if "--add-prefecture-secret" in sys.argv:
+        existing = path.read_text()
+        if not any(line.startswith("QOMUNE_PREFECTURE_DEMO_SECRET=") for line in existing.splitlines()):
+            with path.open("a") as file:
+                file.write("\nQOMUNE_PREFECTURE_DEMO_SECRET=" + secrets.token_hex(32) + "\n")
+            path.chmod(0o600)
+        print("Secret des comptes fictifs de préfecture configuré ; secrets existants conservés.")
+        raise SystemExit(0)
     if "--add-metrics-key" in sys.argv:
         existing = path.read_text()
         if not any(line.startswith("QOMUNE_METRICS_KEY=") for line in existing.splitlines()):

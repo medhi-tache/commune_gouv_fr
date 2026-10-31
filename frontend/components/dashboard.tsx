@@ -18,6 +18,7 @@ import {
   Globe2,
   Flag,
   Landmark,
+  MapPin,
   Leaf,
   LockKeyhole,
   LogOut,
@@ -67,6 +68,8 @@ type Publication = {
   author_profile?: string;
   commune_name?: string;
   author_institution?: string;
+  department_code?: string;
+  department_name?: string;
 };
 type Modal = "login" | "create" | "about" | "members" | "register" | null;
 const categories = [
@@ -226,7 +229,7 @@ export default function Dashboard({
   section = "gouvernement",
 }: {
   children?: ReactNode;
-  section?: "gouvernement" | "presidence";
+  section?: "gouvernement" | "presidence" | "prefectures" | "communes";
 }) {
   const councilRequestHandled = useRef(false);
   const [communes, setCommunes] = useState<Commune[]>([]);
@@ -259,12 +262,14 @@ export default function Dashboard({
 
   // Le choix effectué depuis l'annuaire ouvre le fil communal et survit au rechargement.
   useEffect(() => {
-    if (children) return;
-    const code = new URLSearchParams(window.location.search)
-      .get("commune")
-      ?.toUpperCase();
+    if (children && section !== "communes") return;
+    const code = (
+      section === "communes" && children
+        ? window.location.pathname.split("/")[2]
+        : new URLSearchParams(window.location.search).get("commune")
+    )?.toUpperCase();
     if (code && /^[A-Z0-9]{5}$/.test(code)) setCommune(code);
-  }, [children]);
+  }, [children, section]);
 
   useEffect(() => {
     let current = true;
@@ -371,7 +376,13 @@ export default function Dashboard({
   function selectCommune(selected: Commune | null) {
     if (children) {
       window.location.assign(
-        selected ? `/?commune=${encodeURIComponent(selected.id)}` : "/",
+        section === "communes"
+          ? selected
+            ? `/communes/${encodeURIComponent(selected.id)}`
+            : "/communes"
+          : selected
+            ? `/?commune=${encodeURIComponent(selected.id)}`
+            : "/",
       );
       return;
     }
@@ -556,6 +567,35 @@ export default function Dashboard({
             {children && section === "gouvernement" && (
               <span className="nav-indicator" />
             )}
+          </a>
+          <a
+            href="/prefectures"
+            className={
+              children && section === "prefectures"
+                ? "nav-item active"
+                : "nav-item"
+            }
+            aria-current={
+              children && section === "prefectures" ? "page" : undefined
+            }
+          >
+            <Landmark size={19} /> Préfectures
+            {children && section === "prefectures" && (
+              <span className="nav-indicator" />
+            )}
+          </a>
+          <a
+            href="/communes"
+            className={
+              children && section === "communes"
+                ? "nav-item active"
+                : "nav-item"
+            }
+            aria-current={
+              children && section === "communes" ? "page" : undefined
+            }
+          >
+            <MapPin size={19} /> Fiches des communes
           </a>
         </nav>
         <div className="sidebar-line" />
@@ -809,6 +849,20 @@ export default function Dashboard({
                 <TownIllustration />
               </section>
 
+              {view === "public" && selectedCommune && (
+                <a
+                  className="commune-profile-link"
+                  href={`/communes/${selectedCommune.id}`}
+                >
+                  <MapPin size={20} />
+                  <span>
+                    La fiche de {selectedCommune.name}
+                    <small>Informations et prix des carburants</small>
+                  </span>
+                  <ArrowUpRight size={19} />
+                </a>
+              )}
+
               <section className="feed-section" aria-labelledby="feed-title">
                 <div className="section-title">
                   <div>
@@ -1040,6 +1094,10 @@ export default function Dashboard({
               {children ? (
                 section === "presidence" ? (
                   "Présidence de la République · fiche publique"
+                ) : section === "communes" ? (
+                  "Communes · fiches publiques"
+                ) : section === "prefectures" ? (
+                  "Préfectures · annuaire public"
                 ) : (
                   "Gouvernement · annuaire public"
                 )
@@ -1482,21 +1540,25 @@ function PublicationMeta({
         <Landmark size={14} />
       </span>
       <span className="commune-name">
-        {item.scope === "national"
-          ? "Toutes les communes"
-          : commune?.name || item.commune_id}
+        {item.scope === "department"
+          ? `Département : ${item.department_name || item.department_code}`
+          : item.scope === "national"
+            ? "Toutes les communes"
+            : commune?.name || item.commune_id}
       </span>
       <span className="meta-separator">·</span>
       <time dateTime={item.published_at}>{dateLabel(item.published_at)}</time>
       {item.is_demo && item.author_profile && (
         <span className="national-demo-tag">
-          {item.author_institution === "presidence"
-            ? item.scope === "national"
-              ? "Présidence · National"
-              : "Présidence"
-            : item.scope === "national"
-              ? "National"
-              : "Gouvernement"}{" "}
+          {item.author_institution === "prefecture"
+            ? "Préfecture"
+            : item.author_institution === "presidence"
+              ? item.scope === "national"
+                ? "Présidence · National"
+                : "Présidence"
+              : item.scope === "national"
+                ? "National"
+                : "Gouvernement"}{" "}
           · Démonstration
         </span>
       )}

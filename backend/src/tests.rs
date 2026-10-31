@@ -2013,3 +2013,409 @@ async fn presidence_fictive_distincte_du_gouvernement_et_diffusions_bornees() {
     );
     database.drop().await.unwrap();
 }
+
+/// Le visiteur voit les deux périmètres publics, sans messages privés ni données d’un autre auteur.
+#[tokio::test]
+async fn profil_gouvernement_public_filtre_auteur_visibilite_et_pagination() {
+    let (app, database) = setup().await;
+    database
+        .collection::<Document>("government_demo_accounts")
+        .insert_one(doc! {
+            "id":"demo-gouvernement-profil-test", "slug":"profil-test",
+            "institution":"gouvernement", "is_demo":true
+        })
+        .await
+        .unwrap();
+    let publications = database.collection::<Document>("publications");
+    let mut ids = Vec::new();
+    for index in 0..22 {
+        let id = format!("national-profil-test-{}", Uuid::new_v4());
+        ids.push(id.clone());
+        publications.insert_one(doc! {
+            "id":id, "author_id":"demo-gouvernement-profil-test",
+            "title":format!("Démonstration — message {index}"), "body":"Contenu public de test.",
+            "category":"Vie citoyenne", "visibility":"public", "is_demo":true,
+            "author_name":"Auteur fictif", "author_role":"Fonction de test",
+            "commune_id":"74010", "commune_name":"Annecy",
+            "scope":if index % 2 == 0 {"national"} else {"commune"},
+            "published_at":"2026-10-31T10:00:00Z"
+        }).await.unwrap();
+    }
+    let mut excluded = Vec::new();
+    for (author, visibility, demo) in [
+        ("demo-gouvernement-profil-test", "private", true),
+        ("autre-auteur", "public", true),
+        ("demo-gouvernement-profil-test", "public", false),
+    ] {
+        let id = Uuid::new_v4().to_string();
+        excluded.push(id.clone());
+        publications
+            .insert_one(doc! {
+                "id":id,"author_id":author,"visibility":visibility,"is_demo":demo,
+                "scope":"national", "published_at":"2026-10-31T11:00:00Z"
+            })
+            .await
+            .unwrap();
+    }
+    let path = "/government/profil-test/publications";
+    let (status, first, _) = request(&app, "GET", path, None, None).await;
+    assert_eq!(status, StatusCode::OK);
+    let posts = first["publications"].as_array().unwrap();
+    assert_eq!(posts.len(), 20);
+    assert!(posts.iter().any(|post| post["scope"] == "national"));
+    assert!(posts.iter().any(|post| post["scope"] == "commune"));
+    for post in posts {
+        assert!(post.get("author_id").is_none());
+        assert!(post.get("password_hash").is_none());
+        assert_eq!(post["visibility"], "public");
+    }
+    let cursor = first["next_cursor"].as_str().unwrap();
+    let (status, second, _) =
+        request(&app, "GET", &format!("{path}?before={cursor}"), None, None).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(second["publications"].as_array().unwrap().len(), 2);
+    assert!(second["next_cursor"].is_null());
+    let actual: Vec<_> = posts
+        .iter()
+        .chain(second["publications"].as_array().unwrap())
+        .map(|p| p["id"].as_str().unwrap().to_string())
+        .collect();
+    ids.sort_by(|a, b| b.cmp(a));
+    assert_eq!(actual, ids);
+    for invalid in excluded
+        .into_iter()
+        .chain(["invalide".into(), Uuid::new_v4().to_string()])
+    {
+        assert_eq!(
+            request(&app, "GET", &format!("{path}?before={invalid}"), None, None)
+                .await
+                .0,
+            StatusCode::BAD_REQUEST
+        );
+    }
+    assert_eq!(
+        request(
+            &app,
+            "GET",
+            "/government/inexistant/publications",
+            None,
+            None
+        )
+        .await
+        .0,
+        StatusCode::NOT_FOUND
+    );
+    publications
+        .delete_many(doc! {"author_id":"demo-gouvernement-profil-test"})
+        .await
+        .unwrap();
+    let (_, empty, _) = request(&app, "GET", path, None, None).await;
+    assert_eq!(empty["publications"], json!([]));
+    assert!(empty["next_cursor"].is_null());
+    database.drop().await.unwrap();
+}
+
+#[tokio::test]
+async fn prefectures_fictives_comptes_persistants_et_diffusion_limitee_au_departement() {
+    let (app, database) = setup().await;
+    government::initialize(&database).await.unwrap();
+    let secret = "cle-de-test-des-prefectures-avec-au-moins-trente-deux-caracteres";
+    prefectures::initialize(&database, secret).await.unwrap();
+    let accounts = database.collection::<Document>("government_demo_accounts");
+    assert_eq!(
+        accounts
+            .count_documents(doc! {"institution":"prefecture"})
+            .await
+            .unwrap(),
+        101
+    );
+    let first = accounts
+        .find_one(doc! {"slug":"58-nievre"})
+        .await
+        .unwrap()
+        .unwrap();
+    prefectures::initialize(&database, secret).await.unwrap();
+    let second = accounts
+        .find_one(doc! {"slug":"58-nievre"})
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(
+        first.get_str("password_hash").unwrap(),
+        second.get_str("password_hash").unwrap()
+    );
+    assert_eq!(
+        accounts
+            .count_documents(doc! {"institution":"prefecture"})
+            .await
+            .unwrap(),
+        101
+    );
+    let password = prefectures::demo_password(secret, "58");
+    assert_ne!(password, prefectures::demo_password(secret, "59"));
+    let (status, _, cookie) = request(
+        &app,
+        "POST",
+        "/government-demo/login",
+        None,
+        Some(json!({"email":"58-nievre@prefecture.demo.qomune.fr","password":password})),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    let cookie = cookie.unwrap();
+    let (_, me, _) = request(&app, "GET", "/government-demo/me", Some(&cookie), None).await;
+    assert_eq!(me["account"]["institution"], "prefecture");
+    assert_eq!(me["account"]["department_code"], "58");
+    assert!(me["account"].get("password_hash").is_none());
+    for (id, name) in [("58194", "Nevers"), ("58086", "Decize")] {
+        database.collection::<Document>("communes").insert_one(doc! {"id":id,"name":name,"department":"Nièvre · 58","region":"Bourgogne-Franche-Comté","search_name":reference::normalize_name(name)}).await.unwrap();
+    }
+    let (status, found, _) =
+        request(&app, "GET", "/communes?department=58&q=Nevers", None, None).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(found.as_array().unwrap().len(), 1);
+    assert_eq!(found[0]["id"], "58194");
+    let (_, found, _) = request(
+        &app,
+        "GET",
+        "/communes?department=58&ids=58194,74010",
+        None,
+        None,
+    )
+    .await;
+    assert_eq!(found.as_array().unwrap().len(), 1);
+    assert_eq!(found[0]["id"], "58194");
+    let payload = json!({"title":"Test fictif départemental","body":"Message de démonstration de la préfecture.","category":"Services publics","request_id":Uuid::new_v4().to_string()});
+    let (status, departmental, _) = request(
+        &app,
+        "POST",
+        "/government-demo/publications",
+        Some(&cookie),
+        Some(payload.clone()),
+    )
+    .await;
+    assert_eq!(status, StatusCode::CREATED);
+    assert_eq!(departmental["scope"], "department");
+    assert_eq!(departmental["department_code"], "58");
+    for (commune, visible) in [
+        ("58194", true),
+        ("58086", true),
+        ("74010", false),
+        ("33063", false),
+    ] {
+        let (_, posts, _) = request(
+            &app,
+            "GET",
+            &format!("/publications?commune={commune}"),
+            None,
+            None,
+        )
+        .await;
+        assert_eq!(
+            posts
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|post| post["id"] == departmental["id"]),
+            visible
+        );
+    }
+    let (_, posts, _) = request(
+        &app,
+        "GET",
+        "/publications?commune=58194&q=inexistant",
+        None,
+        None,
+    )
+    .await;
+    assert!(posts.as_array().unwrap().is_empty());
+    let mut local = payload.clone();
+    local["request_id"] = json!(Uuid::new_v4().to_string());
+    local["commune_id"] = json!("58194");
+    let (status, communal, _) = request(
+        &app,
+        "POST",
+        "/government-demo/publications",
+        Some(&cookie),
+        Some(local),
+    )
+    .await;
+    assert_eq!(status, StatusCode::CREATED);
+    assert_eq!(communal["scope"], "commune");
+    let (_, posts, _) = request(&app, "GET", "/publications?commune=58086", None, None).await;
+    assert!(
+        !posts
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|post| post["id"] == communal["id"])
+    );
+    let mut other = payload.clone();
+    other["request_id"] = json!(Uuid::new_v4().to_string());
+    other["commune_id"] = json!("74010");
+    assert_eq!(
+        request(
+            &app,
+            "POST",
+            "/government-demo/publications",
+            Some(&cookie),
+            Some(other)
+        )
+        .await
+        .0,
+        StatusCode::FORBIDDEN
+    );
+    let (status, profile, _) = request(
+        &app,
+        "GET",
+        "/prefectures/58-nievre/publications",
+        None,
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(profile["publications"].as_array().unwrap().len(), 2);
+    for post in profile["publications"].as_array().unwrap() {
+        assert_eq!(post["author_profile"], "/prefectures/58-nievre");
+        assert_eq!(post["department_code"], "58");
+        assert_eq!(post["author_institution"], "prefecture");
+    }
+    // Un véritable identifiant de publication préfixé fonctionne comme curseur.
+    let cursor = profile["publications"][0]["id"].as_str().unwrap();
+    assert_eq!(
+        request(
+            &app,
+            "GET",
+            &format!("/prefectures/58-nievre/publications?before={cursor}"),
+            None,
+            None
+        )
+        .await
+        .1["publications"]
+            .as_array()
+            .unwrap()
+            .len(),
+        1
+    );
+    assert_eq!(
+        request(
+            &app,
+            "GET",
+            "/government/58-nievre/publications",
+            None,
+            None
+        )
+        .await
+        .0,
+        StatusCode::NOT_FOUND
+    );
+    assert_eq!(
+        request(
+            &app,
+            "GET",
+            "/publications?scope=council",
+            Some(&cookie),
+            None
+        )
+        .await
+        .0,
+        StatusCode::UNAUTHORIZED
+    );
+    assert_eq!(
+        request(&app, "GET", "/admin/statistics", Some(&cookie), None)
+            .await
+            .0,
+        StatusCode::UNAUTHORIZED
+    );
+    assert_eq!(
+        request(
+            &app,
+            "GET",
+            "/government-demo/publications",
+            Some(&cookie),
+            None
+        )
+        .await
+        .1
+        .as_array()
+        .unwrap()
+        .len(),
+        2
+    );
+    // La même demande conserve une seule diffusion, y compris après une réinitialisation.
+    request(
+        &app,
+        "POST",
+        "/government-demo/publications",
+        Some(&cookie),
+        Some(payload),
+    )
+    .await;
+    assert_eq!(
+        database
+            .collection::<Document>("publications")
+            .count_documents(doc! {"author_id":"demo-prefecture-58-nievre"})
+            .await
+            .unwrap(),
+        2
+    );
+    database.drop().await.unwrap();
+}
+
+#[test]
+fn codes_departementaux_corse_et_outre_mer_distincts() {
+    for (commune, department) in [
+        ("58194", "58"),
+        ("2A004", "2A"),
+        ("2B033", "2B"),
+        ("97105", "971"),
+        ("97209", "972"),
+        ("97611", "976"),
+    ] {
+        assert_eq!(prefectures::department_code(commune), Some(department));
+    }
+    assert!(prefectures::department_code("invalide").is_none());
+}
+
+#[tokio::test]
+async fn carburants_publics_utilisent_cache_et_contours_sans_confondre_les_communes() {
+    let (app, database) = setup().await;
+    let now = Utc::now();
+    let expire = DateTime::from_millis((now + Duration::hours(1)).timestamp_millis());
+    let cache = database.collection::<fuel::CachedData>("fuel_cache");
+    cache.insert_one(fuel::CachedData {key:"fuel-geometry-74010".into(),data:json!({"properties":{"code":"74010"},"geometry":{"type":"Polygon","coordinates":[[[0,0],[2,0],[2,2],[0,2],[0,0]]]}}),fetched_at:now.to_rfc3339(),expires_at:expire}).await.unwrap();
+    cache.insert_one(fuel::CachedData {key:"fuel-national-v1".into(),data:json!([
+        {"id":1,"adresse":"Station dans la commune","ville":"Annecy","geom":{"lon":1,"lat":1},"carburants_disponibles":["Gazole"],"gazole_prix":1.9,"gazole_maj":now.to_rfc3339()},
+        {"id":2,"adresse":"Voisine moins chère","ville":"Annecy","geom":{"lon":3,"lat":1},"carburants_disponibles":["Gazole"],"gazole_prix":1.0,"gazole_maj":now.to_rfc3339()},
+        {"id":3,"adresse":"Carburant en rupture","ville":"Annecy","geom":{"lon":1,"lat":1},"carburants_disponibles":[],"gazole_prix":0.9,"gazole_maj":now.to_rfc3339()}
+    ]),fetched_at:now.to_rfc3339(),expires_at:expire}).await.unwrap();
+    let (status, data, _) = request(&app, "GET", "/carburants/74010", None, None).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(data["commune_id"], "74010");
+    assert_eq!(data["station_count"], 2);
+    assert_eq!(data["prices"][0]["price_per_litre"], 1.9);
+    assert_eq!(
+        data["prices"][0]["stations"][0]["address"],
+        "Station dans la commune"
+    );
+    assert!(data["prices"][1]["price_per_litre"].is_null());
+    assert_eq!(
+        request(&app, "GET", "/carburants/invalide", None, None)
+            .await
+            .0,
+        StatusCode::BAD_REQUEST
+    );
+    assert_eq!(
+        request(&app, "GET", "/carburants/00000", None, None)
+            .await
+            .0,
+        StatusCode::NOT_FOUND
+    );
+    assert_eq!(
+        request(&app, "POST", "/carburants/74010", None, Some(json!({})))
+            .await
+            .0,
+        StatusCode::METHOD_NOT_ALLOWED
+    );
+    database.drop().await.unwrap();
+}

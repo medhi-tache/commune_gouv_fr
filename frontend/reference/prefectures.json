@@ -1,0 +1,1319 @@
+{
+  "checked_at": "2026-10-30",
+  "source_url": "https://api-lannuaire.service-public.gouv.fr/explore/dataset/api-lannuaire-administration/",
+  "members": [
+    {
+      "slug": "01-ain",
+      "name": "Préfecture · Ain",
+      "role": "Services de l’État — Ain (01)",
+      "ministries": [
+        "Département : Ain"
+      ],
+      "official_url": "https://www.ain.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/auvergne-rhone-alpes/ain/52540ade-49fd-4b93-9de0-d1b7834097c5",
+      "department_code": "01",
+      "department_name": "Ain",
+      "communes_count": 391
+    },
+    {
+      "slug": "02-aisne",
+      "name": "Préfecture · Aisne",
+      "role": "Services de l’État — Aisne (02)",
+      "ministries": [
+        "Département : Aisne"
+      ],
+      "official_url": "https://www.aisne.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/hauts-de-france/aisne/715f7838-001b-4f45-9cd0-cfb95b6b6fd2",
+      "department_code": "02",
+      "department_name": "Aisne",
+      "communes_count": 797
+    },
+    {
+      "slug": "03-allier",
+      "name": "Préfecture · Allier",
+      "role": "Services de l’État — Allier (03)",
+      "ministries": [
+        "Département : Allier"
+      ],
+      "official_url": "https://www.allier.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/auvergne-rhone-alpes/allier/862954e0-d918-4581-bdb3-e397df94003d",
+      "department_code": "03",
+      "department_name": "Allier",
+      "communes_count": 317
+    },
+    {
+      "slug": "04-alpes-de-haute-provence",
+      "name": "Préfecture · Alpes-de-Haute-Provence",
+      "role": "Services de l’État — Alpes-de-Haute-Provence (04)",
+      "ministries": [
+        "Département : Alpes-de-Haute-Provence"
+      ],
+      "official_url": "https://www.alpes-de-haute-provence.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/provence-alpes-cote-d-azur/alpes-de-haute-provence/e91978a4-0aff-4cdd-b27a-f752d54f6bc1",
+      "department_code": "04",
+      "department_name": "Alpes-de-Haute-Provence",
+      "communes_count": 198
+    },
+    {
+      "slug": "05-hautes-alpes",
+      "name": "Préfecture · Hautes-Alpes",
+      "role": "Services de l’État — Hautes-Alpes (05)",
+      "ministries": [
+        "Département : Hautes-Alpes"
+      ],
+      "official_url": "https://www.hautes-alpes.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/provence-alpes-cote-d-azur/hautes-alpes/b90485a7-f293-4dd6-84b2-8bd60df5c2fb",
+      "department_code": "05",
+      "department_name": "Hautes-Alpes",
+      "communes_count": 162
+    },
+    {
+      "slug": "06-alpes-maritimes",
+      "name": "Préfecture · Alpes-Maritimes",
+      "role": "Services de l’État — Alpes-Maritimes (06)",
+      "ministries": [
+        "Département : Alpes-Maritimes"
+      ],
+      "official_url": "https://www.alpes-maritimes.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/provence-alpes-cote-d-azur/alpes-maritimes/26a9c215-0daa-4ee8-849f-13a15c5dec5a",
+      "department_code": "06",
+      "department_name": "Alpes-Maritimes",
+      "communes_count": 163
+    },
+    {
+      "slug": "07-ardeche",
+      "name": "Préfecture · Ardèche",
+      "role": "Services de l’État — Ardèche (07)",
+      "ministries": [
+        "Département : Ardèche"
+      ],
+      "official_url": "https://www.ardeche.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/auvergne-rhone-alpes/ardeche/5763d4b9-36f1-46ef-8a1f-be2586b82f0e",
+      "department_code": "07",
+      "department_name": "Ardèche",
+      "communes_count": 335
+    },
+    {
+      "slug": "08-ardennes",
+      "name": "Préfecture · Ardennes",
+      "role": "Services de l’État — Ardennes (08)",
+      "ministries": [
+        "Département : Ardennes"
+      ],
+      "official_url": "https://www.ardennes.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/grand-est/ardennes/3c16cdaf-0aef-45e6-b0bb-f39705c9be44",
+      "department_code": "08",
+      "department_name": "Ardennes",
+      "communes_count": 447
+    },
+    {
+      "slug": "09-ariege",
+      "name": "Préfecture · Ariège",
+      "role": "Services de l’État — Ariège (09)",
+      "ministries": [
+        "Département : Ariège"
+      ],
+      "official_url": "https://www.ariege.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/occitanie/ariege/02f0cd6c-39a8-4804-abca-db83f1dbf3fb",
+      "department_code": "09",
+      "department_name": "Ariège",
+      "communes_count": 325
+    },
+    {
+      "slug": "10-aube",
+      "name": "Préfecture · Aube",
+      "role": "Services de l’État — Aube (10)",
+      "ministries": [
+        "Département : Aube"
+      ],
+      "official_url": "https://www.aube.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/grand-est/aube/ab7e2333-bcc1-4d47-b705-a0dc6e1d058c",
+      "department_code": "10",
+      "department_name": "Aube",
+      "communes_count": 431
+    },
+    {
+      "slug": "11-aude",
+      "name": "Préfecture · Aude",
+      "role": "Services de l’État — Aude (11)",
+      "ministries": [
+        "Département : Aude"
+      ],
+      "official_url": "https://www.aude.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/occitanie/aude/c5fb7c1b-2426-47bf-b96b-991f84e63a1f",
+      "department_code": "11",
+      "department_name": "Aude",
+      "communes_count": 433
+    },
+    {
+      "slug": "12-aveyron",
+      "name": "Préfecture · Aveyron",
+      "role": "Services de l’État — Aveyron (12)",
+      "ministries": [
+        "Département : Aveyron"
+      ],
+      "official_url": "https://www.aveyron.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/occitanie/aveyron/15e75ffd-e4c3-4b3e-97e8-1f91760ab105",
+      "department_code": "12",
+      "department_name": "Aveyron",
+      "communes_count": 285
+    },
+    {
+      "slug": "13-bouches-du-rhone",
+      "name": "Préfecture · Bouches-du-Rhône",
+      "role": "Services de l’État — Bouches-du-Rhône (13)",
+      "ministries": [
+        "Département : Bouches-du-Rhône"
+      ],
+      "official_url": "https://www.bouches-du-rhone.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/provence-alpes-cote-d-azur/bouches-du-rhone/e5bd70c4-80df-41da-bb65-2e53299b9119",
+      "department_code": "13",
+      "department_name": "Bouches-du-Rhône",
+      "communes_count": 119
+    },
+    {
+      "slug": "14-calvados",
+      "name": "Préfecture · Calvados",
+      "role": "Services de l’État — Calvados (14)",
+      "ministries": [
+        "Département : Calvados"
+      ],
+      "official_url": "https://www.calvados.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/normandie/calvados/72fbe34d-5350-42ae-90b9-e47106d0e7d8",
+      "department_code": "14",
+      "department_name": "Calvados",
+      "communes_count": 526
+    },
+    {
+      "slug": "15-cantal",
+      "name": "Préfecture · Cantal",
+      "role": "Services de l’État — Cantal (15)",
+      "ministries": [
+        "Département : Cantal"
+      ],
+      "official_url": "https://www.cantal.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/auvergne-rhone-alpes/cantal/9b4029f4-b42c-4b5d-9934-483d5b38b63f",
+      "department_code": "15",
+      "department_name": "Cantal",
+      "communes_count": 250
+    },
+    {
+      "slug": "16-charente",
+      "name": "Préfecture · Charente",
+      "role": "Services de l’État — Charente (16)",
+      "ministries": [
+        "Département : Charente"
+      ],
+      "official_url": "https://www.charente.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/nouvelle-aquitaine/charente/b5738c18-0e90-4c8b-bca3-5f42f6c31807",
+      "department_code": "16",
+      "department_name": "Charente",
+      "communes_count": 359
+    },
+    {
+      "slug": "17-charente-maritime",
+      "name": "Préfecture · Charente-Maritime",
+      "role": "Services de l’État — Charente-Maritime (17)",
+      "ministries": [
+        "Département : Charente-Maritime"
+      ],
+      "official_url": "https://www.charente-maritime.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/nouvelle-aquitaine/charente-maritime/b15e371b-5e5d-4a51-b030-411823e4eb3e",
+      "department_code": "17",
+      "department_name": "Charente-Maritime",
+      "communes_count": 462
+    },
+    {
+      "slug": "18-cher",
+      "name": "Préfecture · Cher",
+      "role": "Services de l’État — Cher (18)",
+      "ministries": [
+        "Département : Cher"
+      ],
+      "official_url": "https://www.cher.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/centre-val-de-loire/cher/3594994d-5d1f-4276-89fa-7e6494d3ebb0",
+      "department_code": "18",
+      "department_name": "Cher",
+      "communes_count": 286
+    },
+    {
+      "slug": "19-correze",
+      "name": "Préfecture · Corrèze",
+      "role": "Services de l’État — Corrèze (19)",
+      "ministries": [
+        "Département : Corrèze"
+      ],
+      "official_url": "https://www.correze.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/nouvelle-aquitaine/correze/74aff24d-6edf-4a6f-a9a3-3cbeea9309a3",
+      "department_code": "19",
+      "department_name": "Corrèze",
+      "communes_count": 277
+    },
+    {
+      "slug": "21-cote-d-or",
+      "name": "Préfecture · Côte-d'Or",
+      "role": "Services de l’État — Côte-d'Or (21)",
+      "ministries": [
+        "Département : Côte-d'Or"
+      ],
+      "official_url": "https://www.cote-dor.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/bourgogne-franche-comte/cote-d-or/32bfc2bc-9fc9-494b-b0d7-ad7ba0025c69",
+      "department_code": "21",
+      "department_name": "Côte-d'Or",
+      "communes_count": 698
+    },
+    {
+      "slug": "22-cotes-d-armor",
+      "name": "Préfecture · Côtes-d'Armor",
+      "role": "Services de l’État — Côtes-d'Armor (22)",
+      "ministries": [
+        "Département : Côtes-d'Armor"
+      ],
+      "official_url": "https://www.cotes-darmor.gouv.fr",
+      "source_url": "https://lannuaire.service-public.gouv.fr/bretagne/cotes-d-armor/106c2d6a-4f2b-4aa6-b08a-998e63790aab",
+      "department_code": "22",
+      "department_name": "Côtes-d'Armor",
+      "communes_count": 344
+    },
+    {
+      "slug": "23-creuse",
+      "name": "Préfecture · Creuse",
+      "role": "Services de l’État — Creuse (23)",
+      "ministries": [
+        "Département : Creuse"
+      ],
+      "official_url": "https://www.creuse.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/nouvelle-aquitaine/creuse/14732cd9-a9ed-4528-9666-b57ea3660ace",
+      "department_code": "23",
+      "department_name": "Creuse",
+      "communes_count": 255
+    },
+    {
+      "slug": "24-dordogne",
+      "name": "Préfecture · Dordogne",
+      "role": "Services de l’État — Dordogne (24)",
+      "ministries": [
+        "Département : Dordogne"
+      ],
+      "official_url": "https://www.dordogne.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/nouvelle-aquitaine/dordogne/770ad5fe-b798-4bac-9df2-1f0ecd3d6e57",
+      "department_code": "24",
+      "department_name": "Dordogne",
+      "communes_count": 503
+    },
+    {
+      "slug": "25-doubs",
+      "name": "Préfecture · Doubs",
+      "role": "Services de l’État — Doubs (25)",
+      "ministries": [
+        "Département : Doubs"
+      ],
+      "official_url": "https://www.doubs.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/bourgogne-franche-comte/doubs/27632011-2e64-484f-9707-00afd5ddb0d9",
+      "department_code": "25",
+      "department_name": "Doubs",
+      "communes_count": 563
+    },
+    {
+      "slug": "26-drome",
+      "name": "Préfecture · Drôme",
+      "role": "Services de l’État — Drôme (26)",
+      "ministries": [
+        "Département : Drôme"
+      ],
+      "official_url": "https://www.drome.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/auvergne-rhone-alpes/drome/d8c995cf-0b36-4eef-a68d-dd0802c76cbf",
+      "department_code": "26",
+      "department_name": "Drôme",
+      "communes_count": 362
+    },
+    {
+      "slug": "27-eure",
+      "name": "Préfecture · Eure",
+      "role": "Services de l’État — Eure (27)",
+      "ministries": [
+        "Département : Eure"
+      ],
+      "official_url": "https://www.eure.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/normandie/eure/ec1de053-417a-4088-8ddb-02b5089b657f",
+      "department_code": "27",
+      "department_name": "Eure",
+      "communes_count": 585
+    },
+    {
+      "slug": "28-eure-et-loir",
+      "name": "Préfecture · Eure-et-Loir",
+      "role": "Services de l’État — Eure-et-Loir (28)",
+      "ministries": [
+        "Département : Eure-et-Loir"
+      ],
+      "official_url": "https://www.eure-et-loir.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/centre-val-de-loire/eure-et-loir/d1dc3abd-cdb8-4d93-aca2-6106411883d8",
+      "department_code": "28",
+      "department_name": "Eure-et-Loir",
+      "communes_count": 363
+    },
+    {
+      "slug": "29-finistere",
+      "name": "Préfecture · Finistère",
+      "role": "Services de l’État — Finistère (29)",
+      "ministries": [
+        "Département : Finistère"
+      ],
+      "official_url": "https://www.finistere.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/bretagne/finistere/2a739ac5-4620-45fc-82c5-83fe8db07df0",
+      "department_code": "29",
+      "department_name": "Finistère",
+      "communes_count": 277
+    },
+    {
+      "slug": "2a-corse-du-sud",
+      "name": "Préfecture · Corse-du-Sud",
+      "role": "Services de l’État — Corse-du-Sud (2A)",
+      "ministries": [
+        "Département : Corse-du-Sud"
+      ],
+      "official_url": "https://www.corse-du-sud.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/corse/corse-du-sud/4806a1b0-e34a-416f-95e3-21f729837f8f",
+      "department_code": "2A",
+      "department_name": "Corse-du-Sud",
+      "communes_count": 124
+    },
+    {
+      "slug": "2b-haute-corse",
+      "name": "Préfecture · Haute-Corse",
+      "role": "Services de l’État — Haute-Corse (2B)",
+      "ministries": [
+        "Département : Haute-Corse"
+      ],
+      "official_url": "https://www.haute-corse.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/corse/haute-corse/9e476da4-b440-4767-a3d5-f32753dec22b",
+      "department_code": "2B",
+      "department_name": "Haute-Corse",
+      "communes_count": 236
+    },
+    {
+      "slug": "30-gard",
+      "name": "Préfecture · Gard",
+      "role": "Services de l’État — Gard (30)",
+      "ministries": [
+        "Département : Gard"
+      ],
+      "official_url": "https://www.gard.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/occitanie/gard/6c56f81e-c303-4006-bf23-0e35ecf0b9c0",
+      "department_code": "30",
+      "department_name": "Gard",
+      "communes_count": 350
+    },
+    {
+      "slug": "31-haute-garonne",
+      "name": "Préfecture · Haute-Garonne",
+      "role": "Services de l’État — Haute-Garonne (31)",
+      "ministries": [
+        "Département : Haute-Garonne"
+      ],
+      "official_url": "https://www.haute-garonne.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/occitanie/haute-garonne/bcbcfb2e-89ec-44a4-b2ae-28f87c55357f",
+      "department_code": "31",
+      "department_name": "Haute-Garonne",
+      "communes_count": 586
+    },
+    {
+      "slug": "32-gers",
+      "name": "Préfecture · Gers",
+      "role": "Services de l’État — Gers (32)",
+      "ministries": [
+        "Département : Gers"
+      ],
+      "official_url": "https://www.gers.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/occitanie/gers/dd662b7a-5485-48d6-ad1a-f1720b05830f",
+      "department_code": "32",
+      "department_name": "Gers",
+      "communes_count": 458
+    },
+    {
+      "slug": "33-gironde",
+      "name": "Préfecture · Gironde",
+      "role": "Services de l’État — Gironde (33)",
+      "ministries": [
+        "Département : Gironde"
+      ],
+      "official_url": "https://www.gironde.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/nouvelle-aquitaine/gironde/03ba0b47-7bd0-4e68-9a14-4125b9ae0484",
+      "department_code": "33",
+      "department_name": "Gironde",
+      "communes_count": 534
+    },
+    {
+      "slug": "34-herault",
+      "name": "Préfecture · Hérault",
+      "role": "Services de l’État — Hérault (34)",
+      "ministries": [
+        "Département : Hérault"
+      ],
+      "official_url": "https://www.herault.gouv.fr",
+      "source_url": "https://lannuaire.service-public.gouv.fr/occitanie/herault/cc7a5287-6ebb-4dc7-af37-fab99bc266a6",
+      "department_code": "34",
+      "department_name": "Hérault",
+      "communes_count": 341
+    },
+    {
+      "slug": "35-ille-et-vilaine",
+      "name": "Préfecture · Ille-et-Vilaine",
+      "role": "Services de l’État — Ille-et-Vilaine (35)",
+      "ministries": [
+        "Département : Ille-et-Vilaine"
+      ],
+      "official_url": "https://www.ille-et-vilaine.gouv.fr",
+      "source_url": "https://lannuaire.service-public.gouv.fr/bretagne/ille-et-vilaine/229f6896-6ee0-443d-901c-0a3f44b15f30",
+      "department_code": "35",
+      "department_name": "Ille-et-Vilaine",
+      "communes_count": 332
+    },
+    {
+      "slug": "36-indre",
+      "name": "Préfecture · Indre",
+      "role": "Services de l’État — Indre (36)",
+      "ministries": [
+        "Département : Indre"
+      ],
+      "official_url": "https://www.indre.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/centre-val-de-loire/indre/1c1f751c-55a1-4056-ab65-33b2f7392a81",
+      "department_code": "36",
+      "department_name": "Indre",
+      "communes_count": 241
+    },
+    {
+      "slug": "37-indre-et-loire",
+      "name": "Préfecture · Indre-et-Loire",
+      "role": "Services de l’État — Indre-et-Loire (37)",
+      "ministries": [
+        "Département : Indre-et-Loire"
+      ],
+      "official_url": "https://www.indre-et-loire.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/centre-val-de-loire/indre-et-loire/206b64cc-3e35-4f28-a521-f3da90bf54cb",
+      "department_code": "37",
+      "department_name": "Indre-et-Loire",
+      "communes_count": 272
+    },
+    {
+      "slug": "38-isere",
+      "name": "Préfecture · Isère",
+      "role": "Services de l’État — Isère (38)",
+      "ministries": [
+        "Département : Isère"
+      ],
+      "official_url": "https://www.isere.gouv.fr",
+      "source_url": "https://lannuaire.service-public.gouv.fr/auvergne-rhone-alpes/isere/d43894ef-bf14-42d2-b07d-0c1f6b906026",
+      "department_code": "38",
+      "department_name": "Isère",
+      "communes_count": 512
+    },
+    {
+      "slug": "39-jura",
+      "name": "Préfecture · Jura",
+      "role": "Services de l’État — Jura (39)",
+      "ministries": [
+        "Département : Jura"
+      ],
+      "official_url": "https://www.jura.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/bourgogne-franche-comte/jura/989adb94-9d39-4054-aaf5-2572aa11ec63",
+      "department_code": "39",
+      "department_name": "Jura",
+      "communes_count": 492
+    },
+    {
+      "slug": "40-landes",
+      "name": "Préfecture · Landes",
+      "role": "Services de l’État — Landes (40)",
+      "ministries": [
+        "Département : Landes"
+      ],
+      "official_url": "https://www.landes.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/nouvelle-aquitaine/landes/634271f6-e001-48ff-97bd-4b91ca455d0a",
+      "department_code": "40",
+      "department_name": "Landes",
+      "communes_count": 327
+    },
+    {
+      "slug": "41-loir-et-cher",
+      "name": "Préfecture · Loir-et-Cher",
+      "role": "Services de l’État — Loir-et-Cher (41)",
+      "ministries": [
+        "Département : Loir-et-Cher"
+      ],
+      "official_url": "https://www.loir-et-cher.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/centre-val-de-loire/loir-et-cher/d5282ebc-1fcd-4bf5-ab53-269d21b0bc67",
+      "department_code": "41",
+      "department_name": "Loir-et-Cher",
+      "communes_count": 267
+    },
+    {
+      "slug": "42-loire",
+      "name": "Préfecture · Loire",
+      "role": "Services de l’État — Loire (42)",
+      "ministries": [
+        "Département : Loire"
+      ],
+      "official_url": "https://www.loire.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/auvergne-rhone-alpes/loire/19fefc85-ec18-4b72-b858-516e20cf1147",
+      "department_code": "42",
+      "department_name": "Loire",
+      "communes_count": 320
+    },
+    {
+      "slug": "43-haute-loire",
+      "name": "Préfecture · Haute-Loire",
+      "role": "Services de l’État — Haute-Loire (43)",
+      "ministries": [
+        "Département : Haute-Loire"
+      ],
+      "official_url": "https://www.haute-loire.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/auvergne-rhone-alpes/haute-loire/389ea306-c22b-42f2-b5d4-186b7e742301",
+      "department_code": "43",
+      "department_name": "Haute-Loire",
+      "communes_count": 257
+    },
+    {
+      "slug": "44-loire-atlantique",
+      "name": "Préfecture · Loire-Atlantique",
+      "role": "Services de l’État — Loire-Atlantique (44)",
+      "ministries": [
+        "Département : Loire-Atlantique"
+      ],
+      "official_url": "https://www.loire-atlantique.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/pays-de-la-loire/loire-atlantique/99392b20-dff3-40bd-9496-8d6d999b7872",
+      "department_code": "44",
+      "department_name": "Loire-Atlantique",
+      "communes_count": 207
+    },
+    {
+      "slug": "45-loiret",
+      "name": "Préfecture · Loiret",
+      "role": "Services de l’État — Loiret (45)",
+      "ministries": [
+        "Département : Loiret"
+      ],
+      "official_url": "https://www.loiret.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/centre-val-de-loire/loiret/3040f259-ddb7-4e8a-bd5a-9ea9149270e2",
+      "department_code": "45",
+      "department_name": "Loiret",
+      "communes_count": 325
+    },
+    {
+      "slug": "46-lot",
+      "name": "Préfecture · Lot",
+      "role": "Services de l’État — Lot (46)",
+      "ministries": [
+        "Département : Lot"
+      ],
+      "official_url": "https://www.lot.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/occitanie/lot/2b702572-9604-48f4-b836-518f5a841bb1",
+      "department_code": "46",
+      "department_name": "Lot",
+      "communes_count": 312
+    },
+    {
+      "slug": "47-lot-et-garonne",
+      "name": "Préfecture · Lot-et-Garonne",
+      "role": "Services de l’État — Lot-et-Garonne (47)",
+      "ministries": [
+        "Département : Lot-et-Garonne"
+      ],
+      "official_url": "https://www.lot-et-garonne.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/nouvelle-aquitaine/lot-et-garonne/5f7fffa8-a2f3-4830-9c59-d8c67d56ba8a",
+      "department_code": "47",
+      "department_name": "Lot-et-Garonne",
+      "communes_count": 319
+    },
+    {
+      "slug": "48-lozere",
+      "name": "Préfecture · Lozère",
+      "role": "Services de l’État — Lozère (48)",
+      "ministries": [
+        "Département : Lozère"
+      ],
+      "official_url": "https://www.lozere.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/occitanie/lozere/77157508-65b5-4cc4-b427-28d0d7c8109a",
+      "department_code": "48",
+      "department_name": "Lozère",
+      "communes_count": 152
+    },
+    {
+      "slug": "49-maine-et-loire",
+      "name": "Préfecture · Maine-et-Loire",
+      "role": "Services de l’État — Maine-et-Loire (49)",
+      "ministries": [
+        "Département : Maine-et-Loire"
+      ],
+      "official_url": "https://www.maine-et-loire.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/pays-de-la-loire/maine-et-loire/c28fed7b-ba94-4baa-97ca-0346b526229d",
+      "department_code": "49",
+      "department_name": "Maine-et-Loire",
+      "communes_count": 176
+    },
+    {
+      "slug": "50-manche",
+      "name": "Préfecture · Manche",
+      "role": "Services de l’État — Manche (50)",
+      "ministries": [
+        "Département : Manche"
+      ],
+      "official_url": "https://www.manche.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/normandie/manche/e5db6c06-1ccb-4402-a7a8-f0ceb5ac9268",
+      "department_code": "50",
+      "department_name": "Manche",
+      "communes_count": 445
+    },
+    {
+      "slug": "51-marne",
+      "name": "Préfecture · Marne",
+      "role": "Services de l’État — Marne (51)",
+      "ministries": [
+        "Département : Marne"
+      ],
+      "official_url": "https://www.marne.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/grand-est/marne/1cb215c2-96e1-4a94-921a-98a370bc9887",
+      "department_code": "51",
+      "department_name": "Marne",
+      "communes_count": 610
+    },
+    {
+      "slug": "52-haute-marne",
+      "name": "Préfecture · Haute-Marne",
+      "role": "Services de l’État — Haute-Marne (52)",
+      "ministries": [
+        "Département : Haute-Marne"
+      ],
+      "official_url": "https://www.haute-marne.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/grand-est/haute-marne/15395ad3-2176-46b0-9d0a-ee60133d7906",
+      "department_code": "52",
+      "department_name": "Haute-Marne",
+      "communes_count": 426
+    },
+    {
+      "slug": "53-mayenne",
+      "name": "Préfecture · Mayenne",
+      "role": "Services de l’État — Mayenne (53)",
+      "ministries": [
+        "Département : Mayenne"
+      ],
+      "official_url": "https://www.mayenne.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/pays-de-la-loire/mayenne/869d8e5a-0c0a-468c-8736-ce74cfacbc76",
+      "department_code": "53",
+      "department_name": "Mayenne",
+      "communes_count": 240
+    },
+    {
+      "slug": "54-meurthe-et-moselle",
+      "name": "Préfecture · Meurthe-et-Moselle",
+      "role": "Services de l’État — Meurthe-et-Moselle (54)",
+      "ministries": [
+        "Département : Meurthe-et-Moselle"
+      ],
+      "official_url": "https://www.meurthe-et-moselle.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/grand-est/meurthe-et-moselle/b07dff0b-5af8-4359-9c04-ffeb1cba13c9",
+      "department_code": "54",
+      "department_name": "Meurthe-et-Moselle",
+      "communes_count": 591
+    },
+    {
+      "slug": "55-meuse",
+      "name": "Préfecture · Meuse",
+      "role": "Services de l’État — Meuse (55)",
+      "ministries": [
+        "Département : Meuse"
+      ],
+      "official_url": "https://www.meuse.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/grand-est/meuse/7ced2ae9-068c-40c5-8175-e0f2fbd596b1",
+      "department_code": "55",
+      "department_name": "Meuse",
+      "communes_count": 499
+    },
+    {
+      "slug": "56-morbihan",
+      "name": "Préfecture · Morbihan",
+      "role": "Services de l’État — Morbihan (56)",
+      "ministries": [
+        "Département : Morbihan"
+      ],
+      "official_url": "https://www.morbihan.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/bretagne/morbihan/966f71dd-d463-4994-ad32-2f351bccb55c",
+      "department_code": "56",
+      "department_name": "Morbihan",
+      "communes_count": 249
+    },
+    {
+      "slug": "57-moselle",
+      "name": "Préfecture · Moselle",
+      "role": "Services de l’État — Moselle (57)",
+      "ministries": [
+        "Département : Moselle"
+      ],
+      "official_url": "https://www.moselle.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/grand-est/moselle/b72ca22f-907c-48ff-91e0-c8b3aa953ae5",
+      "department_code": "57",
+      "department_name": "Moselle",
+      "communes_count": 725
+    },
+    {
+      "slug": "58-nievre",
+      "name": "Préfecture · Nièvre",
+      "role": "Services de l’État — Nièvre (58)",
+      "ministries": [
+        "Département : Nièvre"
+      ],
+      "official_url": "https://www.nievre.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/bourgogne-franche-comte/nievre/2cf88fcb-e2ee-4531-805b-13135f256ff6",
+      "department_code": "58",
+      "department_name": "Nièvre",
+      "communes_count": 309
+    },
+    {
+      "slug": "59-nord",
+      "name": "Préfecture · Nord",
+      "role": "Services de l’État — Nord (59)",
+      "ministries": [
+        "Département : Nord"
+      ],
+      "official_url": "https://www.nord.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/hauts-de-france/nord/88df876f-8048-41cd-b985-d796bd21580e",
+      "department_code": "59",
+      "department_name": "Nord",
+      "communes_count": 647
+    },
+    {
+      "slug": "60-oise",
+      "name": "Préfecture · Oise",
+      "role": "Services de l’État — Oise (60)",
+      "ministries": [
+        "Département : Oise"
+      ],
+      "official_url": "https://www.oise.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/hauts-de-france/oise/51d7cd1b-4d4e-4910-9a7b-947ffd055ced",
+      "department_code": "60",
+      "department_name": "Oise",
+      "communes_count": 680
+    },
+    {
+      "slug": "61-orne",
+      "name": "Préfecture · Orne",
+      "role": "Services de l’État — Orne (61)",
+      "ministries": [
+        "Département : Orne"
+      ],
+      "official_url": "https://www.orne.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/normandie/orne/c4fd783b-bdcc-402d-b870-223fc4445b0c",
+      "department_code": "61",
+      "department_name": "Orne",
+      "communes_count": 381
+    },
+    {
+      "slug": "62-pas-de-calais",
+      "name": "Préfecture · Pas-de-Calais",
+      "role": "Services de l’État — Pas-de-Calais (62)",
+      "ministries": [
+        "Département : Pas-de-Calais"
+      ],
+      "official_url": "https://www.pas-de-calais.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/hauts-de-france/pas-de-calais/a198c12b-5ae6-4c67-9a29-fb47323c8b7f",
+      "department_code": "62",
+      "department_name": "Pas-de-Calais",
+      "communes_count": 887
+    },
+    {
+      "slug": "63-puy-de-dome",
+      "name": "Préfecture · Puy-de-Dôme",
+      "role": "Services de l’État — Puy-de-Dôme (63)",
+      "ministries": [
+        "Département : Puy-de-Dôme"
+      ],
+      "official_url": "https://www.puy-de-dome.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/auvergne-rhone-alpes/puy-de-dome/d495649e-148a-4d09-97c2-2c11263bd7cf",
+      "department_code": "63",
+      "department_name": "Puy-de-Dôme",
+      "communes_count": 463
+    },
+    {
+      "slug": "64-pyrenees-atlantiques",
+      "name": "Préfecture · Pyrénées-Atlantiques",
+      "role": "Services de l’État — Pyrénées-Atlantiques (64)",
+      "ministries": [
+        "Département : Pyrénées-Atlantiques"
+      ],
+      "official_url": "https://www.pyrenees-atlantiques.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/nouvelle-aquitaine/pyrenees-atlantiques/1f948f35-9246-4220-92dd-dfc63c909135",
+      "department_code": "64",
+      "department_name": "Pyrénées-Atlantiques",
+      "communes_count": 545
+    },
+    {
+      "slug": "65-hautes-pyrenees",
+      "name": "Préfecture · Hautes-Pyrénées",
+      "role": "Services de l’État — Hautes-Pyrénées (65)",
+      "ministries": [
+        "Département : Hautes-Pyrénées"
+      ],
+      "official_url": "https://www.hautes-pyrenees.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/occitanie/hautes-pyrenees/46f1fa23-691f-4c8e-bc70-93e9c8c42e1c",
+      "department_code": "65",
+      "department_name": "Hautes-Pyrénées",
+      "communes_count": 469
+    },
+    {
+      "slug": "66-pyrenees-orientales",
+      "name": "Préfecture · Pyrénées-Orientales",
+      "role": "Services de l’État — Pyrénées-Orientales (66)",
+      "ministries": [
+        "Département : Pyrénées-Orientales"
+      ],
+      "official_url": "https://www.pyrenees-orientales.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/occitanie/pyrenees-orientales/26e27775-3024-4da5-b6d7-ecb3b0a8733c",
+      "department_code": "66",
+      "department_name": "Pyrénées-Orientales",
+      "communes_count": 226
+    },
+    {
+      "slug": "67-bas-rhin",
+      "name": "Préfecture · Bas-Rhin",
+      "role": "Services de l’État — Bas-Rhin (67)",
+      "ministries": [
+        "Département : Bas-Rhin"
+      ],
+      "official_url": "https://www.bas-rhin.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/grand-est/bas-rhin/2d5be364-275d-4e49-93cd-f132cfd45255",
+      "department_code": "67",
+      "department_name": "Bas-Rhin",
+      "communes_count": 514
+    },
+    {
+      "slug": "68-haut-rhin",
+      "name": "Préfecture · Haut-Rhin",
+      "role": "Services de l’État — Haut-Rhin (68)",
+      "ministries": [
+        "Département : Haut-Rhin"
+      ],
+      "official_url": "https://www.haut-rhin.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/grand-est/haut-rhin/9a58d701-f793-486d-863c-63ee35dd2b10",
+      "department_code": "68",
+      "department_name": "Haut-Rhin",
+      "communes_count": 366
+    },
+    {
+      "slug": "69-rhone",
+      "name": "Préfecture · Rhône",
+      "role": "Services de l’État — Rhône (69)",
+      "ministries": [
+        "Département : Rhône"
+      ],
+      "official_url": "https://www.rhone.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/auvergne-rhone-alpes/rhone/97aee73f-4216-4b70-94bb-bc5bd5d76984",
+      "department_code": "69",
+      "department_name": "Rhône",
+      "communes_count": 266
+    },
+    {
+      "slug": "70-haute-saone",
+      "name": "Préfecture · Haute-Saône",
+      "role": "Services de l’État — Haute-Saône (70)",
+      "ministries": [
+        "Département : Haute-Saône"
+      ],
+      "official_url": "https://www.haute-saone.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/bourgogne-franche-comte/haute-saone/f0726527-39a6-4c4c-a6cd-2284d82d48b9",
+      "department_code": "70",
+      "department_name": "Haute-Saône",
+      "communes_count": 536
+    },
+    {
+      "slug": "71-saone-et-loire",
+      "name": "Préfecture · Saône-et-Loire",
+      "role": "Services de l’État — Saône-et-Loire (71)",
+      "ministries": [
+        "Département : Saône-et-Loire"
+      ],
+      "official_url": "https://www.saone-et-loire.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/bourgogne-franche-comte/saone-et-loire/e27befdb-2fb3-47fd-955a-60c930941d02",
+      "department_code": "71",
+      "department_name": "Saône-et-Loire",
+      "communes_count": 563
+    },
+    {
+      "slug": "72-sarthe",
+      "name": "Préfecture · Sarthe",
+      "role": "Services de l’État — Sarthe (72)",
+      "ministries": [
+        "Département : Sarthe"
+      ],
+      "official_url": "https://www.sarthe.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/pays-de-la-loire/sarthe/885ea458-c4db-4634-8d91-d651c44ba72d",
+      "department_code": "72",
+      "department_name": "Sarthe",
+      "communes_count": 352
+    },
+    {
+      "slug": "73-savoie",
+      "name": "Préfecture · Savoie",
+      "role": "Services de l’État — Savoie (73)",
+      "ministries": [
+        "Département : Savoie"
+      ],
+      "official_url": "https://www.savoie.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/auvergne-rhone-alpes/savoie/81344c70-3601-481e-857d-a24f50b5e5a7",
+      "department_code": "73",
+      "department_name": "Savoie",
+      "communes_count": 273
+    },
+    {
+      "slug": "74-haute-savoie",
+      "name": "Préfecture · Haute-Savoie",
+      "role": "Services de l’État — Haute-Savoie (74)",
+      "ministries": [
+        "Département : Haute-Savoie"
+      ],
+      "official_url": "https://www.haute-savoie.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/auvergne-rhone-alpes/haute-savoie/7996bb87-77d0-4570-a7cd-325e0cc48b2f",
+      "department_code": "74",
+      "department_name": "Haute-Savoie",
+      "communes_count": 279
+    },
+    {
+      "slug": "75-paris",
+      "name": "Préfecture · Paris",
+      "role": "Services de l’État — Paris (75)",
+      "ministries": [
+        "Département : Paris"
+      ],
+      "official_url": "https://www.prefectures-regions.gouv.fr/ile-de-france",
+      "source_url": "https://lannuaire.service-public.gouv.fr/ile-de-france/paris/a68167ac-ca2d-41cb-8b2f-5da467e46c03",
+      "department_code": "75",
+      "department_name": "Paris",
+      "communes_count": 1
+    },
+    {
+      "slug": "76-seine-maritime",
+      "name": "Préfecture · Seine-Maritime",
+      "role": "Services de l’État — Seine-Maritime (76)",
+      "ministries": [
+        "Département : Seine-Maritime"
+      ],
+      "official_url": "https://www.seine-maritime.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/normandie/seine-maritime/67aefdb7-9729-43ee-bc54-a768300c1f20",
+      "department_code": "76",
+      "department_name": "Seine-Maritime",
+      "communes_count": 707
+    },
+    {
+      "slug": "77-seine-et-marne",
+      "name": "Préfecture · Seine-et-Marne",
+      "role": "Services de l’État — Seine-et-Marne (77)",
+      "ministries": [
+        "Département : Seine-et-Marne"
+      ],
+      "official_url": "https://www.seine-et-marne.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/ile-de-france/seine-et-marne/245006d0-6cc2-4b53-861a-c2e9b8a6747b",
+      "department_code": "77",
+      "department_name": "Seine-et-Marne",
+      "communes_count": 507
+    },
+    {
+      "slug": "78-yvelines",
+      "name": "Préfecture · Yvelines",
+      "role": "Services de l’État — Yvelines (78)",
+      "ministries": [
+        "Département : Yvelines"
+      ],
+      "official_url": "https://www.yvelines.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/ile-de-france/yvelines/b8310757-c178-43fe-aec5-0cb4803b86b2",
+      "department_code": "78",
+      "department_name": "Yvelines",
+      "communes_count": 259
+    },
+    {
+      "slug": "79-deux-sevres",
+      "name": "Préfecture · Deux-Sèvres",
+      "role": "Services de l’État — Deux-Sèvres (79)",
+      "ministries": [
+        "Département : Deux-Sèvres"
+      ],
+      "official_url": "https://www.deux-sevres.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/nouvelle-aquitaine/deux-sevres/e4859d0d-a7c5-44a9-a714-7b3252f74552",
+      "department_code": "79",
+      "department_name": "Deux-Sèvres",
+      "communes_count": 252
+    },
+    {
+      "slug": "80-somme",
+      "name": "Préfecture · Somme",
+      "role": "Services de l’État — Somme (80)",
+      "ministries": [
+        "Département : Somme"
+      ],
+      "official_url": "https://www.somme.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/hauts-de-france/somme/57fbd6c8-62b5-443b-bf52-d7b3db5b2b47",
+      "department_code": "80",
+      "department_name": "Somme",
+      "communes_count": 771
+    },
+    {
+      "slug": "81-tarn",
+      "name": "Préfecture · Tarn",
+      "role": "Services de l’État — Tarn (81)",
+      "ministries": [
+        "Département : Tarn"
+      ],
+      "official_url": "https://www.tarn.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/occitanie/tarn/677614ea-f87a-48ca-9f3d-928e5aa2b272",
+      "department_code": "81",
+      "department_name": "Tarn",
+      "communes_count": 314
+    },
+    {
+      "slug": "82-tarn-et-garonne",
+      "name": "Préfecture · Tarn-et-Garonne",
+      "role": "Services de l’État — Tarn-et-Garonne (82)",
+      "ministries": [
+        "Département : Tarn-et-Garonne"
+      ],
+      "official_url": "https://www.tarn-et-garonne.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/occitanie/tarn-et-garonne/6e8b5540-e240-41d3-a029-b6262c5a5373",
+      "department_code": "82",
+      "department_name": "Tarn-et-Garonne",
+      "communes_count": 195
+    },
+    {
+      "slug": "83-var",
+      "name": "Préfecture · Var",
+      "role": "Services de l’État — Var (83)",
+      "ministries": [
+        "Département : Var"
+      ],
+      "official_url": "https://www.var.gouv.fr",
+      "source_url": "https://lannuaire.service-public.gouv.fr/provence-alpes-cote-d-azur/var/162ab3b2-360f-46cc-ac83-67c967b214bd",
+      "department_code": "83",
+      "department_name": "Var",
+      "communes_count": 153
+    },
+    {
+      "slug": "84-vaucluse",
+      "name": "Préfecture · Vaucluse",
+      "role": "Services de l’État — Vaucluse (84)",
+      "ministries": [
+        "Département : Vaucluse"
+      ],
+      "official_url": "https://www.vaucluse.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/provence-alpes-cote-d-azur/vaucluse/55e56746-59d1-4cb5-8b4a-136171fb5784",
+      "department_code": "84",
+      "department_name": "Vaucluse",
+      "communes_count": 151
+    },
+    {
+      "slug": "85-vendee",
+      "name": "Préfecture · Vendée",
+      "role": "Services de l’État — Vendée (85)",
+      "ministries": [
+        "Département : Vendée"
+      ],
+      "official_url": "https://www.vendee.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/pays-de-la-loire/vendee/f1a3efbb-cff0-4990-90f1-6d40c13abdfa",
+      "department_code": "85",
+      "department_name": "Vendée",
+      "communes_count": 253
+    },
+    {
+      "slug": "86-vienne",
+      "name": "Préfecture · Vienne",
+      "role": "Services de l’État — Vienne (86)",
+      "ministries": [
+        "Département : Vienne"
+      ],
+      "official_url": "https://www.vienne.gouv.fr",
+      "source_url": "https://lannuaire.service-public.gouv.fr/nouvelle-aquitaine/vienne/044f4ada-e551-426d-8c62-6d7b19f5d21a",
+      "department_code": "86",
+      "department_name": "Vienne",
+      "communes_count": 265
+    },
+    {
+      "slug": "87-haute-vienne",
+      "name": "Préfecture · Haute-Vienne",
+      "role": "Services de l’État — Haute-Vienne (87)",
+      "ministries": [
+        "Département : Haute-Vienne"
+      ],
+      "official_url": "https://www.haute-vienne.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/nouvelle-aquitaine/haute-vienne/86d0ebc6-a84b-4cc8-a178-f5172ca3584c",
+      "department_code": "87",
+      "department_name": "Haute-Vienne",
+      "communes_count": 195
+    },
+    {
+      "slug": "88-vosges",
+      "name": "Préfecture · Vosges",
+      "role": "Services de l’État — Vosges (88)",
+      "ministries": [
+        "Département : Vosges"
+      ],
+      "official_url": "https://www.vosges.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/grand-est/vosges/f999af82-5a34-4f67-a8df-52a2a8c177d1",
+      "department_code": "88",
+      "department_name": "Vosges",
+      "communes_count": 506
+    },
+    {
+      "slug": "89-yonne",
+      "name": "Préfecture · Yonne",
+      "role": "Services de l’État — Yonne (89)",
+      "ministries": [
+        "Département : Yonne"
+      ],
+      "official_url": "https://www.yonne.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/bourgogne-franche-comte/yonne/cc30c13c-3551-4a44-8750-bc5bca8d6f92",
+      "department_code": "89",
+      "department_name": "Yonne",
+      "communes_count": 423
+    },
+    {
+      "slug": "90-territoire-de-belfort",
+      "name": "Préfecture · Territoire de Belfort",
+      "role": "Services de l’État — Territoire de Belfort (90)",
+      "ministries": [
+        "Département : Territoire de Belfort"
+      ],
+      "official_url": "https://www.territoire-de-belfort.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/bourgogne-franche-comte/territoire-de-belfort/6ade1784-caf8-438a-869d-6139cb1b6353",
+      "department_code": "90",
+      "department_name": "Territoire de Belfort",
+      "communes_count": 101
+    },
+    {
+      "slug": "91-essonne",
+      "name": "Préfecture · Essonne",
+      "role": "Services de l’État — Essonne (91)",
+      "ministries": [
+        "Département : Essonne"
+      ],
+      "official_url": "https://www.essonne.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/ile-de-france/essonne/68982b67-c7ab-46f7-aa74-c9a46a7d04ad",
+      "department_code": "91",
+      "department_name": "Essonne",
+      "communes_count": 194
+    },
+    {
+      "slug": "92-hauts-de-seine",
+      "name": "Préfecture · Hauts-de-Seine",
+      "role": "Services de l’État — Hauts-de-Seine (92)",
+      "ministries": [
+        "Département : Hauts-de-Seine"
+      ],
+      "official_url": "https://www.hauts-de-seine.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/ile-de-france/hauts-de-seine/0d56064a-bf03-4ef4-a8b0-85d882fa4677",
+      "department_code": "92",
+      "department_name": "Hauts-de-Seine",
+      "communes_count": 36
+    },
+    {
+      "slug": "93-seine-saint-denis",
+      "name": "Préfecture · Seine-Saint-Denis",
+      "role": "Services de l’État — Seine-Saint-Denis (93)",
+      "ministries": [
+        "Département : Seine-Saint-Denis"
+      ],
+      "official_url": "https://www.seine-saint-denis.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/ile-de-france/seine-saint-denis/6cbec247-95d0-4aca-befe-352a3805c7de",
+      "department_code": "93",
+      "department_name": "Seine-Saint-Denis",
+      "communes_count": 39
+    },
+    {
+      "slug": "94-val-de-marne",
+      "name": "Préfecture · Val-de-Marne",
+      "role": "Services de l’État — Val-de-Marne (94)",
+      "ministries": [
+        "Département : Val-de-Marne"
+      ],
+      "official_url": "https://www.val-de-marne.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/ile-de-france/val-de-marne/dc82689e-1fe2-495d-aceb-6f1fed3c5690",
+      "department_code": "94",
+      "department_name": "Val-de-Marne",
+      "communes_count": 47
+    },
+    {
+      "slug": "95-val-d-oise",
+      "name": "Préfecture · Val-d'Oise",
+      "role": "Services de l’État — Val-d'Oise (95)",
+      "ministries": [
+        "Département : Val-d'Oise"
+      ],
+      "official_url": "https://www.val-doise.gouv.fr",
+      "source_url": "https://lannuaire.service-public.gouv.fr/ile-de-france/val-d-oise/70ca07b0-db06-41a7-ae0f-58239c9a643a",
+      "department_code": "95",
+      "department_name": "Val-d'Oise",
+      "communes_count": 183
+    },
+    {
+      "slug": "971-guadeloupe",
+      "name": "Préfecture · Guadeloupe",
+      "role": "Services de l’État — Guadeloupe (971)",
+      "ministries": [
+        "Département : Guadeloupe"
+      ],
+      "official_url": "https://www.guadeloupe.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/guadeloupe/guadeloupe/7121906b-cecf-46b5-abe5-ec4f9ef8c669",
+      "department_code": "971",
+      "department_name": "Guadeloupe",
+      "communes_count": 32
+    },
+    {
+      "slug": "972-martinique",
+      "name": "Préfecture · Martinique",
+      "role": "Services de l’État — Martinique (972)",
+      "ministries": [
+        "Département : Martinique"
+      ],
+      "official_url": "https://www.martinique.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/martinique/martinique/f9d7fb06-b1c4-4fb4-9840-235085c3e637",
+      "department_code": "972",
+      "department_name": "Martinique",
+      "communes_count": 34
+    },
+    {
+      "slug": "973-guyane",
+      "name": "Préfecture · Guyane",
+      "role": "Services de l’État — Guyane (973)",
+      "ministries": [
+        "Département : Guyane"
+      ],
+      "official_url": "https://www.guyane.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/guyane/guyane/1efa4780-c58a-4b68-84ca-725d0c7cf82c",
+      "department_code": "973",
+      "department_name": "Guyane",
+      "communes_count": 22
+    },
+    {
+      "slug": "974-la-reunion",
+      "name": "Préfecture · La Réunion",
+      "role": "Services de l’État — La Réunion (974)",
+      "ministries": [
+        "Département : La Réunion"
+      ],
+      "official_url": "https://www.reunion.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/la-reunion/la-reunion/b10e78eb-7e1f-4a39-a345-5356a242b6d9",
+      "department_code": "974",
+      "department_name": "La Réunion",
+      "communes_count": 24
+    },
+    {
+      "slug": "976-mayotte",
+      "name": "Préfecture · Mayotte",
+      "role": "Services de l’État — Mayotte (976)",
+      "ministries": [
+        "Département : Mayotte"
+      ],
+      "official_url": "https://www.mayotte.gouv.fr/",
+      "source_url": "https://lannuaire.service-public.gouv.fr/mayotte/mayotte/d67b1697-0e17-45a5-a1e3-eaa12eba8270",
+      "department_code": "976",
+      "department_name": "Mayotte",
+      "communes_count": 17
+    }
+  ]
+}

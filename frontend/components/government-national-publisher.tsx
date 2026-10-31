@@ -13,14 +13,24 @@ type NationalPost = {
   scope: string;
   commune_id: string;
   commune_name?: string;
+  department_name?: string;
 };
 
 /** Un identifiant conservé lors d'un nouvel essai évite de diffuser deux fois le même formulaire. */
 export default function GovernmentNationalPublisher({
   name,
+  departmentCode,
+  departmentName,
+  profileSlug,
 }: {
   name: string;
+  departmentCode?: string;
+  departmentName?: string;
+  profileSlug?: string;
 }) {
+  const allLabel = departmentCode
+    ? `Toutes les communes du département : ${departmentName}`
+    : "Toutes les communes";
   const [audience, setAudience] = useState<"national" | "commune">("national");
   const [commune, setCommune] = useState<Commune | null>(null);
   const [publishedLink, setPublishedLink] = useState("/");
@@ -70,6 +80,7 @@ export default function GovernmentNationalPublisher({
         scope: string;
         commune_id: string;
         commune_name?: string;
+        department_name?: string;
       }>("government-demo/publications", {
         title,
         body,
@@ -79,16 +90,21 @@ export default function GovernmentNationalPublisher({
       });
       setTitle("");
       setBody("");
+      window.dispatchEvent(new Event("qomune:government-publication"));
       requestId.current = null;
       setSuccess(
-        receipt.scope === "national"
-          ? "Votre publication de démonstration est visible dans le fil public de toutes les communes."
-          : `Votre publication de démonstration est visible dans le fil public de la commune : ${receipt.commune_name || receipt.commune_id}.`,
+        receipt.scope === "department"
+          ? `Votre publication de démonstration est visible dans les communes du département : ${receipt.department_name}.`
+          : receipt.scope === "national"
+            ? "Votre publication de démonstration est visible dans le fil public de toutes les communes."
+            : `Votre publication de démonstration est visible dans le fil public de la commune : ${receipt.commune_name || receipt.commune_id}.`,
       );
       setPublishedLink(
-        receipt.scope === "national"
-          ? "/"
-          : `/?commune=${encodeURIComponent(receipt.commune_id)}`,
+        receipt.scope === "department"
+          ? `/prefectures/${profileSlug}`
+          : receipt.scope === "national"
+            ? "/"
+            : `/?commune=${encodeURIComponent(receipt.commune_id)}`,
       );
       // Une erreur de relecture ne transforme pas une publication réussie en invitation à republier.
       try {
@@ -114,7 +130,9 @@ export default function GovernmentNationalPublisher({
         <Globe2 size={21} /> Publier un message de démonstration
       </h3>
       <p>
-        Diffusion publique vers toutes les communes ou une commune choisie,
+        {departmentCode
+          ? "Diffusion publique vers les communes de votre département ou une commune choisie de ce département,"
+          : "Diffusion publique vers toutes les communes ou une commune choisie,"}
         depuis le compte fictif associé à <strong>{name}</strong>.
       </p>
       <p className="government-national-notice">
@@ -135,7 +153,7 @@ export default function GovernmentNationalPublisher({
                 setAudience("national");
               }}
             />{" "}
-            Toutes les communes
+            {allLabel}
           </label>
           <label>
             <input
@@ -160,6 +178,7 @@ export default function GovernmentNationalPublisher({
               setCommune(selected);
             }}
             allowAll={false}
+            departmentCode={departmentCode}
             disabled={busy}
           />
         )}
@@ -216,7 +235,7 @@ export default function GovernmentNationalPublisher({
         <p>
           Destinataires :{" "}
           {audience === "national"
-            ? "toutes les communes"
+            ? allLabel
             : commune?.name || "choisissez une commune"}
           . Visibilité : publique. Signature : {name}, compte fictif.
         </p>
@@ -228,7 +247,9 @@ export default function GovernmentNationalPublisher({
           {busy
             ? "Diffusion en cours…"
             : audience === "national"
-              ? "Publier dans toutes les communes"
+              ? departmentCode
+                ? "Publier dans le département"
+                : "Publier dans toutes les communes"
               : `Publier pour ${commune?.name || "la commune choisie"}`}
         </button>
       </form>
@@ -258,9 +279,11 @@ export default function GovernmentNationalPublisher({
                     })}
                   </time>{" "}
                   ·{" "}
-                  {post.scope === "national"
-                    ? "Toutes les communes"
-                    : post.commune_name || post.commune_id}
+                  {post.scope === "department"
+                    ? `Département : ${post.department_name}`
+                    : post.scope === "national"
+                      ? "Toutes les communes"
+                      : post.commune_name || post.commune_id}
                 </p>
               </li>
             ))}

@@ -120,3 +120,51 @@ Les erreurs métier prennent la forme `{ "error": "Message en français" }`.
 - `503` : backend inaccessible depuis Next.js.
 
 Les erreurs d'extraction de requête produites par Axum peuvent être des réponses texte sur l'API Rust directe. Le relais Next.js les convertit en JSON avec un message français et conserve leur code HTTP.
+
+### Publications publiques d’un membre du Gouvernement
+
+`GET /government/{slug}/publications` est accessible sans session. Il renvoie
+`{ "publications": [...], "next_cursor": "..." }` avec 20 messages publics de
+démonstration au maximum, du plus récent au plus ancien. Les diffusions nationales
+et celles destinées à une commune précise apparaissent sur le profil de leur auteur.
+
+Pour lire la suite, transmettre `?before=<next_cursor>`. Un curseur doit désigner
+une publication publique du même compte ; les curseurs d’un autre auteur ou d’un
+message privé sont refusés. `next_cursor` vaut `null` en fin de liste. Aucun champ
+technique d’authentification n’est renvoyé. Les autres méthodes HTTP ne sont pas
+exposées par le relais web pour cette route publique.
+
+### Préfectures de démonstration
+
+Les comptes fictifs des préfectures utilisent les routes de session
+`/government-demo/login`, `/government-demo/me`, `/government-demo/logout` et
+`/government-demo/publications`, avec `institution: "prefecture"`. Ces noms de
+routes sont conservés pour rester compatibles avec les autres comptes fictifs.
+
+`GET /prefectures/{slug}/publications` expose uniquement les publications
+publiques de l’auteur, par pages de 20 avec le même curseur `before` que le
+Gouvernement. `GET /communes?department=58&q=Nevers` borne la recherche au
+département. Le filtre est appliqué avant la recherche et la limite.
+
+Sans `commune_id`, un compte de préfecture produit `scope: "department"`, avec
+`department_code` et `department_name` imposés par son compte côté serveur.
+Avec `commune_id`, une commune d’un autre département est refusée (403).
+Les messages départementaux apparaissent dans chacun des fils communaux
+concernés et dans le fil public global. Aucune route de diffusion privée ni
+aucun mot de passe ne sont exposés par ces API publiques.
+
+### Carburants les moins chers de la commune
+
+`GET /carburants/{code_insee}` est public et renvoie `commune_id`, `commune_name`,
+`station_count` (stations locales), `nearby_radius_km`, `fetched_at`, `source_url` et `prices`. Pour chacun des six carburants,
+`price_per_litre` contient le minimum déclaré en euros par litre (ou `null`) et
+`stations` liste les ex æquo avec leur adresse, ville, `updated_at` et
+`older_than_week`. Les minima sont comparés au millième d’euro.
+
+Le code doit désigner une commune du référentiel de Qomune. Réponses : `400` pour
+un code mal formé, `404` pour une commune inconnue, `503` si les données officielles
+ne peuvent pas être récupérées. Seule la lecture est autorisée. Le relais Next.js
+accorde jusqu’à 45 secondes à cette route lors d’une récupération initiale.
+Aucun cookie ni identifiant du visiteur n’est envoyé aux services de données.
+
+En l’absence de prix local pour un carburant, le comparateur cherche le minimum dans les stations voisines jusqu’à 25 km à vol d’oiseau du centre approximatif de l’emprise communale. La priorité reste au prix local, même si un voisin est moins cher. Chaque résultat indique `search_scope` (`commune`, `nearby`, `none`) ; les stations voisines comportent une `distance_km` indicative. Sans résultat dans ce rayon, aucun prix n’est inventé.

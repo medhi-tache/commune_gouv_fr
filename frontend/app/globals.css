@@ -2436,3 +2436,152 @@ h1 {
 .sidebar {
   overflow-y: auto;
 }
+
+/* Service communal des carburants : comparaison distincte pour chaque motorisation. */
+.fuel-prices {
+  margin: 30px 0;
+  padding: 26px;
+  background: white;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--blue);
+  border-radius: 9px;
+}
+.fuel-eyebrow {
+  color: var(--blue);
+  font-size: 10px;
+  letter-spacing: 1.8px;
+  font-weight: 700;
+}
+.fuel-heading h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font: 26px/1.3 var(--serif);
+  margin: 12px 0;
+}
+.fuel-heading p:not(.fuel-eyebrow),
+.fuel-disclaimer,
+.fuel-empty {
+  color: var(--muted);
+  line-height: 1.7;
+}
+.fuel-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+.fuel-card {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  overflow-wrap: anywhere;
+}
+.fuel-card h3 {
+  margin: 0 0 12px;
+  color: var(--blue);
+  font-size: 14px;
+}
+.fuel-price {
+  margin: 0 0 16px;
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.fuel-price span {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
+}
+.fuel-card ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.fuel-card li {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.fuel-card li + li {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.fuel-card li span,
+.fuel-card small,
+.fuel-tie,
+.fuel-missing p {
+  color: var(--muted);
+}
+.fuel-old {
+  color: #97500a !important;
+}
+.fuel-missing {
+  background: var(--paper);
+}
+.fuel-source {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.fuel-source a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--blue);
+  text-decoration: underline;
+}
+.fuel-disclaimer {
+  font-size: 11px;
+  margin: 14px 0 0;
+}
+.fuel-error {
+  margin: 16px 0;
+  padding: 14px;
+  border-left: 3px solid var(--red);
+  background: #fff3f4;
+  font-size: 13px;
+}
+.fuel-error p {
+  line-height: 1.6;
+}
+@media (max-width: 1100px) {
+  .fuel-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .fuel-prices {
+    padding: 18px;
+  }
+  .fuel-heading h2 {
+    font-size: 23px;
+    align-items: flex-start;
+  }
+  .fuel-heading h2 svg {
+    flex-shrink: 0;
+  }
+  .fuel-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Fiches publiques des communes et accès depuis le fil local. */
+.commune-profile h1 { display:flex; align-items:center; gap:12px; }
+.commune-facts { display:flex; flex-wrap:wrap; gap:24px; margin:24px 0; padding:22px; background:#f5f6fb; border-radius:14px; }
+.commune-facts dt { font-size:12px; color:#596381; }
+.commune-facts dd { margin:6px 0 0; font-weight:600; }
+.commune-profile .fuel-prices { margin-top:32px; }
+.commune-directory { margin:32px 0; max-width:400px; }
+.commune-profile-link { display:flex; align-items:center; gap:14px; padding:22px; margin:0 0 28px; border:1px solid #dce1f3; border-left:4px solid #192ca8; border-radius:12px; color:#192b66; text-decoration:none; background:white; }
+.commune-profile-link span { flex:1; font-weight:600; }
+.commune-profile-link small { display:block; margin-top:5px; font-weight:400; }
+.commune-profile-link:hover { background:#f3f5ff; }
+
+.fuel-card .fuel-area, .fuel-card .fuel-nearby { font-size:11px; margin:8px 0 12px; color:#596381; }
+.fuel-card .fuel-nearby { color:#8a4b07; font-weight:600; }

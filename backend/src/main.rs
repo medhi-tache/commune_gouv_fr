@@ -3,7 +3,9 @@
 mod administration;
 mod discussion;
 mod fixtures;
+mod fuel;
 mod government;
+mod prefectures;
 mod reference;
 mod registration;
 #[cfg(test)]
@@ -114,6 +116,10 @@ struct Publication {
     commune_name: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     author_institution: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    department_code: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    department_name: Option<String>,
 }
 /// L'identifiant d'auteur reste en base ; la signature conserve son état au moment de l'envoi.
 #[derive(Serialize, Deserialize)]
@@ -135,6 +141,7 @@ async fn connect(uri: &str, name: &str) -> mongodb::error::Result<Database> {
 /// Les ajouts initiaux sont idempotents : un redémarrage ne remplace jamais les données existantes.
 async fn initialize(database: &Database, password: &str) -> mongodb::error::Result<()> {
     discussion::initialize(database).await?;
+    fuel::initialize(database).await?;
     visits::initialize(database).await?;
     for name in ["communes", "members", "publications"] {
         let index = IndexModel::builder()
@@ -276,6 +283,7 @@ async fn health(State(database): State<Database>) -> ApiResult<Json<Value>> {
 }
 #[derive(Deserialize, Default)]
 struct CommuneFilters {
+    department: Option<String>,
     q: Option<String>,
     ids: Option<String>,
     limit: Option<i64>,
@@ -288,6 +296,17 @@ async fn communes(
 ) -> ApiResult<Json<Vec<Commune>>> {
     let mut filter = doc! {};
     let mut limit = query.limit.unwrap_or(20);
+    if let Some(department) = query.department {
+        if ![2, 3].contains(&department.len())
+            || !department.bytes().all(|b| b.is_ascii_alphanumeric())
+        {
+            return Err(invalid("Code de département invalide."));
+        }
+        filter.insert(
+            "id",
+            doc! {"$regex":format!("^{}", escaped_search(&department))},
+        );
+    }
     if !(1..=100).contains(&limit) {
         return Err(invalid("La limite doit être comprise entre 1 et 100."));
     }
@@ -302,7 +321,11 @@ async fn communes(
             return Err(invalid("Liste de codes de communes invalide."));
         }
         limit = codes.len() as i64;
-        filter.insert("id", doc! {"$in":codes});
+        let mut ids_filter = doc! {"$in":codes};
+        if let Some(mongodb::bson::Bson::Document(department_filter)) = filter.remove("id") {
+            ids_filter.extend(department_filter);
+        }
+        filter.insert("id", ids_filter);
     }
     if let Some(q) = query.q.filter(|q| !q.trim().is_empty()) {
         if q.len() > 200 {
@@ -594,12 +617,12 @@ async fn publications(
             if let Some(commune) = filters.commune.filter(|c| !c.is_empty()) {
                 // Une seule publication nationale est visible dans chaque fil communal.
                 // Le groupe géographique reste distinct du filtre de recherche textuelle.
-                filter.insert(
-                    "$and",
-                    vec![doc! {"$or":[
-                        {"commune_id":commune}, {"scope":"national"}
-                    ]}],
-                );
+                let mut destinations =
+                    vec![doc! {"commune_id":&commune}, doc! {"scope":"national"}];
+                if let Some(code) = prefectures::department_code(&commune) {
+                    destinations.push(doc! {"scope":"department","department_code":code});
+                }
+                filter.insert("$and", vec![doc! {"$or":destinations}]);
             }
         }
         "council" => {
@@ -732,6 +755,8 @@ async fn create_publication(
             author_profile: None,
             commune_name: None,
             author_institution: None,
+            department_code: None,
+            department_name: None,
         },
     };
     database
@@ -743,6 +768,7 @@ async fn create_publication(
 fn app(database: Database) -> Router {
     Router::new()
         .route("/health", get(health))
+        .route("/carburants/{code}", get(fuel::cheapest))
         .route("/internal/visits", post(visits::record))
         .route("/admin/login", post(administration::login))
         .route("/admin/logout", post(administration::logout))
@@ -756,6 +782,14 @@ fn app(database: Database) -> Router {
         .route("/government-demo/login", post(government::login))
         .route("/government-demo/logout", post(government::logout))
         .route("/government-demo/me", get(government::me))
+        .route(
+            "/government/{slug}/publications",
+            get(government::profile_publications),
+        )
+        .route(
+            "/prefectures/{slug}/publications",
+            get(government::prefecture_publications),
+        )
         .route(
             "/government-demo/publications",
             get(government::publications).post(government::publish),
@@ -785,6 +819,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await
         .map_err(|_| "Initialisation MongoDB impossible.")?;
     government::initialize(&database).await?;
+    let prefecture_secret = std::env::var("QOMUNE_PREFECTURE_DEMO_SECRET").map_err(
+        |_| "Configurez le secret privé QOMUNE_PREFECTURE_DEMO_SECRET (32 caractères minimum).",
+    )?;
+    prefectures::initialize(&database, &prefecture_secret).await?;
     if let Ok(password) = std::env::var("QOMUNE_ADMIN_PASSWORD") {
         administration::configure(&database, &password).await?;
     }

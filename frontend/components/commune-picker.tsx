@@ -19,6 +19,7 @@ export default function CommunePicker({
   disabled = false,
   compact = false,
   allowAll = true,
+  departmentCode,
 }: {
   value: Commune | null;
   onChange: (commune: Commune | null) => void;
@@ -26,6 +27,7 @@ export default function CommunePicker({
   disabled?: boolean;
   compact?: boolean;
   allowAll?: boolean;
+  departmentCode?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -81,7 +83,9 @@ export default function CommunePicker({
     setResults([]);
     setError("");
     const timer = setTimeout(() => {
-      api<Commune[]>(`communes?limit=20&q=${encodeURIComponent(query)}`)
+      api<Commune[]>(
+        `communes?limit=20&q=${encodeURIComponent(query)}${departmentCode ? `&department=${encodeURIComponent(departmentCode)}` : ""}`,
+      )
         .then((items) => {
           if (current) setResults(items);
         })
@@ -96,7 +100,7 @@ export default function CommunePicker({
       current = false;
       clearTimeout(timer);
     };
-  }, [open, query]);
+  }, [open, query, departmentCode]);
 
   function choose(commune: Commune | null) {
     onChange(commune);

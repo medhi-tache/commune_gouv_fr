@@ -21,7 +21,9 @@ export function proxy(request: NextRequest, event: NextFetchEvent) {
     const page =
       request.nextUrl.pathname === "/" ||
       request.nextUrl.pathname.startsWith("/gouvernement") ||
-      request.nextUrl.pathname.startsWith("/presidence")
+      request.nextUrl.pathname.startsWith("/presidence") ||
+      request.nextUrl.pathname.startsWith("/prefectures") ||
+      request.nextUrl.pathname.startsWith("/communes")
         ? "public"
         : request.nextUrl.pathname === "/administration"
           ? "admin_demo"
@@ -55,6 +57,8 @@ export const config = {
     "/",
     "/gouvernement/:path*",
     "/presidence/:path*",
+    "/prefectures/:path*",
+    "/communes/:path*",
     "/administration",
     "/administration/connexion",
   ],

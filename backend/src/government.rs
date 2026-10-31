@@ -1,4 +1,4 @@
-//! Comptes fictifs du Gouvernement et de la Présidence, isolés des élus municipaux et de l'administration.
+//! Sessions fictives des institutions, isolées des élus municipaux et de l’administration.
 use super::*;
 
 const DEMO_PASSWORD: &str = "gouvernement-demo";
@@ -33,6 +33,10 @@ pub struct DemoAccount {
     source_checked_at: String,
     #[serde(default)]
     institution: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    department_code: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    department_name: Option<String>,
 }
 #[derive(Deserialize)]
 struct StoredAccount {
@@ -223,7 +227,7 @@ async fn authenticated(database: &Database, headers: &HeaderMap) -> ApiResult<Op
 fn denied() -> ApiError {
     ApiError(
         StatusCode::UNAUTHORIZED,
-        "Connectez-vous à un compte fictif du Gouvernement ou de la Présidence.".into(),
+        "Connectez-vous à un compte fictif institutionnel.".into(),
     )
 }
 pub async fn me(State(database): State<Database>, headers: HeaderMap) -> ApiResult<Json<Value>> {
@@ -291,8 +295,26 @@ pub async fn publish(
         }
         None => None,
     };
+    // Une préfecture ne peut pas usurper le périmètre d'un autre département.
+    if author.institution == "prefecture" {
+        let department = author
+            .department_code
+            .as_deref()
+            .ok_or_else(|| invalid("Département du compte indisponible."))?;
+        if target
+            .as_ref()
+            .is_some_and(|commune| prefectures::department_code(&commune.id) != Some(department))
+        {
+            return Err(ApiError(
+                StatusCode::FORBIDDEN,
+                "Cette commune ne dépend pas de votre préfecture.".into(),
+            ));
+        }
+    }
     let scope = if target.is_some() {
         "commune"
+    } else if author.institution == "prefecture" {
+        "department"
     } else {
         "national"
     };
@@ -304,12 +326,20 @@ pub async fn publish(
     let presidency = author.institution == "presidence";
     let id = format!(
         "{}-{}-{}",
-        if presidency { "presidence" } else { "national" },
+        if presidency {
+            "presidence"
+        } else if author.institution == "prefecture" {
+            "prefecture"
+        } else {
+            "national"
+        },
         author.slug,
         request_id
     );
     let author_profile = if presidency {
         "/presidence".to_owned()
+    } else if author.institution == "prefecture" {
+        format!("/prefectures/{}", author.slug)
     } else {
         format!("/gouvernement/{}", author.slug)
     };
@@ -319,6 +349,7 @@ pub async fn publish(
         "body":format!("Publication fictive de démonstration. Ne constitue pas une communication officielle.\n\n{}",input.body.trim()),
         "category":input.category, "visibility":"public",
         "author_name":format!("{} (compte fictif)",author.name), "author_role":author.function,
+        "department_code":&author.department_code,"department_name":&author.department_name,
         "author_profile":author_profile,"author_institution":&author.institution, "published_at":Utc::now().to_rfc3339()
     };
     let collection = database.collection::<Document>("publications");
@@ -343,7 +374,8 @@ pub async fn publish(
         Json(json!({
             "id":id, "scope":saved.get_str("scope").unwrap_or("national"),
             "commune_id":saved.get_str("commune_id").unwrap_or(""),
-            "commune_name":saved.get_str("commune_name").ok(), "is_demo":true
+            "commune_name":saved.get_str("commune_name").ok(),
+            "department_code":saved.get_str("department_code").ok(),"department_name":saved.get_str("department_name").ok(), "is_demo":true
         })),
     ))
 }
@@ -357,7 +389,7 @@ pub async fn publications(
         .ok_or_else(denied)?;
     let records: Vec<StoredPublication> = database
         .collection("publications")
-        .find(doc! {"author_id":author.id,"scope":{"$in":["national","commune"]},"is_demo":true,"visibility":"public"})
+        .find(doc! {"author_id":author.id,"scope":{"$in":["national","commune","department"]},"is_demo":true,"visibility":"public"})
         .sort(doc! {"published_at":-1,"id":-1})
         .limit(20)
         .await?
@@ -369,6 +401,110 @@ pub async fn publications(
             .map(|record| record.publication)
             .collect(),
     ))
+}
+
+#[derive(Default, Deserialize)]
+pub struct ProfilePage {
+    before: Option<String>,
+}
+
+#[derive(Serialize)]
+pub struct ProfilePublications {
+    publications: Vec<Publication>,
+    next_cursor: Option<String>,
+}
+
+/// Le profil public ne révèle ni les identifiants des comptes ni les messages privés.
+fn public_profile_filter(author_id: &str) -> Document {
+    doc! {
+        "author_id":author_id, "visibility":"public", "is_demo":true,
+        "scope":{"$in":["national","commune","department"]}
+    }
+}
+
+/// Consultation sans connexion ; le curseur reste limité aux publications du même auteur.
+pub async fn profile_publications(
+    State(database): State<Database>,
+    Path(slug): Path<String>,
+    Query(page): Query<ProfilePage>,
+) -> ApiResult<Json<ProfilePublications>> {
+    load_profile_publications(database, slug, page, "gouvernement").await
+}
+
+pub async fn prefecture_publications(
+    State(database): State<Database>,
+    Path(slug): Path<String>,
+    Query(page): Query<ProfilePage>,
+) -> ApiResult<Json<ProfilePublications>> {
+    load_profile_publications(database, slug, page, "prefecture").await
+}
+
+async fn load_profile_publications(
+    database: Database,
+    slug: String,
+    page: ProfilePage,
+    institution: &str,
+) -> ApiResult<Json<ProfilePublications>> {
+    if slug.len() > 100 {
+        return Err(invalid("Profil invalide."));
+    }
+    let account = database
+        .collection::<Document>("government_demo_accounts")
+        .find_one(doc! {"slug":slug,"institution":institution,"is_demo":true})
+        .await?
+        .ok_or_else(|| ApiError(StatusCode::NOT_FOUND, "Profil introuvable.".into()))?;
+    let author_id = account.get_str("id").map_err(|_| {
+        ApiError(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Profil indisponible.".into(),
+        )
+    })?;
+    let collection = database.collection::<StoredPublication>("publications");
+    let mut filter = public_profile_filter(author_id);
+    if let Some(before) = page.before {
+        if before.is_empty()
+            || before.len() > 200
+            || !before
+                .bytes()
+                .all(|b| b.is_ascii_alphanumeric() || b == b'-')
+        {
+            return Err(invalid("Curseur de publication invalide."));
+        }
+        let mut cursor_filter = filter.clone();
+        cursor_filter.insert("id", &before);
+        let cursor = collection
+            .find_one(cursor_filter)
+            .await?
+            .ok_or_else(|| invalid("Curseur de publication invalide."))?;
+        let date = cursor.publication.published_at;
+        filter.insert(
+            "$or",
+            vec![
+                doc! {"published_at":{"$lt":&date}},
+                doc! {"published_at":&date,"id":{"$lt":&before}},
+            ],
+        );
+    }
+    let mut records: Vec<StoredPublication> = collection
+        .find(filter)
+        .sort(doc! {"published_at":-1,"id":-1})
+        .limit(21)
+        .await?
+        .try_collect()
+        .await?;
+    let next_cursor = if records.len() > 20 {
+        records.truncate(20);
+        records.last().map(|record| record.publication.id.clone())
+    } else {
+        None
+    };
+    Ok(Json(ProfilePublications {
+        publications: records
+            .into_iter()
+            .map(|record| record.publication)
+            .collect(),
+        next_cursor,
+    }))
 }
 
 pub async fn logout(State(database): State<Database>, headers: HeaderMap) -> ApiResult<Response> {

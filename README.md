@@ -261,3 +261,56 @@ La procédure et les fichiers de déploiement du prototype sont décrits dans [d
 Le comptage est réalisé côté Next.js, en arrière-plan, via `POST /internal/visits` : cette route ne passe pas par le relais public `/api` et exige une clé serveur `QOMUNE_METRICS_KEY`. La démonstration publique ne présente aucune mesure réelle de fréquentation. En local, `npm run dev` génère automatiquement la clé dans `backend/data/metrics-key.txt` ; pour des services lancés séparément, fournir la même clé privée au frontend et au backend.
 
 Le filtrage des pages vues est testé par `node scripts/test-visits-proxy.mjs` et inclus dans `npm run check`.
+
+Les profils `/gouvernement/[slug]` affichent les publications publiques du compte
+fictif correspondant, même pour un visiteur non connecté. Le fil présente le
+contenu, la signature, la date et les communes destinataires ; les publications
+précédentes sont consultables par pagination. Une nouvelle diffusion actualise
+également le fil du profil ouvert, sans créer une seconde publication en base.
+
+### Comptes fictifs des préfectures
+
+L’annuaire `/prefectures` présente les 101 préfectures départementales (Paris et
+outre-mer compris), à partir de l’annuaire officiel DILA consulté le 30 octobre
+2026. Chaque fiche dispose d’un compte fictif et d’un fil public paginé.
+
+Une préfecture peut publier vers toutes les communes de son département en une
+seule opération, ou vers une commune de ce département. Le serveur vérifie la
+compétence territoriale et refuse une commune extérieure. Les publications ne
+sont pas dupliquées et ne donnent aucun accès aux conseils municipaux privés.
+Les services régionaux, sous-préfectures, préfectures de police et maritimes ne
+sont pas inclus dans ces 101 comptes départementaux.
+
+Les mots de passe individuels sont dérivés d’un secret privé d’installation
+`QOMUNE_PREFECTURE_DEMO_SECRET` (32 caractères minimum), puis stockés sous forme
+Argon2 dans MongoDB. Ce secret doit être conservé hors Git et hors des documents
+publics. Le lanceur local le crée dans `backend/data/prefecture-demo-secret.txt`.
+Sur OVH, le renseigner dans le fichier `.env` privé. Les redémarrages préservent
+les mots de passe existants ; changer le secret ne les fait pas tourner.
+
+### Prix des carburants par commune
+
+La fiche publique d’une commune présente les prix déclarés les plus bas
+par carburant (Gazole, SP95, SP98, E10, E85, GPLc), les adresses des stations ex æquo
+et la date de déclaration propre à chaque prix. Les carburants déclarés indisponibles,
+les prix invalides et les stations sans coordonnées exploitables sont exclus.
+Une déclaration de plus de sept jours reste visible, avec une mention de prudence :
+un prix inchangé peut rester valide sans nouvelle déclaration.
+
+Le serveur Rust récupère un export national réduit du jeu officiel
+[Prix des carburants, flux instantané v2](https://www.data.gouv.fr/datasets/prix-des-carburants-en-france-flux-instantane-v2-amelioree),
+réutilisable sous Licence Ouverte 2.0. Un cache MongoDB de dix minutes mutualise
+l’export entre toutes les communes ; une seule actualisation est exécutée lors
+de demandes simultanées. Les contours officiels de [geo.api.gouv.fr](https://geo.api.gouv.fr/decoupage-administratif/communes)
+sont conservés 24 heures. Le rattachement se fait par coordonnées et polygones,
+y compris les enclaves, sans assimiler code postal et code INSEE et sans demander
+la position du visiteur. Un index TTL supprime les caches expirés.
+
+La rubrique privilégie les stations référencées dans la commune puis recherche à proximité les carburants absents ; elle ne prétend pas couvrir toutes les stations ni leurs horaires actuels d’ouverture. Une absence de prix est distinguée d’une indisponibilité de
+la source. La date de récupération de l’export ne remplace pas celle de chaque prix.
+
+### Fiches des communes
+
+L’annuaire `/communes` permet de rechercher une commune. Chaque code INSEE du référentiel dispose d’une fiche publique `/communes/[code]` : nom, département, région, lien vers les publications et prix minimal par carburant dans les stations de la commune. Une commune sans prix reste accessible avec un message explicite. Le fil local renvoie vers sa fiche. Les fiches sont comptabilisées comme visites publiques, sans transmettre le code commune aux statistiques.
+
+En l’absence de prix local pour un carburant, le comparateur cherche le minimum dans les stations voisines jusqu’à 25 km à vol d’oiseau du centre approximatif de l’emprise communale. La priorité reste au prix local, même si un voisin est moins cher. Chaque résultat indique `search_scope` (`commune`, `nearby`, `none`) ; les stations voisines comportent une `distance_km` indicative. Sans résultat dans ce rayon, aucun prix n’est inventé.

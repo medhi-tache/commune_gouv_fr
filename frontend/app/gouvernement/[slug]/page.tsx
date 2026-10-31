@@ -1,4 +1,5 @@
 import GovernmentDemoAccount from "../../../components/government-demo-account";
+import GovernmentPublications from "../../../components/government-publications";
 import type { Metadata } from "next";
 import { socialMetadata } from "../../../lib/social-metadata";
 import { notFound } from "next/navigation";
@@ -28,7 +29,7 @@ export async function generateMetadata({
   );
 }
 
-/** Les profils ne créent aucun compte et ne permettent pas de publier au nom d'un ministre. */
+/** Le fil public du profil reste accessible sans ouvrir une session de démonstration. */
 export default async function GovernmentProfile({ params }: ProfileProps) {
   const { slug } = await params;
   const member = government.members.find((item) => item.slug === slug);
@@ -82,6 +83,7 @@ export default async function GovernmentProfile({ params }: ProfileProps) {
           <span className="sr-only"> sur info.gouv.fr (nouvel onglet)</span>
         </a>
       </section>
+      <GovernmentPublications slug={member.slug} name={member.name} />
       <GovernmentDemoAccount member={member} />
       <p className="government-note">
         Source :{" "}

@@ -13,6 +13,8 @@ type DemoAccount = {
   email: string;
   is_demo: boolean;
   institution: string;
+  department_code?: string;
+  department_name?: string;
 };
 
 /** Une session de démonstration distincte, sans droit sur les espaces municipaux. */
@@ -21,7 +23,7 @@ export default function GovernmentDemoAccount({
   institution = "gouvernement",
 }: {
   member: GovernmentMember;
-  institution?: "gouvernement" | "presidence";
+  institution?: "gouvernement" | "presidence" | "prefecture";
 }) {
   const email = `${member.slug}@${institution}.demo.qomune.fr`;
   const [account, setAccount] = useState<DemoAccount | null>(null);
@@ -88,8 +90,8 @@ export default function GovernmentDemoAccount({
       </h2>
       <p>
         Ce compte de test est inspiré de la fiche publique suivante :{" "}
-        {member.name}. Il n’appartient pas à cette personne et ne représente
-        aucune communication officielle.
+        {member.name}. Il n’appartient pas à la personne ou à l’institution
+        présentée et ne représente aucune communication officielle.
       </p>
       {loading ? (
         <p role="status">Chargement de la session…</p>
@@ -105,8 +107,11 @@ export default function GovernmentDemoAccount({
           <p className="government-demo-email">{account.email}</p>
           <p>
             Cette session permet de diffuser des publications de démonstration
-            dans toutes les communes ou dans une commune choisie. Elle ne donne
-            aucun accès aux conseils municipaux ni à l’administration.
+            {account.institution === "prefecture"
+              ? `dans les communes de son département (${account.department_name}) ou dans une commune de ce département.`
+              : "dans toutes les communes ou dans une commune choisie."}{" "}
+            Elle ne donne aucun accès aux conseils municipaux ni à
+            l’administration.
           </p>
           {(account.slug !== member.slug ||
             account.institution !== institution) && (
@@ -120,6 +125,9 @@ export default function GovernmentDemoAccount({
               <GovernmentNationalPublisher
                 key={account.slug}
                 name={account.name}
+                departmentCode={account.department_code}
+                departmentName={account.department_name}
+                profileSlug={account.slug}
               />
             )}
           <button className="button" disabled={busy} onClick={logout}>

@@ -69,3 +69,17 @@ sudo docker compose -f compose.ovh.yaml up --build -d api web
 ```
 
 La migration ajoute seulement la clé de mesure manquante dans `.env` et conserve tous les secrets existants. Le graphique des visites est réservé à `/administration/connexion`. Il agrège les chargements HTML de tous les visiteurs, sans cookies de suivi, IP ou identité. Les métriques ne sont pas des visiteurs uniques ; les préchargements et les contrôles de santé ne comptent pas. Les journées précédant l'activation sont indiquées comme non mesurées. La collecte n'empêche pas l'ouverture du site en cas d'indisponibilité de la mesure.
+
+### Ajout des comptes fictifs des préfectures à une installation existante
+
+Avant la première mise à jour comportant ces comptes, exécuter :
+
+```sh
+python3 deploy/configure.py --add-prefecture-secret
+```
+
+La commande ajoute uniquement le secret privé manquant et conserve tous les
+secrets existants. Il permet de dériver les mots de passe individuels des comptes
+fictifs départementaux ; le conserver dans les sauvegardes privées du `.env`.
+Il n’est jamais transmis au navigateur. Une fois les comptes créés, un changement
+de ce secret ne réinitialise pas leurs mots de passe stockés dans MongoDB.

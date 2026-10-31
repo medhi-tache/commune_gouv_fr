@@ -38,6 +38,16 @@ if (!process.env.QOMUNE_METRICS_KEY) {
     });
   process.env.QOMUNE_METRICS_KEY = readFileSync(file, "utf8").trim();
 }
+// Secret privé persistant : les identifiants des préfectures restent identiques après redémarrage.
+if (!process.env.QOMUNE_PREFECTURE_DEMO_SECRET) {
+  const file = resolve(root, "backend/data/prefecture-demo-secret.txt");
+  if (!existsSync(file))
+    writeFileSync(file, randomBytes(32).toString("hex"), {
+      mode: 0o600,
+      flag: "wx",
+    });
+  process.env.QOMUNE_PREFECTURE_DEMO_SECRET = readFileSync(file, "utf8").trim();
+}
 const webPort = process.env.WEB_PORT || "3000";
 const apiBind = process.env.API_BIND || "127.0.0.1:8080";
 const children = [];

@@ -12,7 +12,13 @@ async function proxy(
   const allowed =
     /^(admin\/(login|logout|statistics)|government-demo\/(login|logout|me|publications)|communes(?:\/meta)?|health|members|auth\/(login|logout|me|register)|publications(?:\/[a-zA-Z0-9-]+(?:\/(discussion|comments|reaction))?)?)$/;
   const route = path.join("/");
-  if (!allowed.test(route))
+  const publicProfile =
+    /^(government|prefectures)\/[a-z0-9-]+\/publications$/.test(route) ||
+    /^carburants\/(?:[0-9]{5}|2[AB][0-9]{3})$/.test(route);
+  if (
+    (!allowed.test(route) && !publicProfile) ||
+    (publicProfile && request.method !== "GET")
+  )
     return Response.json({ error: "Route introuvable." }, { status: 404 });
 
   // Une page tierce ne peut pas déclencher une connexion ou une publication à notre place.
@@ -53,7 +59,9 @@ async function proxy(
         },
         body,
         cache: "no-store",
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(
+          route.startsWith("carburants/") ? 45000 : 15000,
+        ),
       },
     );
     const headers = new Headers({
