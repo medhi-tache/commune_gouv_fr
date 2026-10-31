@@ -7,6 +7,7 @@ Ces documents sont accessibles au public. Les versions précédentes sont conser
 | 1 | 29 octobre 2026 | Conception initiale, publications municipales publiques et privées, exigences FranceConnect. | [Consulter la version 1](cahier_des_charges_qomune_v1_public.pdf) |
 | 2 | 30 octobre 2026 | Prototype déployé, administration et parcours de démonstration. | [Consulter la version 2 publique](cahier_des_charges_qomune_v2_public.pdf) |
 | 3 | 30 octobre 2026 | Annuaire du Gouvernement, comptes fictifs, diffusion nationale ou vers une commune choisie, statistiques et critères de recette. | [Consulter la version 3 publique](cahier_des_charges_qomune_v3_public.pdf) |
+| 4 | 31 octobre 2026 | Préfectures départementales, fiches communales, prix des carburants et repli de proximité à 25 km, confidentialité, architecture et critères de recette. | [Consulter la version 4 publique](cahier_des_charges_qomune_v4_public.pdf) |
 | 5 | 31 octobre 2026 | Fiches communales enrichies avec repère SMIC et publications après les carburants, lien À propos, prévisionnel téléchargeable, financement proposé et exigences de production. | [Consulter la version 5 publique](cahier_des_charges_qomune_v5_public.pdf) |
 
 Les adresses de connexion de démonstration éventuellement présentes désignent des comptes fictifs. Les mots de passe ont été retirés des éditions publiques actuelles et doivent être communiqués séparément. Ils ne constituent ni une preuve d'identité ni une habilitation officielle. Les exigences de la version définitive sont distinguées des fonctions du prototype.
